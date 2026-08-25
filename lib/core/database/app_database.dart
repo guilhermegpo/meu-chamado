@@ -49,14 +49,46 @@ class Callings extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => const [
+    'FOREIGN KEY (workspace_id, user_id) '
+        'REFERENCES memberships (workspace_id, user_id) ON DELETE CASCADE',
+  ];
 }
 
-@DriftDatabase(tables: [Workspaces, Users, Memberships, Callings])
+@DataClassName('AppPreferenceRow')
+class AppPreferences extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {key};
+}
+
+@DriftDatabase(
+  tables: [Workspaces, Users, Memberships, Callings, AppPreferences],
+)
 final class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   AppDatabase.defaults() : super(driftDatabase(name: 'meu_chamado'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (migrator) => migrator.createAll(),
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.createTable(appPreferences);
+        await migrator.alterTable(TableMigration(callings));
+      }
+    },
+    beforeOpen: (_) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }
