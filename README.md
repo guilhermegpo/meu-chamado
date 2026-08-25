@@ -10,14 +10,22 @@ Workspace local, com uma base modular para evoluções futuras.
 
 ## Status
 
-**`0.1.0-alpha.1` — Em desenvolvimento.** O app shell desta versão está sendo
-validado localmente e no CI. Ele reúne a experiência inicial, a persistência e
-as regras mínimas necessárias para testar o produto no Android; não representa
-uma versão estável ou pronta para distribuição.
+**`0.1.0-alpha.1` — Alpha.**
 
-Google Drive, sincronização, atualização pelo aplicativo, módulos completos de
-chamado e distribuição pública não fazem parte desta entrega. Itens futuros do
-roadmap não devem ser interpretados como funcionalidades existentes.
+> [!WARNING]
+> Pré-versão em desenvolvimento ativo. A modelagem de dados, o schema local e as
+> interfaces podem mudar de forma incompatível antes da `0.1.0` estável, e não há
+> caminho de atualização garantido entre pré-versões. Use apenas para avaliação,
+> com dados fictícios.
+
+Esta versão fecha o app shell: a experiência inicial, a persistência local e as
+regras mínimas necessárias para exercitar o produto no Android. Não é uma versão
+estável nem distribuída publicamente — não há APK de release assinado com chave
+de produção, apenas artefatos de debug para validação.
+
+As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
+existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
+futura e não deve ser lido como funcionalidade existente.
 
 ## Problema e objetivo
 
@@ -28,7 +36,7 @@ O projeto busca oferecer uma base Android local para organizar Workspaces,
 usuários e chamados. A primeira alpha funciona sem conta ou serviço externo e
 mantém os dados no dispositivo.
 
-## Escopo da `0.1.0-alpha.1`
+## Implementado na `0.1.0-alpha.1`
 
 - splash screen e onboarding guiado;
 - criação de um Workspace `LOCAL` e do primeiro usuário como `ADMIN`;
@@ -44,9 +52,19 @@ mantém os dados no dispositivo.
 - banco SQLite local com Drift, schema versionado e migração explícita;
 - estado assíncrono e injeção de dependências com Riverpod.
 
-Os itens acima descrevem o escopo em fechamento. Enquanto a versão permanecer
-marcada como **Em desenvolvimento**, alterações e validações ainda podem ocorrer
-antes de seu encerramento.
+Cada item acima foi verificado por testes automatizados e por um smoke test em
+emulador Android, com instalação limpa e reabertura após `force-stop`.
+
+### Fora desta versão
+
+Os itens abaixo **não existem** nesta alpha, ainda que apareçam no roadmap ou em
+decisões de arquitetura já registradas:
+
+- sincronização e integração com Google Drive;
+- Workspace compartilhado entre dispositivos ou pessoas;
+- atualização pelo próprio aplicativo;
+- rotinas internas dos módulos de Ministração e de Escola Dominical;
+- APK de release assinado e distribuição pública.
 
 ## Catálogo inicial
 
@@ -65,7 +83,8 @@ desenvolvimento**.
 
 As escolhas e seus trade-offs estão documentados nos
 [ADRs](docs/adr/), incluindo a decisão do
-[app shell da primeira alpha](docs/adr/0010-alpha1-app-shell.md).
+[app shell da primeira alpha](docs/adr/0010-alpha1-app-shell.md) e o motivo de
+[adiar a chave de assinatura de release](docs/adr/0011-android-release-signing.md).
 
 ## Modelo de domínio
 
@@ -117,8 +136,11 @@ número de build. No Android, esse número de build alimenta o `versionCode`, qu
 deve crescer a cada pacote publicado, sem substituir o significado da versão
 SemVer exibida ao usuário.
 
-O status **Em desenvolvimento** significa que ainda não há release pública
-correspondente, mesmo que APKs de debug sejam construídos para validação.
+O status **Alpha** significa que a versão está fechada e marcada, mas continua
+sujeita a mudanças incompatíveis. A publicação correspondente no GitHub é uma
+pré-release: ela documenta o marco e não distribui um APK assinado para produção.
+O que falta para isso está em
+[ADR 0011](docs/adr/0011-android-release-signing.md).
 
 ## Privacidade e segurança
 

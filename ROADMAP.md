@@ -7,9 +7,9 @@ entregues.
 
 ## 0.1.x — Fundação
 
-### 0.1.0-alpha.1 — Em desenvolvimento
+### 0.1.0-alpha.1 — Entregue em 2026-08-25
 
-Escopo em fechamento e validação:
+Escopo entregue e verificado:
 
 - app shell com splash screen e onboarding;
 - Workspace `LOCAL` persistido;
@@ -23,9 +23,10 @@ Escopo em fechamento e validação:
 - schema local versionado e migração testável;
 - CI de pull requests e smoke test em Android.
 
-Os módulos do catálogo permanecem com suas rotinas internas **Em
-desenvolvimento**. O marco só deixa esse status depois das validações locais, do
-CI e do teste no dispositivo ou emulador definido para a entrega.
+Os módulos do catálogo permanecem com suas rotinas internas **não
+implementadas**: a alpha organiza as instâncias de chamado, não o trabalho de
+cada chamado. Não há APK de release assinado nesta versão — ver
+[ADR 0011](docs/adr/0011-android-release-signing.md).
 
 ### Depois da primeira alpha
 
