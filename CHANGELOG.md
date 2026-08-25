@@ -9,7 +9,7 @@ projeto pretende usar [Versionamento Semântico](https://semver.org/lang/pt-BR/)
 
 Nenhuma mudança posterior à primeira alpha foi registrada.
 
-## [0.1.0-alpha.1] — Em desenvolvimento
+## [0.1.0-alpha.1] — 2026-08-25
 
 ### Added
 
@@ -30,12 +30,19 @@ Nenhuma mudança posterior à primeira alpha foi registrada.
 ### Fora desta versão
 
 - sincronização ou integração com Google Drive;
+- Workspace compartilhado entre dispositivos ou pessoas;
 - atualização pelo aplicativo;
-- implementação das rotinas internas dos módulos de chamado;
-- release assinada ou distribuição pública.
+- módulo completo do Secretário da Ministração do Quórum de Élderes;
+- módulo completo do Secretário da Escola Dominical;
+- APK de release assinado com chave de produção e distribuição pública.
+
+Esta é uma pré-versão alpha. A modelagem de dados, o schema local e as
+interfaces ainda podem mudar de forma incompatível antes da `0.1.0` estável, e
+não há caminho de atualização garantido entre pré-versões.
 
 O número SemVer `0.1.0-alpha.1` identifica a pré-versão. O sufixo de build do
 Flutter, como `+1`, corresponde ao `versionCode` do Android e evolui de forma
 monotônica quando um novo pacote é publicado.
 
-[Unreleased]: https://github.com/guilhermegpo/meu-chamado/commits/develop
+[Unreleased]: https://github.com/guilhermegpo/meu-chamado/compare/v0.1.0-alpha.1...develop
+[0.1.0-alpha.1]: https://github.com/guilhermegpo/meu-chamado/releases/tag/v0.1.0-alpha.1
