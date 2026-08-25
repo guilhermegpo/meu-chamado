@@ -11,12 +11,17 @@ class AppsMeuMark extends StatelessWidget {
       label: 'Apps Meu',
       image: true,
       child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: size,
-          child: CustomPaint(
-            painter: _AppsMeuMarkPainter(
-              primary: Theme.of(context).colorScheme.primary,
-              accent: Theme.of(context).colorScheme.secondary,
+        // Center isola a marca do alinhamento do pai. Dentro de uma Column com
+        // CrossAxisAlignment.stretch, o SizedBox sozinho recebe largura forçada
+        // e o desenho sai esticado.
+        child: Center(
+          child: SizedBox.square(
+            dimension: size,
+            child: CustomPaint(
+              painter: _AppsMeuMarkPainter(
+                primary: Theme.of(context).colorScheme.primary,
+                accent: Theme.of(context).colorScheme.secondary,
+              ),
             ),
           ),
         ),
