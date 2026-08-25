@@ -2,51 +2,81 @@
 
 Este roadmap comunica direção, não um contrato imutável. Escopo e ordem podem
 mudar quando testes, pesquisa ou restrições reais indicarem uma opção melhor.
+Itens de versões futuras são hipóteses e não representam funcionalidades já
+entregues.
 
 ## 0.1.x — Fundação
 
-- scaffold Flutter verificável;
-- onboarding e Workspace local;
-- primeiro usuário `ADMIN`;
-- perfis, temas e RBAC básico;
-- estrutura modular para múltiplos chamados;
-- CI de pull requests.
+### 0.1.0-alpha.1 — Entregue em 2026-08-25
+
+Escopo entregue e verificado:
+
+- app shell com splash screen e onboarding;
+- Workspace `LOCAL` persistido;
+- primeiro usuário `ADMIN`, múltiplos usuários e foto opcional local;
+- RBAC central para `ADMIN`, `MODERATOR` e `USER`;
+- proteção do último administrador;
+- catálogo inicial de chamados;
+- zero, um ou vários chamados por usuário;
+- ativação e arquivamento de chamados;
+- tema claro, escuro ou do sistema com preferência persistida;
+- schema local versionado e migração testável;
+- CI de pull requests e smoke test em Android.
+
+Os módulos do catálogo permanecem com suas rotinas internas **não
+implementadas**: a alpha organiza as instâncias de chamado, não o trabalho de
+cada chamado. Não há APK de release assinado nesta versão — ver
+[ADR 0011](docs/adr/0011-android-release-signing.md).
+
+### Depois da primeira alpha
+
+- corrigir achados de uso da primeira alpha;
+- ampliar testes de autorização, persistência e migração;
+- refinar acessibilidade, mensagens de erro e experiência offline;
+- revisar navegação quando existirem rotas profundas ou fluxos aninhados reais.
 
 ## 0.2.x — Secretário da Ministração
 
-- módulo próprio para rotinas e entrevistas de ministração;
-- dados nominais tratados como locais/protegidos;
-- relatórios trimestrais sem expor dados reais no repositório.
+- pesquisar e implementar rotinas próprias do módulo;
+- manter dados nominais locais e protegidos;
+- validar relatórios sem expor dados reais no repositório.
 
 ## 0.3.x — Secretário da Escola Dominical
 
-- classes, professores, participantes e frequência;
-- designações, agenda e conselho de professores;
-- regras próprias sobre infraestrutura compartilhada.
+- pesquisar classes, professores, participantes e frequência;
+- avaliar designações, agenda e conselho de professores;
+- implementar regras próprias sobre a infraestrutura compartilhada.
 
-## 0.4.x — Workspace compartilhado
+## 0.4.x — Workspace compartilhado / Google Drive
 
-- pesquisa de sincronização via Google Drive;
-- seleção explícita de pasta e privilégio mínimo;
-- migração de Workspace local para compartilhado sem perda de dados;
-- apenas dados permitidos no provedor compartilhado.
+- pesquisar sincronização opcional e o modelo de conflitos;
+- avaliar seleção explícita de pasta e privilégio mínimo;
+- projetar migração do Workspace local sem perda silenciosa;
+- manter dados privados fora do provedor compartilhado.
 
-## 0.5.x — Atualização
+Esta seção é planejamento. Google Drive não está implementado na primeira
+alpha.
 
-- canais Stable e Beta;
-- consulta ao GitHub Releases;
-- changelog, download de APK completo e verificação de integridade;
-- fluxo Android de instalação sem armazenar keystore no repositório.
+## 0.5.x — Atualizações
 
-## 0.6.x — Segurança, testes e refinamentos
+- pesquisar canais Stable e Beta;
+- avaliar consulta de versão, changelog e verificação de integridade;
+- definir um fluxo Android seguro antes de qualquer distribuição.
 
-- revisão do modelo de ameaças;
-- ampliação de testes de autorização, migração e persistência;
-- acessibilidade, performance e experiência offline;
-- preparação de release reproduzível.
+Esta seção é planejamento. Atualização pelo aplicativo e distribuição pública
+não estão implementadas na primeira alpha.
+
+## 0.6.x — Segurança e refinamentos
+
+- revisar o modelo de ameaças;
+- ampliar testes de autorização, migração e persistência;
+- refinar acessibilidade, performance e experiência offline;
+- preparar um processo de release reproduzível apenas quando houver decisão de
+  distribuição.
 
 ## 1.0.0 — Primeira versão estável
 
 - escopo estável definido por evidência de uso e testes;
 - documentação de operação, privacidade e recuperação;
-- release assinado e verificável.
+- processo de release reproduzível e verificável, caso a distribuição seja
+  aprovada no futuro.

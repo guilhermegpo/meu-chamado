@@ -1,7 +1,7 @@
 # Meu Chamado
 
-Aplicativo mobile modular para organização e acompanhamento de chamados, com
-suporte a múltiplos usuários e chamados.
+Aplicativo Android offline-first para organizar usuários e chamados em um
+Workspace local, com uma base modular para evoluções futuras.
 
 > [!IMPORTANT]
 > Meu Chamado é um projeto independente e não oficial. Não é afiliado,
@@ -10,51 +10,81 @@ suporte a múltiplos usuários e chamados.
 
 ## Status
 
-**Fundação do produto.** O repositório contém decisões de arquitetura,
-privacidade, segurança, identidade e roadmap. O aplicativo Flutter e suas
-funcionalidades ainda não estão implementados.
+**`0.1.0-alpha.1` — Alpha.**
 
-Primeiro marco planejado: `0.1.0-alpha.1`.
+> [!WARNING]
+> Pré-versão em desenvolvimento ativo. A modelagem de dados, o schema local e as
+> interfaces podem mudar de forma incompatível antes da `0.1.0` estável, e não há
+> caminho de atualização garantido entre pré-versões. Use apenas para avaliação,
+> com dados fictícios.
 
-## Problema
+Esta versão fecha o app shell: a experiência inicial, a persistência local e as
+regras mínimas necessárias para exercitar o produto no Android. Não é uma versão
+estável nem distribuída publicamente — não há APK de release assinado com chave
+de produção, apenas artefatos de debug para validação.
 
-Pessoas podem acumular diferentes chamados e responsabilidades, cada um com
-rotinas, informações e limites de acesso próprios. Planilhas, papel e mensagens
-fragmentam esse acompanhamento e não oferecem um modelo consistente para uso
-individual ou compartilhado.
+As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
+existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
+futura e não deve ser lido como funcionalidade existente.
 
-## Objetivo
+## Problema e objetivo
 
-Construir um aplicativo Android offline-first que organize usuários, chamados e
-rotinas dentro de um Workspace. O modo local deve funcionar sem conta externa;
-o compartilhamento será opcional e projetado com privilégio mínimo.
+Pessoas podem acumular responsabilidades com rotinas e limites de acesso
+distintos. Planilhas, papel e mensagens fragmentam esse acompanhamento.
 
-## Escopo inicial
+O projeto busca oferecer uma base Android local para organizar Workspaces,
+usuários e chamados. A primeira alpha funciona sem conta ou serviço externo e
+mantém os dados no dispositivo.
 
-O marco `0.1.0-alpha.1` pretende entregar somente a fundação:
+## Implementado na `0.1.0-alpha.1`
 
-- inicialização do aplicativo;
-- temas claro e escuro;
-- onboarding;
-- criação de Workspace local;
-- primeiro usuário como `ADMIN`;
-- seleção e foto de perfil;
-- RBAC básico;
-- estrutura para zero, um ou vários chamados;
-- configurações essenciais.
+- splash screen e onboarding guiado;
+- criação de um Workspace `LOCAL` e do primeiro usuário como `ADMIN`;
+- cadastro e seleção de múltiplos usuários;
+- foto de perfil opcional armazenada localmente pelo aplicativo;
+- RBAC centralizado para os papéis `ADMIN`, `MODERATOR` e `USER`, incluindo a
+  proteção do último administrador;
+- catálogo inicial de chamados, sem implementar ainda as rotinas internas de
+  cada módulo;
+- suporte a zero, um ou vários chamados por usuário, com estados `ACTIVE` e
+  `ARCHIVED`;
+- temas claro, escuro e preferência do sistema, com escolha persistida;
+- banco SQLite local com Drift, schema versionado e migração explícita;
+- estado assíncrono e injeção de dependências com Riverpod.
 
-Google Drive, módulos completos de chamado e atualização pelo GitHub Releases
-permanecem planejados; não são funcionalidades atuais.
+Cada item acima foi verificado por testes automatizados e por um smoke test em
+emulador Android, com instalação limpa e reabertura após `force-stop`.
 
-## Tecnologia planejada
+### Fora desta versão
 
-- Flutter e Dart;
-- Android como primeira plataforma;
-- arquitetura preparada para avaliar iOS futuramente;
-- banco local SQLite por meio de uma biblioteca a decidir;
-- roteamento, estado e armazenamento seguro definidos após avaliação técnica.
+Os itens abaixo **não existem** nesta alpha, ainda que apareçam no roadmap ou em
+decisões de arquitetura já registradas:
 
-Versões e dependências só serão registradas quando o scaffold Flutter existir.
+- sincronização e integração com Google Drive;
+- Workspace compartilhado entre dispositivos ou pessoas;
+- atualização pelo próprio aplicativo;
+- rotinas internas dos módulos de Ministração e de Escola Dominical;
+- APK de release assinado e distribuição pública.
+
+## Catálogo inicial
+
+O catálogo usa identificadores estáveis, independentes do texto mostrado na
+interface. Nesta alpha, ele permite associar e arquivar os chamados de
+Secretário da Ministração do Quórum de Élderes e Secretário da Escola Dominical.
+As rotinas próprias desses módulos continuam sinalizadas como **Em
+desenvolvimento**.
+
+## Stack
+
+- Flutter `3.47.1` e Dart `3.13.1`;
+- Riverpod para estado e injeção de dependências;
+- Drift sobre SQLite para persistência offline;
+- Android como primeira plataforma.
+
+As escolhas e seus trade-offs estão documentados nos
+[ADRs](docs/adr/), incluindo a decisão do
+[app shell da primeira alpha](docs/adr/0010-alpha1-app-shell.md) e o motivo de
+[adiar a chave de assinatura de release](docs/adr/0011-android-release-signing.md).
 
 ## Modelo de domínio
 
@@ -67,52 +97,79 @@ Calling
 CallingModule
 ```
 
-Workspaces poderão ser `LOCAL` ou `SHARED`. Papéis previstos: `ADMIN`,
-`MODERATOR` e `USER`. As regras completas estão em
-[docs/product/domain-model.md](docs/product/domain-model.md).
+O modo entregue nesta alpha usa apenas Workspace `LOCAL`. Os papéis são
+`ADMIN`, `MODERATOR` e `USER`; permissões são avaliadas no Workspace atual e
+negadas por padrão quando não estiverem autorizadas. As regras completas estão
+em [docs/product/domain-model.md](docs/product/domain-model.md).
 
-## Privacidade
+## Como executar
 
-Dados compartilháveis do Workspace e dados privados de chamado são limites
-diferentes. Dados reais de membros, credenciais, tokens, keystore, pastas reais
-do Drive e bancos locais nunca devem entrar neste repositório.
+Pré-requisitos: Flutter `3.47.1`, uma plataforma Flutter configurada e as
+ferramentas indicadas por `flutter doctor -v`.
+
+```bash
+flutter pub get
+dart run build_runner build
+flutter run
+```
+
+Nenhum secret, conta Google ou serviço externo é necessário para o modo local.
+
+## Testes e qualidade
+
+```bash
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build apk --debug
+```
+
+O CI executa formatação, verificação de código gerado, análise, testes e build
+do APK de debug em pull requests para `main` e `develop`. A execução no Android
+requer SDK e dispositivo ou emulador configurado.
+
+## Versionamento
+
+O projeto usa SemVer para a versão pública. Em `0.1.0-alpha.1+1`,
+`0.1.0-alpha.1` identifica a pré-versão do aplicativo e o número após `+` é o
+número de build. No Android, esse número de build alimenta o `versionCode`, que
+deve crescer a cada pacote publicado, sem substituir o significado da versão
+SemVer exibida ao usuário.
+
+O status **Alpha** significa que a versão está fechada e marcada, mas continua
+sujeita a mudanças incompatíveis. A publicação correspondente no GitHub é uma
+pré-release: ela documenta o marco e não distribui um APK assinado para produção.
+O que falta para isso está em
+[ADR 0011](docs/adr/0011-android-release-signing.md).
+
+## Privacidade e segurança
+
+Nome, foto e dados de chamados permanecem no armazenamento local desta alpha.
+Dados reais de membros, credenciais, tokens, keystore, pastas reais de serviços
+externos e bancos locais nunca devem entrar neste repositório.
+
+Somente dados fictícios podem aparecer em código, testes ou screenshots, como
+`Administrador Demo` e `Usuário Demo`.
 
 Veja [docs/privacy/data-boundaries.md](docs/privacy/data-boundaries.md) e
 [docs/security/threat-model.md](docs/security/threat-model.md).
 
-## Arquitetura e decisões
+## Arquitetura e roadmap
 
 - [Visão de arquitetura](docs/architecture/overview.md)
 - [ADRs](docs/adr/)
 - [Identidade visual](docs/design/identity.md)
 - [Roadmap](ROADMAP.md)
 
-Os ADRs distinguem decisões aceitas de propostas futuras. Um documento não
-significa que a funcionalidade já foi implementada.
+Os ADRs distinguem decisões aceitas de propostas futuras. Uma decisão
+documentada não significa que toda a funcionalidade relacionada já foi
+implementada.
 
-## Como executar
-
-Ainda não há aplicativo executável. Esta seção será atualizada junto com o
-primeiro scaffold Flutter verificável.
-
-## Testes e CI
-
-Ainda não há código Flutter para analisar ou testar. Quando o scaffold existir,
-o CI de pull requests deverá executar formatação, análise estática, testes e
-build Android apropriado ao estágio do projeto.
-
-## Dados de demonstração
-
-Somente dados fictícios podem ser usados em código, documentação, screenshots e
-testes, por exemplo: `Administrador Demo`, `Usuário Demo`, `João Exemplo` e
-`Maria Exemplo`.
-
-## Contribuição e segurança
+## Contribuição, licença e marca
 
 As políticas padrão de contribuição, código de conduta e segurança são herdadas
-do repositório público [`guilhermegpo/.github`](https://github.com/guilhermegpo/.github).
-
-## Licença e marca
+do repositório público
+[`guilhermegpo/.github`](https://github.com/guilhermegpo/.github).
 
 O código é disponibilizado sob a [licença MIT](LICENSE). A licença do código não
 concede automaticamente direitos sobre o nome, a identidade visual ou ativos de
