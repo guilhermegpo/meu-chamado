@@ -2,8 +2,9 @@
 
 ## Status
 
-Arquitetura conceitual. O scaffold Flutter ainda não foi criado e nenhum bloco
-descrito aqui deve ser interpretado como implementado.
+Arquitetura incremental. O scaffold Flutter, o banco local, o onboarding e a
+fundação de Workspace/RBAC estão implementados. Integrações externas,
+sincronização e módulos especializados permanecem conceituais.
 
 ## Objetivos
 
@@ -33,24 +34,20 @@ Infraestrutura
 As dependências devem apontar para o domínio. Flutter, SQLite ou Google Drive
 são detalhes externos e não devem definir as regras de autorização.
 
-## Organização prevista
+## Organização atual
 
 O código deverá crescer no formato feature-first. Uma estrutura possível:
 
 ```text
 lib/
 ├── app/
-├── core/
-│   ├── database/
-│   ├── routing/
-│   ├── security/
-│   ├── storage/
 │   └── theme/
+├── core/
+│   └── database/
 ├── features/
 │   ├── onboarding/
+│   ├── home/
 │   ├── workspace/
-│   ├── users/
-│   ├── callings/
 │   └── settings/
 └── shared/
 ```
@@ -72,6 +69,6 @@ StorageProvider
 
 ## Qualidade
 
-O primeiro CI real deverá validar formatação, análise, testes e um build Android
-compatível com o estágio. Regras de domínio, RBAC e migração de Workspace têm
-prioridade sobre testes puramente visuais.
+O CI valida formatação, código gerado, análise, testes e build Android debug em
+pull requests. Regras de domínio, RBAC e migração de Workspace têm prioridade
+sobre testes puramente visuais.
