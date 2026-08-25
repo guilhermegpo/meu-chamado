@@ -23,6 +23,15 @@ enum CallingStatus {
   final String storageValue;
 }
 
+enum ThemePreference {
+  system('SYSTEM'),
+  light('LIGHT'),
+  dark('DARK');
+
+  const ThemePreference(this.storageValue);
+  final String storageValue;
+}
+
 class UserProfile {
   const UserProfile({
     required this.id,
@@ -40,15 +49,19 @@ class UserProfile {
 class CallingSummary {
   const CallingSummary({
     required this.id,
+    required this.userId,
     required this.title,
     required this.moduleKey,
     required this.status,
+    this.archivedAt,
   });
 
   final String id;
+  final String userId;
   final String title;
   final String moduleKey;
   final CallingStatus status;
+  final DateTime? archivedAt;
 }
 
 class WorkspaceDashboard {
