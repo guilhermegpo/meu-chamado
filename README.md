@@ -10,51 +10,51 @@ suporte a múltiplos usuários e chamados.
 
 ## Status
 
-**Fundação do produto.** O repositório contém decisões de arquitetura,
-privacidade, segurança, identidade e roadmap. O aplicativo Flutter e suas
-funcionalidades ainda não estão implementados.
+**Fundação do produto em desenvolvimento (`0.1.0-alpha.1`).** O aplicativo
+Flutter já inicia, persiste um Workspace local, cria o primeiro usuário como
+`ADMIN`, oferece seleção de perfil e temas claro/escuro, e modela zero, um ou
+vários chamados.
 
-Primeiro marco planejado: `0.1.0-alpha.1`.
+Ainda não existem Google Drive, módulos completos de chamado, distribuição ou
+atualização automática. Itens do roadmap não devem ser interpretados como
+funcionalidades entregues.
 
-## Problema
+## Problema e objetivo
 
-Pessoas podem acumular diferentes chamados e responsabilidades, cada um com
-rotinas, informações e limites de acesso próprios. Planilhas, papel e mensagens
-fragmentam esse acompanhamento e não oferecem um modelo consistente para uso
-individual ou compartilhado.
+Pessoas podem acumular responsabilidades com rotinas e limites de acesso
+distintos. Planilhas, papel e mensagens fragmentam esse acompanhamento.
 
-## Objetivo
+O projeto busca oferecer uma base Android offline-first para organizar
+Workspaces, usuários e chamados. O modo local funciona sem conta externa; o
+compartilhamento futuro será opcional e projetado com privilégio mínimo.
 
-Construir um aplicativo Android offline-first que organize usuários, chamados e
-rotinas dentro de um Workspace. O modo local deve funcionar sem conta externa;
-o compartilhamento será opcional e projetado com privilégio mínimo.
+## O que a fundação implementa
 
-## Escopo inicial
+- aplicativo Flutter com Material 3 e identidade visual original da família
+  Apps Meu;
+- temas claro, escuro e preferência do sistema;
+- onboarding para um Workspace `LOCAL`;
+- persistência SQLite local com Drift;
+- primeiro usuário criado como `ADMIN`;
+- proteção de domínio contra remoção do último administrador;
+- seleção de usuário e estrutura para foto de perfil local;
+- estrutura persistente para múltiplos chamados `ACTIVE` ou `ARCHIVED`;
+- estado assíncrono com Riverpod;
+- testes de repositório e onboarding.
 
-O marco `0.1.0-alpha.1` pretende entregar somente a fundação:
+Foto de perfil, criação de usuários pela interface, gestão de chamados e
+persistência da preferência de tema continuam incrementos futuros da série
+`0.1.x`.
 
-- inicialização do aplicativo;
-- temas claro e escuro;
-- onboarding;
-- criação de Workspace local;
-- primeiro usuário como `ADMIN`;
-- seleção e foto de perfil;
-- RBAC básico;
-- estrutura para zero, um ou vários chamados;
-- configurações essenciais.
+## Stack
 
-Google Drive, módulos completos de chamado e atualização pelo GitHub Releases
-permanecem planejados; não são funcionalidades atuais.
+- Flutter `3.47.1` e Dart `3.13.1`;
+- Riverpod `3.4.2` para estado e injeção de dependências;
+- Drift `2.34.x` sobre SQLite para persistência offline;
+- Android como primeira plataforma.
 
-## Tecnologia planejada
-
-- Flutter e Dart;
-- Android como primeira plataforma;
-- arquitetura preparada para avaliar iOS futuramente;
-- banco local SQLite por meio de uma biblioteca a decidir;
-- roteamento, estado e armazenamento seguro definidos após avaliação técnica.
-
-Versões e dependências só serão registradas quando o scaffold Flutter existir.
+As escolhas e seus trade-offs estão documentados em
+[docs/adr/0009-flutter-foundation-dependencies.md](docs/adr/0009-flutter-foundation-dependencies.md).
 
 ## Modelo de domínio
 
@@ -67,53 +67,66 @@ Calling
 CallingModule
 ```
 
-Workspaces poderão ser `LOCAL` ou `SHARED`. Papéis previstos: `ADMIN`,
-`MODERATOR` e `USER`. As regras completas estão em
+Workspaces podem ser `LOCAL` ou `SHARED`. Papéis previstos: `ADMIN`, `MODERATOR`
+e `USER`. As regras completas estão em
 [docs/product/domain-model.md](docs/product/domain-model.md).
 
-## Privacidade
+## Como executar
+
+Pré-requisitos: Flutter `3.47.1`, uma plataforma Flutter configurada e as
+ferramentas indicadas por `flutter doctor -v`.
+
+```bash
+flutter pub get
+dart run build_runner build
+flutter run
+```
+
+Nenhum secret, conta Google ou serviço externo é necessário para a fundação
+local.
+
+## Testes e qualidade
+
+```bash
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build apk --debug
+```
+
+O CI executa essas validações em pull requests para `main` e `develop`. O build
+Android local requer o Android SDK; a análise e os testes de unidade/widget
+podem ser executados sem dispositivo.
+
+## Privacidade e segurança
 
 Dados compartilháveis do Workspace e dados privados de chamado são limites
 diferentes. Dados reais de membros, credenciais, tokens, keystore, pastas reais
 do Drive e bancos locais nunca devem entrar neste repositório.
 
+Somente dados fictícios podem aparecer em código, testes ou screenshots, como
+`Administrador Demo` e `Usuário Demo`.
+
 Veja [docs/privacy/data-boundaries.md](docs/privacy/data-boundaries.md) e
 [docs/security/threat-model.md](docs/security/threat-model.md).
 
-## Arquitetura e decisões
+## Arquitetura e roadmap
 
 - [Visão de arquitetura](docs/architecture/overview.md)
 - [ADRs](docs/adr/)
 - [Identidade visual](docs/design/identity.md)
 - [Roadmap](ROADMAP.md)
 
-Os ADRs distinguem decisões aceitas de propostas futuras. Um documento não
-significa que a funcionalidade já foi implementada.
+Os ADRs distinguem decisões aceitas de propostas futuras. Uma decisão
+documentada não significa que toda a funcionalidade relacionada já foi
+implementada.
 
-## Como executar
-
-Ainda não há aplicativo executável. Esta seção será atualizada junto com o
-primeiro scaffold Flutter verificável.
-
-## Testes e CI
-
-Ainda não há código Flutter para analisar ou testar. Quando o scaffold existir,
-o CI de pull requests deverá executar formatação, análise estática, testes e
-build Android apropriado ao estágio do projeto.
-
-## Dados de demonstração
-
-Somente dados fictícios podem ser usados em código, documentação, screenshots e
-testes, por exemplo: `Administrador Demo`, `Usuário Demo`, `João Exemplo` e
-`Maria Exemplo`.
-
-## Contribuição e segurança
+## Contribuição, licença e marca
 
 As políticas padrão de contribuição, código de conduta e segurança são herdadas
-do repositório público [`guilhermegpo/.github`](https://github.com/guilhermegpo/.github).
+do repositório público
+[`guilhermegpo/.github`](https://github.com/guilhermegpo/.github).
 
-## Licença e marca
-
-O código é disponibilizado sob a [licença MIT](LICENSE). A licença do código não
-concede automaticamente direitos sobre o nome, a identidade visual ou ativos de
-marca. Consulte [BRAND.md](BRAND.md).
+O código é disponibilizado sob a [licença MIT](LICENSE). A licença do código
+não concede automaticamente direitos sobre o nome, a identidade visual ou
+ativos de marca. Consulte [BRAND.md](BRAND.md).
