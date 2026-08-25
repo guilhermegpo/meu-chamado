@@ -23,10 +23,19 @@ void main() {
 
     expect(find.text('Organize seus chamados no seu ritmo.'), findsOneWidget);
 
+    final nextButton = find.byKey(const Key('onboarding-next-button'));
+    await tester.ensureVisible(nextButton);
+    await tester.tap(nextButton);
+    await tester.pumpAndSettle();
+
     await tester.enterText(
       find.byKey(const Key('workspace-name-field')),
       'Workspace Demo',
     );
+    await tester.ensureVisible(nextButton);
+    await tester.tap(nextButton);
+    await tester.pumpAndSettle();
+
     await tester.enterText(
       find.byKey(const Key('administrator-name-field')),
       'Administrador Demo',
@@ -36,7 +45,7 @@ void main() {
     await tester.tap(createButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Quem está usando o app?'), findsOneWidget);
+    expect(find.text('Quem está usando o Meu Chamado?'), findsOneWidget);
     expect(find.text('Administrador Demo'), findsOneWidget);
     expect(find.text('Administrador'), findsOneWidget);
   });

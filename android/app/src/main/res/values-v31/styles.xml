@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowSplashScreenBackground">@color/launch_background_color</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/launch_mark</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/launch_background_color</item>
+        <item name="android:windowSplashScreenAnimationDuration">200</item>
+        <!-- Sem postSplashScreenTheme: o atributo pertence a
+             androidx.core:core-splashscreen, que este projeto nao usa, e o
+             embedding do Flutter ja troca LaunchTheme por NormalTheme pelo
+             meta-data io.flutter.embedding.android.NormalTheme. -->
+        <item name="android:statusBarColor">@color/launch_background_color</item>
+        <item name="android:navigationBarColor">@color/launch_background_color</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

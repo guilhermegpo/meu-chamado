@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meu_chamado/features/home/presentation/home_screen.dart';
+import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
 import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
 
@@ -30,7 +31,7 @@ class UserSelectionScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Quem está usando o app?',
+                    'Quem está usando o Meu Chamado?',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
@@ -40,8 +41,9 @@ class UserSelectionScreen extends StatelessWidget {
                       child: ListTile(
                         key: Key('select-user-${user.id}'),
                         contentPadding: const EdgeInsets.all(14),
-                        leading: CircleAvatar(
-                          child: Text(_initials(user.name)),
+                        leading: ProfileAvatar(
+                          name: user.name,
+                          photoPath: user.photoPath,
                         ),
                         title: Text(user.name),
                         subtitle: Text(_roleLabel(user.role)),
@@ -56,6 +58,12 @@ class UserSelectionScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Nesta versão local, a seleção de perfil não substitui '
+                    'autenticação individual.',
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             ),
@@ -64,13 +72,6 @@ class UserSelectionScreen extends StatelessWidget {
       ),
     );
   }
-
-  String _initials(String name) => name
-      .trim()
-      .split(RegExp(r'\s+'))
-      .take(2)
-      .map((part) => part.characters.first.toUpperCase())
-      .join();
 
   String _roleLabel(UserRole role) => switch (role) {
     UserRole.admin => 'Administrador',
