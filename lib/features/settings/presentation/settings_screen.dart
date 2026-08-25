@@ -7,7 +7,12 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedMode = ref.watch(themeModeProvider);
+    final themeModeState = ref.watch(themeModeProvider);
+    final selectedMode = themeModeState.when(
+      data: (mode) => mode,
+      loading: () => ThemeMode.system,
+      error: (_, _) => ThemeMode.system,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações')),
@@ -35,8 +40,24 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ],
             selected: {selectedMode},
-            onSelectionChanged: (selection) =>
-                ref.read(themeModeProvider.notifier).select(selection.first),
+            onSelectionChanged: themeModeState.isLoading
+                ? null
+                : (selection) async {
+                    try {
+                      await ref
+                          .read(themeModeProvider.notifier)
+                          .select(selection.first);
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Não foi possível salvar a preferência de tema.',
+                          ),
+                        ),
+                      );
+                    }
+                  },
           ),
           const SizedBox(height: 28),
           const ListTile(
