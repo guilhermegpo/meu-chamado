@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
+import 'package:meu_chamado/features/callings/domain/calling_catalog.dart';
 import 'package:meu_chamado/features/callings/presentation/manage_callings_screen.dart';
+import 'package:meu_chamado/features/ministering/presentation/ministering_dashboard_screen.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
 import 'package:meu_chamado/features/profile/presentation/user_editor_dialog.dart';
 import 'package:meu_chamado/features/settings/presentation/settings_screen.dart';
@@ -161,10 +163,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               for (final calling in activeCallings)
                 Card(
                   child: ListTile(
+                    key: Key('calling-card-${calling.id}'),
                     contentPadding: const EdgeInsets.all(16),
                     leading: const Icon(Icons.assignment_turned_in_outlined),
                     title: Text(calling.title),
-                    subtitle: const Text('Ativo • Em desenvolvimento'),
+                    subtitle: Text(
+                      _hasModule(calling)
+                          ? 'Ativo • Abrir módulo'
+                          : 'Ativo • Em desenvolvimento',
+                    ),
+                    trailing: _hasModule(calling)
+                        ? const Icon(Icons.chevron_right)
+                        : null,
+                    onTap: _hasModule(calling)
+                        ? () => _openModule(calling)
+                        : null,
                   ),
                 ),
             if (archivedCount > 0) ...[
@@ -196,6 +209,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Um chamado abre um módulo quando existe tela para o seu `moduleKey`.
+  ///
+  /// A checagem é pela chave do módulo, nunca pelo título: o título é texto
+  /// livre e pode ser renomeado sem que a funcionalidade mude.
+  bool _hasModule(CallingSummary calling) =>
+      calling.moduleKey == CallingCatalog.ministeringSecretary.moduleKey;
+
+  Future<void> _openModule(CallingSummary calling) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => MinisteringDashboardScreen(
+          callingId: calling.id,
+          callingTitle: calling.title,
         ),
       ),
     );

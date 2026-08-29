@@ -85,3 +85,13 @@ Future<void> settleSnackBars(WidgetTester tester) async {
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
 }
+
+/// Rola a lista até o alvo entrar na tela.
+///
+/// As listas do módulo constroem os filhos sob demanda: o que está abaixo da
+/// dobra ainda não existe na árvore, e procurá-lo sem rolar acusa ausência de
+/// algo que o usuário encontraria rolando.
+Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(finder, 240);
+  await tester.pumpAndSettle();
+}
