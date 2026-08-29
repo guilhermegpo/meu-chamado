@@ -266,26 +266,42 @@ class MinisteringRepository {
   /// Desativa ou reativa uma dupla.
   ///
   /// Dupla inativa sai do denominador do trimestre, mas suas entrevistas
-  /// anteriores permanecem registradas.
+  /// anteriores permanecem registradas. Reativar exige que todos os integrantes
+  /// ainda estejam ativos; do contrário o painel voltaria a contar uma dupla
+  /// que não pode ser usada em novos registros.
   Future<void> setCompanionshipActive({
     required String callingId,
     required String companionshipId,
     required bool isActive,
   }) async {
-    final updated =
-        await (_database.update(_database.ministeringCompanionships)..where(
-              (row) =>
-                  row.id.equals(companionshipId) &
-                  row.callingId.equals(callingId),
-            ))
-            .write(
-              MinisteringCompanionshipsCompanion(
-                isActive: Value(isActive),
-                updatedAt: Value(DateTime.now().toUtc()),
-              ),
-            );
+    await _database.transaction(() async {
+      if (isActive) {
+        final members = await _memberIds(
+          callingId: callingId,
+          companionshipId: companionshipId,
+        );
+        if (members.isEmpty) throw const MinisteringRecordNotFoundException();
+        await _assertUsableMembers(
+          callingId: callingId,
+          brotherIds: members.toList(growable: false),
+        );
+      }
 
-    if (updated == 0) throw const MinisteringRecordNotFoundException();
+      final updated =
+          await (_database.update(_database.ministeringCompanionships)..where(
+                (row) =>
+                    row.id.equals(companionshipId) &
+                    row.callingId.equals(callingId),
+              ))
+              .write(
+                MinisteringCompanionshipsCompanion(
+                  isActive: Value(isActive),
+                  updatedAt: Value(DateTime.now().toUtc()),
+                ),
+              );
+
+      if (updated == 0) throw const MinisteringRecordNotFoundException();
+    });
   }
 
   /// Quantas entrevistas esta dupla já tem.

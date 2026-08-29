@@ -409,6 +409,35 @@ void main() {
       expect(interviews, hasLength(1));
     });
 
+    test('não reativa dupla com integrante inativo', () async {
+      final id = await seedCompanionship();
+      final state = await repository.loadModule(callingId: callingA);
+      final member = state.companionships.single.members.first;
+
+      await repository.setCompanionshipActive(
+        callingId: callingA,
+        companionshipId: id,
+        isActive: false,
+      );
+      await repository.setBrotherActive(
+        callingId: callingA,
+        brotherId: member.id,
+        isActive: false,
+      );
+
+      await expectLater(
+        repository.setCompanionshipActive(
+          callingId: callingA,
+          companionshipId: id,
+          isActive: true,
+        ),
+        throwsA(isA<InactiveBrotherException>()),
+      );
+
+      final updated = await repository.loadModule(callingId: callingA);
+      expect(updated.companionships.single.isActive, isFalse);
+    });
+
     test('recusa entrevista sem participante', () async {
       final id = await seedCompanionship();
 

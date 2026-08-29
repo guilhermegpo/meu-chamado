@@ -7,8 +7,9 @@ import 'package:meu_chamado/features/ministering/presentation/ministering_widget
 
 /// Cadastro dos irmãos que podem compor duplas.
 ///
-/// Um irmão nunca é apagado: é desativado. Apagar destruiria as entrevistas em
-/// que ele participou, e o histórico é o registro do trabalho já feito.
+/// Um irmão que já foi usado é desativado, nunca apagado. Exclusão definitiva
+/// existe somente para corrigir um cadastro que ainda não compôs dupla nem
+/// participou de entrevista.
 class MinisteringBrothersScreen extends ConsumerStatefulWidget {
   const MinisteringBrothersScreen({required this.callingId, super.key});
 
@@ -81,6 +82,7 @@ class _MinisteringBrothersScreenState
               brother: brother,
               onEdit: _busy ? null : () => _rename(brother),
               onToggle: _busy ? null : () => _setActive(brother, false),
+              onDelete: _busy ? null : () => _considerDelete(brother),
               toggleLabel: 'Desativar',
               toggleIcon: Icons.person_off_outlined,
             ),
@@ -105,6 +107,7 @@ class _MinisteringBrothersScreenState
               brother: brother,
               onEdit: _busy ? null : () => _rename(brother),
               onToggle: _busy ? null : () => _setActive(brother, true),
+              onDelete: _busy ? null : () => _considerDelete(brother),
               toggleLabel: 'Reativar',
               toggleIcon: Icons.person_add_alt_outlined,
             ),
@@ -156,6 +159,88 @@ class _MinisteringBrothersScreenState
         isActive ? 'Irmão reativado.' : 'Irmão desativado.',
       );
 
+  Future<void> _considerDelete(MinisteringBrother brother) async {
+    late final MinisteringRemovalCheck check;
+    setState(() => _busy = true);
+    try {
+      check = await ref
+          .read(ministeringRepositoryProvider)
+          .inspectBrotherRemoval(
+            callingId: widget.callingId,
+            brotherId: brother.id,
+          );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
+      return;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (!mounted) return;
+
+    if (!check.canDelete) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Exclusão indisponível'),
+          content: Text(
+            check.hasHistory
+                ? 'Este cadastro já participa do histórico de entrevistas. '
+                      'Desative-o para preservá-lo.'
+                : 'Este cadastro compõe ${check.companionships} '
+                      'dupla${check.companionships == 1 ? '' : 's'}. '
+                      'Remova-o da composição ou desative-o.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Entendi'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('Excluir cadastro?'),
+          content: const Text(
+            'Este cadastro nunca foi usado e pode ser excluído definitivamente. '
+            'Esta ação não pode ser desfeita.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              key: const Key('confirm-delete-brother'),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                foregroundColor: scheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) return;
+
+    await _runMutation(
+      () => ref
+          .read(ministeringRepositoryProvider)
+          .deleteBrother(callingId: widget.callingId, brotherId: brother.id),
+      'Cadastro excluído.',
+    );
+  }
+
   Future<String?> _askLabel({required String title, String? initial}) =>
       showDialog<String>(
         context: context,
@@ -188,6 +273,7 @@ class _BrotherCard extends StatelessWidget {
     required this.brother,
     required this.onEdit,
     required this.onToggle,
+    required this.onDelete,
     required this.toggleLabel,
     required this.toggleIcon,
   });
@@ -195,6 +281,7 @@ class _BrotherCard extends StatelessWidget {
   final MinisteringBrother brother;
   final VoidCallback? onEdit;
   final VoidCallback? onToggle;
+  final VoidCallback? onDelete;
   final String toggleLabel;
   final IconData toggleIcon;
 
@@ -219,6 +306,11 @@ class _BrotherCard extends StatelessWidget {
             tooltip: toggleLabel,
             onPressed: onToggle,
             icon: Icon(toggleIcon),
+          ),
+          IconButton(
+            tooltip: 'Verificar exclusão',
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline),
           ),
         ],
       ),

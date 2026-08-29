@@ -9,8 +9,9 @@ import 'package:meu_chamado/features/ministering/presentation/ministering_widget
 /// Composição das duplas de ministração.
 ///
 /// Uma dupla tem dois integrantes, ou três quando um jovem acompanha. Assim
-/// como o irmão, a dupla é desativada em vez de apagada: desativada ela sai do
-/// denominador do trimestre, mas as entrevistas que já teve permanecem.
+/// como o irmão, uma dupla com histórico é desativada em vez de apagada. Uma
+/// composição criada por engano ainda pode ser excluída enquanto não houver
+/// entrevista vinculada.
 class MinisteringCompanionshipsScreen extends ConsumerStatefulWidget {
   const MinisteringCompanionshipsScreen({required this.callingId, super.key});
 
@@ -105,6 +106,7 @@ class _MinisteringCompanionshipsScreenState
                   ? null
                   : () => _edit(companionship, state.activeBrothers),
               onToggle: _busy ? null : () => _setActive(companionship, false),
+              onDelete: _busy ? null : () => _considerDelete(companionship),
               toggleLabel: 'Desativar dupla',
               toggleIcon: Icons.pause_circle_outline,
             ),
@@ -131,6 +133,7 @@ class _MinisteringCompanionshipsScreenState
                   ? null
                   : () => _edit(companionship, state.activeBrothers),
               onToggle: _busy ? null : () => _setActive(companionship, true),
+              onDelete: _busy ? null : () => _considerDelete(companionship),
               toggleLabel: 'Reativar dupla',
               toggleIcon: Icons.play_circle_outline,
             ),
@@ -213,6 +216,89 @@ class _MinisteringCompanionshipsScreenState
     isActive ? 'Dupla reativada.' : 'Dupla desativada.',
   );
 
+  Future<void> _considerDelete(MinisteringCompanionship companionship) async {
+    late final MinisteringRemovalCheck check;
+    setState(() => _busy = true);
+    try {
+      check = await ref
+          .read(ministeringRepositoryProvider)
+          .inspectCompanionshipRemoval(
+            callingId: widget.callingId,
+            companionshipId: companionship.id,
+          );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
+      return;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (!mounted) return;
+
+    if (!check.canDelete) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Exclusão indisponível'),
+          content: Text(
+            'Esta dupla tem ${check.interviews} '
+            'entrevista${check.interviews == 1 ? '' : 's'} registrada'
+            '${check.interviews == 1 ? '' : 's'}. Desative-a para preservar '
+            'o histórico.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Entendi'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('Excluir dupla?'),
+          content: const Text(
+            'Esta dupla ainda não tem entrevistas e pode ser excluída '
+            'definitivamente. Os cadastros dos integrantes serão mantidos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              key: const Key('confirm-delete-companionship'),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                foregroundColor: scheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) return;
+
+    await _runMutation(
+      () => ref
+          .read(ministeringRepositoryProvider)
+          .deleteCompanionship(
+            callingId: widget.callingId,
+            companionshipId: companionship.id,
+          ),
+      'Dupla excluída.',
+    );
+  }
+
   Future<_CompanionshipDraft?> _askComposition({
     required String title,
     required List<MinisteringBrother> candidates,
@@ -256,6 +342,7 @@ class _CompanionshipCard extends StatelessWidget {
     required this.companionship,
     required this.onEdit,
     required this.onToggle,
+    required this.onDelete,
     required this.toggleLabel,
     required this.toggleIcon,
   });
@@ -263,6 +350,7 @@ class _CompanionshipCard extends StatelessWidget {
   final MinisteringCompanionship companionship;
   final VoidCallback? onEdit;
   final VoidCallback? onToggle;
+  final VoidCallback? onDelete;
   final String toggleLabel;
   final IconData toggleIcon;
 
@@ -301,6 +389,11 @@ class _CompanionshipCard extends StatelessWidget {
               tooltip: toggleLabel,
               onPressed: onToggle,
               icon: Icon(toggleIcon),
+            ),
+            IconButton(
+              tooltip: 'Verificar exclusão da dupla',
+              onPressed: onDelete,
+              icon: const Icon(Icons.delete_outline),
             ),
           ],
         ),

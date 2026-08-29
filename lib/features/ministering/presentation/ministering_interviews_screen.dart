@@ -137,6 +137,9 @@ class _MinisteringInterviewsScreenState
                   _InterviewCard(
                     interview: interview,
                     companionship: companionship,
+                    onEdit: _busy
+                        ? null
+                        : () => _edit(interview, companionship),
                     onDelete: _busy ? null : () => _confirmDelete(interview),
                   ),
             ],
@@ -149,7 +152,15 @@ class _MinisteringInterviewsScreenState
   Future<void> _record(MinisteringCompanionship companionship) async {
     final draft = await showDialog<_InterviewDraft>(
       context: context,
-      builder: (_) => _InterviewEditorDialog(companionship: companionship),
+      builder: (_) => _InterviewEditorDialog(
+        title: 'Registrar entrevista',
+        actionLabel: 'Registrar',
+        companionship: companionship,
+        initialDate: DateTime.now(),
+        initialParticipantIds: companionship.members
+            .map((member) => member.id)
+            .toSet(),
+      ),
     );
     if (draft == null) return;
 
@@ -163,6 +174,40 @@ class _MinisteringInterviewsScreenState
             participantBrotherIds: draft.participantIds,
           ),
       'Entrevista registrada.',
+    );
+  }
+
+  Future<void> _edit(
+    MinisteringInterview interview,
+    MinisteringCompanionship companionship,
+  ) async {
+    final currentMemberIds = companionship.members
+        .map((member) => member.id)
+        .toSet();
+    final draft = await showDialog<_InterviewDraft>(
+      context: context,
+      builder: (_) => _InterviewEditorDialog(
+        title: 'Corrigir entrevista',
+        actionLabel: 'Salvar correção',
+        companionship: companionship,
+        initialDate: displayCalendarDate(interview.completedAt),
+        initialParticipantIds: interview.participantIds
+            .where(currentMemberIds.contains)
+            .toSet(),
+      ),
+    );
+    if (draft == null) return;
+
+    await _runMutation(
+      () => ref
+          .read(ministeringRepositoryProvider)
+          .updateInterview(
+            callingId: widget.callingId,
+            interviewId: interview.id,
+            completedOn: draft.completedOn,
+            participantBrotherIds: draft.participantIds,
+          ),
+      'Entrevista corrigida.',
     );
   }
 
@@ -244,11 +289,13 @@ class _InterviewCard extends StatelessWidget {
   const _InterviewCard({
     required this.interview,
     required this.companionship,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final MinisteringInterview interview;
   final MinisteringCompanionship companionship;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
   @override
@@ -287,6 +334,11 @@ class _InterviewCard extends StatelessWidget {
               ),
             ),
             IconButton(
+              tooltip: 'Corrigir entrevista',
+              onPressed: onEdit,
+              icon: const Icon(Icons.edit_outlined),
+            ),
+            IconButton(
               tooltip: 'Remover entrevista',
               onPressed: onDelete,
               icon: const Icon(Icons.delete_outline),
@@ -310,28 +362,35 @@ class _InterviewDraft {
 }
 
 class _InterviewEditorDialog extends StatefulWidget {
-  const _InterviewEditorDialog({required this.companionship});
+  const _InterviewEditorDialog({
+    required this.title,
+    required this.actionLabel,
+    required this.companionship,
+    required this.initialDate,
+    required this.initialParticipantIds,
+  });
 
+  final String title;
+  final String actionLabel;
   final MinisteringCompanionship companionship;
+  final DateTime initialDate;
+  final Set<String> initialParticipantIds;
 
   @override
   State<_InterviewEditorDialog> createState() => _InterviewEditorDialogState();
 }
 
 class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
-  late DateTime _date = DateTime.now();
+  late DateTime _date = widget.initialDate;
 
-  /// Começa com todos marcados: entrevistar a dupla inteira é o caso comum.
-  late final Set<String> _participants = widget.companionship.members
-      .map((member) => member.id)
-      .toSet();
+  late final Set<String> _participants = widget.initialParticipantIds.toSet();
 
   @override
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
 
     return AlertDialog(
-      title: const Text('Registrar entrevista'),
+      title: Text(widget.title),
       content: SizedBox(
         width: 380,
         child: ListView(
@@ -379,7 +438,7 @@ class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
         FilledButton(
           key: const Key('interview-confirm'),
           onPressed: _participants.isEmpty ? null : _submit,
-          child: const Text('Registrar'),
+          child: Text(widget.actionLabel),
         ),
       ],
     );

@@ -174,4 +174,76 @@ void main() {
       isNull,
     );
   });
+
+  testWidgets('exclui dupla sem entrevista e mantém os integrantes', (
+    tester,
+  ) async {
+    final ids = await seedBrothers(2);
+    await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    await pump(tester);
+
+    await tapVisible(tester, find.byTooltip('Verificar exclusão da dupla'));
+    expect(find.text('Excluir dupla?'), findsOneWidget);
+    await tapVisible(
+      tester,
+      find.byKey(const Key('confirm-delete-companionship')),
+    );
+
+    expect(find.text('Dupla excluída.'), findsOneWidget);
+    expect(find.text('Nenhuma dupla montada.'), findsOneWidget);
+    final state = await repository.loadModule(
+      callingId: ministeringTestCallingId,
+    );
+    expect(state.brothers, hasLength(2));
+  });
+
+  testWidgets('não oferece exclusão para dupla com entrevista', (tester) async {
+    final ids = await seedBrothers(2);
+    final companionship = await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    await repository.recordInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionship,
+      completedOn: DateTime.now(),
+      participantBrotherIds: ids,
+    );
+    await pump(tester);
+
+    await tapVisible(tester, find.byTooltip('Verificar exclusão da dupla'));
+
+    expect(find.text('Exclusão indisponível'), findsOneWidget);
+    expect(find.textContaining('1 entrevista registrada'), findsOneWidget);
+    expect(find.byKey(const Key('confirm-delete-companionship')), findsNothing);
+  });
+
+  testWidgets('não reativa dupla enquanto houver integrante inativo', (
+    tester,
+  ) async {
+    final ids = await seedBrothers(2);
+    final companionship = await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    await repository.setCompanionshipActive(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionship,
+      isActive: false,
+    );
+    await repository.setBrotherActive(
+      callingId: ministeringTestCallingId,
+      brotherId: ids.first,
+      isActive: false,
+    );
+    await pump(tester);
+
+    await tapVisible(tester, find.byTooltip('Reativar dupla'));
+
+    expect(find.textContaining('irmão inativo'), findsOneWidget);
+    expect(find.byTooltip('Reativar dupla'), findsOneWidget);
+  });
 }

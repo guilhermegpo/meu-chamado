@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
+import 'package:meu_chamado/features/ministering/data/ministering_repository.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_brothers_screen.dart';
 
 import 'ministering_harness.dart';
 
 void main() {
   late AppDatabase database;
+  late MinisteringRepository repository;
 
   setUp(() async {
     database = await openMinisteringTestDatabase();
+    repository = MinisteringRepository(database);
   });
 
   tearDown(() async => database.close());
@@ -94,5 +97,43 @@ void main() {
 
     expect(find.byTooltip('Desativar'), findsOneWidget);
     expect(find.text('Nenhum irmão inativo.'), findsOneWidget);
+  });
+
+  testWidgets('exclui definitivamente um cadastro nunca usado', (tester) async {
+    await pump(tester);
+    await addBrother(tester, 'Irmão A');
+    await settleSnackBars(tester);
+
+    await tapVisible(tester, find.byTooltip('Verificar exclusão'));
+    expect(find.text('Excluir cadastro?'), findsOneWidget);
+    await tapVisible(tester, find.byKey(const Key('confirm-delete-brother')));
+
+    expect(find.text('Cadastro excluído.'), findsOneWidget);
+    expect(find.text('Irmão A'), findsNothing);
+    expect(find.textContaining('Nenhum irmão cadastrado'), findsOneWidget);
+  });
+
+  testWidgets('não oferece exclusão quando o cadastro compõe dupla', (
+    tester,
+  ) async {
+    final first = await repository.createBrother(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão A',
+    );
+    final second = await repository.createBrother(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão B',
+    );
+    await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: [first.id, second.id],
+    );
+    await pump(tester);
+
+    await tapVisible(tester, find.byTooltip('Verificar exclusão').first);
+
+    expect(find.text('Exclusão indisponível'), findsOneWidget);
+    expect(find.textContaining('compõe 1 dupla'), findsOneWidget);
+    expect(find.byKey(const Key('confirm-delete-brother')), findsNothing);
   });
 }

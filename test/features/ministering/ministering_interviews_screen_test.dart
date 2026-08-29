@@ -150,6 +150,35 @@ void main() {
     expect(find.byTooltip('Remover entrevista'), findsNWidgets(2));
   });
 
+  testWidgets('corrige participantes sem criar outra entrevista', (
+    tester,
+  ) async {
+    final recorded = await repository.recordInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionshipId,
+      completedOn: DateTime.utc(2026, 8, 10),
+      participantBrotherIds: brotherIds,
+    );
+    await pump(tester);
+
+    await tapVisible(tester, find.byTooltip('Corrigir entrevista'));
+    expect(find.text('Corrigir entrevista'), findsOneWidget);
+    await tapVisible(
+      tester,
+      find.byKey(Key('interview-participant-${brotherIds[1]}')),
+    );
+    await tapVisible(tester, find.byKey(const Key('interview-confirm')));
+
+    expect(find.text('Entrevista corrigida.'), findsOneWidget);
+    final interviews = await repository.listInterviews(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionshipId,
+    );
+    expect(interviews, hasLength(1));
+    expect(interviews.single.id, recorded.id);
+    expect(interviews.single.participantIds, [brotherIds.first]);
+  });
+
   testWidgets('remover pede confirmação e devolve a dupla para pendente', (
     tester,
   ) async {
