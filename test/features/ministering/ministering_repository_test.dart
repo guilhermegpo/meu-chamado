@@ -519,6 +519,263 @@ void main() {
     });
   });
 
+  group('exclusão de irmão', () {
+    test('irmão nunca usado pode ser excluído', () async {
+      final ids = await createBrothers(1);
+
+      final check = await repository.inspectBrotherRemoval(
+        callingId: callingA,
+        brotherId: ids.single,
+      );
+      expect(check.canDelete, isTrue);
+      expect(check.hasHistory, isFalse);
+
+      await repository.deleteBrother(
+        callingId: callingA,
+        brotherId: ids.single,
+      );
+
+      final state = await repository.loadModule(callingId: callingA);
+      expect(state.brothers, isEmpty);
+    });
+
+    test('irmão que compõe dupla não pode ser excluído', () async {
+      final ids = await createBrothers(2);
+      await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+
+      final check = await repository.inspectBrotherRemoval(
+        callingId: callingA,
+        brotherId: ids.first,
+      );
+      expect(check.canDelete, isFalse);
+      expect(check.companionships, 1);
+      expect(check.hasHistory, isFalse);
+
+      await expectLater(
+        repository.deleteBrother(callingId: callingA, brotherId: ids.first),
+        throwsA(isA<MinisteringRecordInUseException>()),
+      );
+
+      final state = await repository.loadModule(callingId: callingA);
+      expect(state.brothers, hasLength(2));
+    });
+
+    test('irmão com entrevista registrada não pode ser excluído', () async {
+      final ids = await createBrothers(2);
+      final companionship = await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+      await repository.recordInterview(
+        callingId: callingA,
+        companionshipId: companionship,
+        completedOn: DateTime.now(),
+        participantBrotherIds: ids,
+      );
+
+      final check = await repository.inspectBrotherRemoval(
+        callingId: callingA,
+        brotherId: ids.first,
+      );
+      expect(check.hasHistory, isTrue);
+      expect(check.interviews, 1);
+
+      await expectLater(
+        repository.deleteBrother(callingId: callingA, brotherId: ids.first),
+        throwsA(isA<MinisteringRecordInUseException>()),
+      );
+    });
+
+    test('a mensagem de recusa não nomeia ninguém', () async {
+      final ids = await createBrothers(2);
+      await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+
+      try {
+        await repository.deleteBrother(callingId: callingA, brotherId: ids[0]);
+        fail('deveria ter recusado');
+      } on MinisteringRecordInUseException catch (error) {
+        expect(error.message, isNot(contains('Irmão A')));
+        expect(error.message, contains('dupla'));
+      }
+    });
+
+    test('não exclui irmão de outro chamado', () async {
+      final foreign = await createBrothers(1, calling: callingB);
+
+      await expectLater(
+        repository.deleteBrother(
+          callingId: callingA,
+          brotherId: foreign.single,
+        ),
+        throwsA(isA<MinisteringRecordNotFoundException>()),
+      );
+    });
+  });
+
+  group('exclusão de dupla', () {
+    test('dupla sem entrevista pode ser excluída e os irmãos ficam', () async {
+      final ids = await createBrothers(2);
+      final companionship = await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+
+      final check = await repository.inspectCompanionshipRemoval(
+        callingId: callingA,
+        companionshipId: companionship,
+      );
+      expect(check.canDelete, isTrue);
+
+      await repository.deleteCompanionship(
+        callingId: callingA,
+        companionshipId: companionship,
+      );
+
+      final state = await repository.loadModule(callingId: callingA);
+      expect(state.companionships, isEmpty);
+      expect(state.brothers, hasLength(2));
+    });
+
+    test('dupla com entrevista não pode ser excluída', () async {
+      final ids = await createBrothers(2);
+      final companionship = await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+      await repository.recordInterview(
+        callingId: callingA,
+        companionshipId: companionship,
+        completedOn: DateTime.now(),
+        participantBrotherIds: ids,
+      );
+
+      await expectLater(
+        repository.deleteCompanionship(
+          callingId: callingA,
+          companionshipId: companionship,
+        ),
+        throwsA(isA<MinisteringRecordInUseException>()),
+      );
+
+      // A FK dupla→entrevista é CASCADE: se a checagem falhasse, o histórico
+      // teria sumido junto e sem aviso.
+      final interviews = await repository.listInterviews(
+        callingId: callingA,
+        companionshipId: companionship,
+      );
+      expect(interviews, hasLength(1));
+    });
+  });
+
+  group('correção de entrevista', () {
+    late List<String> ids;
+    late String companionship;
+    late String interview;
+
+    setUp(() async {
+      ids = await createBrothers(2);
+      companionship = await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+      final recorded = await repository.recordInterview(
+        callingId: callingA,
+        companionshipId: companionship,
+        completedOn: DateTime.utc(2026, 8, 10),
+        participantBrotherIds: ids,
+      );
+      interview = recorded.id;
+    });
+
+    test('corrige a data sem criar outro registro', () async {
+      await repository.updateInterview(
+        callingId: callingA,
+        interviewId: interview,
+        completedOn: DateTime.utc(2026, 8, 12),
+        participantBrotherIds: ids,
+      );
+
+      final list = await repository.listInterviews(
+        callingId: callingA,
+        companionshipId: companionship,
+      );
+      expect(list, hasLength(1));
+      expect(list.single.id, interview);
+      expect(list.single.completedAt, DateTime.utc(2026, 8, 12));
+    });
+
+    test('corrige os participantes', () async {
+      await repository.updateInterview(
+        callingId: callingA,
+        interviewId: interview,
+        completedOn: DateTime.utc(2026, 8, 10),
+        participantBrotherIds: [ids.first],
+      );
+
+      final list = await repository.listInterviews(
+        callingId: callingA,
+        companionshipId: companionship,
+      );
+      expect(list.single.participantIds, [ids.first]);
+    });
+
+    test('recusa data futura na correção', () async {
+      await expectLater(
+        repository.updateInterview(
+          callingId: callingA,
+          interviewId: interview,
+          completedOn: DateTime.now().add(const Duration(days: 1)),
+          participantBrotherIds: ids,
+        ),
+        throwsA(isA<FutureInterviewDateException>()),
+      );
+    });
+
+    test('recusa correção sem participante', () async {
+      await expectLater(
+        repository.updateInterview(
+          callingId: callingA,
+          interviewId: interview,
+          completedOn: DateTime.utc(2026, 8, 10),
+          participantBrotherIds: const [],
+        ),
+        throwsA(isA<InterviewWithoutParticipantsException>()),
+      );
+    });
+
+    test('recusa participante fora da dupla', () async {
+      final outsider = await createBrothers(3);
+
+      await expectLater(
+        repository.updateInterview(
+          callingId: callingA,
+          interviewId: interview,
+          completedOn: DateTime.utc(2026, 8, 10),
+          participantBrotherIds: [outsider.last],
+        ),
+        throwsA(isA<ParticipantOutsideCompanionshipException>()),
+      );
+    });
+
+    test('não corrige entrevista de outro chamado', () async {
+      await expectLater(
+        repository.updateInterview(
+          callingId: callingB,
+          interviewId: interview,
+          completedOn: DateTime.utc(2026, 8, 10),
+          participantBrotherIds: ids,
+        ),
+        throwsA(isA<MinisteringRecordNotFoundException>()),
+      );
+    });
+  });
+
   group('isolamento entre chamados', () {
     test('dados de um chamado não aparecem no outro', () async {
       final ids = await createBrothers(2);

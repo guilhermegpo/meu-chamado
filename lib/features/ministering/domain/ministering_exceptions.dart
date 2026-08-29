@@ -1,3 +1,5 @@
+import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
+
 /// Falhas de regra do módulo de ministração.
 ///
 /// Carregam mensagem pronta para o usuário e **nunca** incluem a identificação
@@ -47,6 +49,32 @@ class ParticipantOutsideCompanionshipException extends MinisteringException {
 class FutureInterviewDateException extends MinisteringException {
   const FutureInterviewDateException()
     : super('A data da entrevista não pode estar no futuro.');
+}
+
+/// Exclusão recusada porque o cadastro é citado por outros registros.
+///
+/// A mensagem diz o que existe, não quem: o secretário precisa entender por
+/// que a ação não está disponível sem que o app aponte uma pessoa.
+class MinisteringRecordInUseException extends MinisteringException {
+  const MinisteringRecordInUseException(super.message);
+
+  factory MinisteringRecordInUseException.brother(
+    MinisteringRemovalCheck check,
+  ) => MinisteringRecordInUseException(
+    check.hasHistory
+        ? 'Este irmão já participou de entrevistas registradas. Desative-o '
+              'em vez de excluir, para não apagar o histórico.'
+        : 'Este irmão compõe uma dupla. Remova-o da dupla ou desative-o.',
+  );
+
+  factory MinisteringRecordInUseException.companionship(
+    MinisteringRemovalCheck check,
+  ) => MinisteringRecordInUseException(
+    'Esta dupla tem ${check.interviews} '
+    'entrevista${check.interviews == 1 ? '' : 's'} registrada'
+    '${check.interviews == 1 ? '' : 's'}. Desative-a em vez de excluir, para '
+    'não apagar o histórico.',
+  );
 }
 
 /// Registro não encontrado no chamado informado.

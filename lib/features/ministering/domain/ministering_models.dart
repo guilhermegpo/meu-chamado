@@ -113,6 +113,29 @@ class MinisteringInterview {
   Quarter get quarter => Quarter.of(completedAt);
 }
 
+/// O que impede — ou não — excluir um cadastro definitivamente.
+///
+/// A tela pergunta isto **antes** de oferecer a ação, para o usuário nunca
+/// escolher "Excluir" e receber um erro no lugar. Quando há vínculo, os
+/// números explicam o motivo em vez de deixar a recusa parecendo arbitrária.
+class MinisteringRemovalCheck {
+  const MinisteringRemovalCheck({
+    required this.companionships,
+    required this.interviews,
+  });
+
+  /// Duplas que citam o cadastro, ativas ou não.
+  final int companionships;
+
+  /// Entrevistas que citam o cadastro.
+  final int interviews;
+
+  /// Só é seguro apagar o que nunca foi usado.
+  bool get canDelete => companionships == 0 && interviews == 0;
+
+  bool get hasHistory => interviews > 0;
+}
+
 /// Números do trimestre exibidos no painel.
 ///
 /// [interviewed] conta **duplas**, não entrevistas: várias entrevistas da mesma
