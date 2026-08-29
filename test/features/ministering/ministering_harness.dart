@@ -95,3 +95,12 @@ Future<void> scrollTo(WidgetTester tester, Finder finder) async {
   await tester.scrollUntilVisible(finder, 240);
   await tester.pumpAndSettle();
 }
+
+/// Volta uma tela pelo botão da barra superior.
+///
+/// `tester.pageBack()` procura a tooltip "Back" fixa em inglês e não encontra
+/// nada com o app em pt-BR, então o alvo aqui é o próprio widget.
+Future<void> goBack(WidgetTester tester) async {
+  await tester.tap(find.byType(BackButton));
+  await tester.pumpAndSettle();
+}
