@@ -31,6 +31,27 @@ informações pessoais, religiosas ou pastorais. Deve permanecer local/protegido
 até existir base técnica, autorização e finalidade documentadas para qualquer
 tratamento diferente.
 
+## Módulo do Secretário da Ministração
+
+O que o módulo grava, a partir da `0.2.0-alpha.1`:
+
+- identificação curta do irmão ministrador (primeiro nome ou iniciais);
+- composição das duplas e rótulo próprio opcional;
+- data de entrevistas realizadas e quem participou.
+
+O que o módulo **não** grava, por decisão e não por omissão — ver
+[ADR 0013](../adr/0013-ministering-minimal-identification.md):
+
+- telefone, endereço ou e-mail;
+- número de registro de membro ou identificador oficial;
+- famílias ou pessoas ministradas;
+- conteúdo, anotações ou impressões sobre a entrevista;
+- dados de saúde, financeiros ou de dignidade;
+- cargo no sacerdócio ou situação no quórum.
+
+Tudo isso é `PrivateCallingData` e permanece no aparelho. As mensagens de erro
+do módulo descrevem a regra violada, nunca a pessoa envolvida.
+
 ## Google Drive futuro
 
 - usar privilégio mínimo, preferindo escopo semelhante a `drive.file`;

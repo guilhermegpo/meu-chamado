@@ -43,17 +43,33 @@ lib/
 ├── app/
 │   └── theme/
 ├── core/
-│   └── database/
+│   ├── database/
+│   └── errors/
 ├── features/
 │   ├── onboarding/
 │   ├── home/
 │   ├── workspace/
+│   ├── callings/
+│   ├── ministering/
+│   │   ├── domain/
+│   │   ├── data/
+│   │   ├── application/
+│   │   └── presentation/
+│   ├── profile/
+│   ├── splash/
 │   └── settings/
 └── shared/
 ```
 
 Essa árvore não deve ser criada antecipadamente. Cada diretório nasce com código
 e testes que justifiquem sua existência.
+
+`features/ministering/` é o primeiro módulo de chamado com implementação real e
+serve de referência para os próximos: `domain/` em Dart puro, sem dependência de
+Flutter ou de banco; `data/` com o repositório sobre Drift; `application/` com os
+provedores Riverpod; `presentation/` com as telas. Toda leitura e escrita é
+filtrada por `callingId`, e alcançar registro de outro chamado responde
+"registro não encontrado".
 
 ## Persistência e sincronização
 
