@@ -51,12 +51,31 @@ void main() {
     await pump(tester);
 
     final quarter = Quarter.of(DateTime.now());
-    expect(find.text('Irmão A · Irmão B'), findsNWidgets(2));
+    // Uma vez só: sem rótulo próprio, o título já é a lista de integrantes.
+    expect(find.text('Irmão A · Irmão B'), findsOneWidget);
     expect(find.text('Pendente no ${quarter.label}'), findsOneWidget);
     expect(
       find.text('Nenhuma entrevista registrada para esta dupla.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('a data registrada é a data escolhida, sem deslocar o dia', (
+    tester,
+  ) async {
+    await repository.recordInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionshipId,
+      completedOn: DateTime.utc(2026, 7),
+      participantBrotherIds: brotherIds,
+    );
+    await pump(tester);
+
+    final expected = MaterialLocalizations.of(
+      tester.element(find.byType(MinisteringInterviewsScreen)),
+    ).formatMediumDate(DateTime(2026, 7));
+    expect(find.text(expected), findsOneWidget);
+    expect(find.text('3º trimestre de 2026'), findsOneWidget);
   });
 
   testWidgets('registra a entrevista e a dupla deixa de ser pendente', (

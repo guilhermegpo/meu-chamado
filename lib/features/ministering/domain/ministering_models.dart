@@ -48,6 +48,14 @@ class Quarter {
 DateTime calendarDate(DateTime value) =>
     DateTime.utc(value.year, value.month, value.day);
 
+/// Reapresenta uma data de calendário UTC como data local, para formatar.
+///
+/// `MaterialLocalizations` formata pelo fuso do aparelho. Passar direto a
+/// meia-noite UTC faria a tela mostrar o dia anterior; o que se quer exibir é
+/// a data em si, então ela é remontada com os mesmos campos.
+DateTime displayCalendarDate(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
+
 /// Irmão ministrador.
 ///
 /// Não é membro do quórum: um jovem ordenado mestre ou sacerdote pode compor

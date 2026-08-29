@@ -492,6 +492,33 @@ void main() {
     });
   });
 
+  group('data da entrevista na ida e na volta', () {
+    test('volta do banco em UTC, no dia que foi registrado', () async {
+      final ids = await createBrothers(2);
+      final companionship = await repository.createCompanionship(
+        callingId: callingA,
+        brotherIds: ids,
+      );
+      // Primeiro dia de um trimestre: é onde um deslocamento de fuso na
+      // leitura joga a entrevista para o trimestre anterior.
+      await repository.recordInterview(
+        callingId: callingA,
+        companionshipId: companionship,
+        completedOn: DateTime.utc(2026, 7),
+        participantBrotherIds: ids,
+      );
+
+      final interview = (await repository.listInterviews(
+        callingId: callingA,
+        companionshipId: companionship,
+      )).single;
+
+      expect(interview.completedAt.isUtc, isTrue);
+      expect(interview.completedAt, DateTime.utc(2026, 7));
+      expect(interview.quarter, const Quarter(2026, 3));
+    });
+  });
+
   group('isolamento entre chamados', () {
     test('dados de um chamado não aparecem no outro', () async {
       final ids = await createBrothers(2);

@@ -84,12 +84,16 @@ class _MinisteringInterviewsScreenState
                   companionship.title,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  companionship.members
-                      .map((member) => member.displayLabel)
-                      .join(' · '),
-                ),
+                // Sem rótulo próprio, o título já é a lista de integrantes:
+                // repeti-la abaixo mostraria a mesma linha duas vezes.
+                if (companionship.displayLabel != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    companionship.members
+                        .map((member) => member.displayLabel)
+                        .join(' · '),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Chip(
                   avatar: Icon(
@@ -169,7 +173,7 @@ class _MinisteringInterviewsScreenState
         title: const Text('Remover entrevista?'),
         content: Text(
           'A entrevista de '
-          '${MaterialLocalizations.of(context).formatMediumDate(interview.completedAt)} '
+          '${MaterialLocalizations.of(context).formatMediumDate(displayCalendarDate(interview.completedAt))} '
           'sai do histórico e a dupla pode voltar a aparecer como pendente. '
           'Use isto apenas para corrigir um registro feito por engano.',
         ),

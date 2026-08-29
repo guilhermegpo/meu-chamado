@@ -333,7 +333,11 @@ class MinisteringRepository {
         MinisteringInterview(
           id: row.id,
           companionshipId: row.companionshipId,
-          completedAt: row.completedAt,
+          // O Drift guarda `DateTime` como epoch e devolve no fuso do
+          // aparelho. Sem voltar para UTC, a meia-noite normalizada na
+          // gravação vira o dia anterior ao ser lida a oeste de Greenwich —
+          // e uma entrevista no primeiro dia do trimestre cairia no anterior.
+          completedAt: row.completedAt.toUtc(),
           participantIds: participants
               .map((item) => item.brotherId)
               .toList(growable: false),
