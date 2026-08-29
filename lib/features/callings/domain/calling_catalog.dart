@@ -3,11 +3,18 @@ class CallingDefinition {
     required this.moduleKey,
     required this.title,
     required this.description,
+    this.hasModule = false,
   });
 
   final String moduleKey;
   final String title;
   final String description;
+
+  /// Se já existe tela para as rotinas próprias deste chamado.
+  ///
+  /// Fonte única para as telas decidirem entre abrir o módulo e sinalizar que
+  /// ele ainda não existe. A decisão nunca olha o título, que é texto livre.
+  final bool hasModule;
 }
 
 abstract final class CallingCatalog {
@@ -15,7 +22,9 @@ abstract final class CallingCatalog {
     moduleKey: 'ministering-secretary',
     title: 'Secretário da Ministração do Quórum de Élderes',
     description:
-        'Estrutura inicial; módulo completo previsto para a série 0.2.x.',
+        'Irmãos, duplas e entrevistas do trimestre. Agendamento e relatórios '
+        'chegam nas próximas versões da série 0.2.x.',
+    hasModule: true,
   );
 
   static const sundaySchoolSecretary = CallingDefinition(

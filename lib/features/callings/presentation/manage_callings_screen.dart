@@ -81,8 +81,8 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'A alpha organiza as instâncias. Os módulos operacionais ainda '
-              'estão em desenvolvimento.',
+              'Chamados com módulo pronto abrem suas rotinas pela tela '
+              'inicial. Os demais ainda estão em desenvolvimento.',
             ),
             const SizedBox(height: 24),
             _SectionTitle(label: 'Ativos', count: active.length),
@@ -293,7 +293,12 @@ class _CallingCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 4),
-                const Text('Em desenvolvimento'),
+                Text(
+                  CallingCatalog.byModuleKey(calling.moduleKey)?.hasModule ??
+                          false
+                      ? 'Módulo disponível'
+                      : 'Em desenvolvimento',
+                ),
               ],
             ),
           ),

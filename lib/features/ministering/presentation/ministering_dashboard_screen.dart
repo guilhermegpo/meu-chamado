@@ -292,23 +292,24 @@ class _StartHere extends StatelessWidget {
                 : 'Cadastre os irmãos ministradores e depois monte as duplas.',
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              OutlinedButton.icon(
-                key: const Key('start-brothers-button'),
-                onPressed: onOpenBrothers,
-                icon: const Icon(Icons.group_outlined),
-                label: const Text('Irmãos'),
-              ),
-              FilledButton.icon(
-                key: const Key('start-companionships-button'),
-                onPressed: hasBrothers ? onOpenCompanionships : null,
-                icon: const Icon(Icons.people_outline),
-                label: const Text('Duplas'),
-              ),
-            ],
+          // Empilhados de propósito: o tema dá largura mínima infinita a todo
+          // `FilledButton`, então lado a lado eles quebrariam a linha sozinhos
+          // e o resultado pareceria acidental.
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              key: const Key('start-brothers-button'),
+              onPressed: onOpenBrothers,
+              icon: const Icon(Icons.group_outlined),
+              label: const Text('Irmãos'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            key: const Key('start-companionships-button'),
+            onPressed: hasBrothers ? onOpenCompanionships : null,
+            icon: const Icon(Icons.people_outline),
+            label: const Text('Duplas'),
           ),
         ],
       ),

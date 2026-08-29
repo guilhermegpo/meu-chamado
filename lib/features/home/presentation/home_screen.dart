@@ -219,7 +219,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// A checagem é pela chave do módulo, nunca pelo título: o título é texto
   /// livre e pode ser renomeado sem que a funcionalidade mude.
   bool _hasModule(CallingSummary calling) =>
-      calling.moduleKey == CallingCatalog.ministeringSecretary.moduleKey;
+      CallingCatalog.byModuleKey(calling.moduleKey)?.hasModule ?? false;
 
   Future<void> _openModule(CallingSummary calling) async {
     await Navigator.of(context).push<void>(
