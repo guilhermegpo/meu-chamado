@@ -18,3 +18,27 @@ final ministeringModuleProvider =
           .watch(ministeringRepositoryProvider)
           .loadModule(callingId: callingId),
     );
+
+/// Chamado e dupla de um histórico de entrevistas.
+typedef MinisteringInterviewsQuery = ({
+  String callingId,
+  String companionshipId,
+});
+
+/// Histórico de uma dupla, da entrevista mais recente para a mais antiga.
+///
+/// Fica fora de [ministeringModuleProvider] de propósito: o painel só precisa
+/// saber quais duplas já foram entrevistadas no trimestre, e carregar o
+/// histórico de todas elas junto seria ler muito para mostrar pouco.
+final ministeringInterviewsProvider =
+    FutureProvider.family<
+      List<MinisteringInterview>,
+      MinisteringInterviewsQuery
+    >(
+      (ref, query) => ref
+          .watch(ministeringRepositoryProvider)
+          .listInterviews(
+            callingId: query.callingId,
+            companionshipId: query.companionshipId,
+          ),
+    );

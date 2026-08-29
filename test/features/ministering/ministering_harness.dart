@@ -1,7 +1,9 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:meu_chamado/app/meu_chamado_app.dart';
 import 'package:meu_chamado/app/theme/app_theme.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
@@ -48,7 +50,20 @@ Future<void> pumpMinisteringScreen(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [databaseProvider.overrideWithValue(database)],
-      child: MaterialApp(theme: AppTheme.light, home: child),
+      child: MaterialApp(
+        theme: AppTheme.light,
+        // Mesma configuração do app: sem ela o seletor de data e as datas
+        // formatadas apareceriam em inglês, e o teste validaria outra tela
+        // que não a entregue ao usuário.
+        locale: appLocale,
+        supportedLocales: const [appLocale],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: child,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -59,5 +74,14 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
+/// Espera a fila de snack bars esvaziar.
+///
+/// O Material exibe um aviso por vez: sem isto, o segundo aviso de uma sequência
+/// fica na fila e o teste procura um texto que ainda não foi para a tela.
+Future<void> settleSnackBars(WidgetTester tester) async {
+  await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
 }

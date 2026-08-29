@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/app/theme/app_theme.dart';
 import 'package:meu_chamado/app/theme/theme_mode_controller.dart';
@@ -7,6 +8,12 @@ import 'package:meu_chamado/features/splash/presentation/app_splash_screen.dart'
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/presentation/user_selection_screen.dart';
 import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
+
+/// Único idioma da alpha.
+///
+/// Sem isto o seletor de data do Material aparece em inglês e no formato
+/// mês/dia — errado para quem registra a data de uma entrevista aqui.
+const appLocale = Locale('pt', 'BR');
 
 class MeuChamadoApp extends ConsumerWidget {
   const MeuChamadoApp({super.key});
@@ -27,6 +34,13 @@ class MeuChamadoApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      locale: appLocale,
+      supportedLocales: const [appLocale],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: const _AppGate(),
     );
   }
