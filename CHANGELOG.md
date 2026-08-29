@@ -35,6 +35,15 @@ atender a rotina de um deles.
 - `userErrorMessage` traduz também as exceções do módulo de ministração;
 - o card de chamado ativo mostra "Abrir módulo" quando existe módulo pronto.
 
+### Fixed
+
+- a data da entrevista deixa de recuar um dia na leitura: o Drift devolvia
+  `DateTime` no fuso do aparelho e desfazia a normalização UTC, o que também
+  jogaria uma entrevista do primeiro dia do trimestre para o anterior;
+- a tela de Configurações mostrava `0.1.0-alpha.1` com a `0.2.0-alpha.1`
+  instalada; a versão passa a vir de `AppInfo`, com teste que a compara ao
+  `pubspec.yaml`.
+
 ### Fora desta versão
 
 - agendamento de entrevistas, `status` e data prevista;
