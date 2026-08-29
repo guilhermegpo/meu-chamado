@@ -657,7 +657,6 @@ class _OnboardingNavigation extends StatelessWidget {
             onPressed: saving ? null : onBack,
             icon: const Icon(Icons.arrow_back),
             label: const Text('Voltar'),
-            style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
         ],
       ],

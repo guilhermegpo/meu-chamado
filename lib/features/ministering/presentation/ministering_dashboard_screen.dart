@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
@@ -291,25 +292,24 @@ class _StartHere extends StatelessWidget {
                       'acompanhar as entrevistas do trimestre.'
                 : 'Cadastre os irmãos ministradores e depois monte as duplas.',
           ),
-          const SizedBox(height: 16),
-          // Empilhados de propósito: o tema dá largura mínima infinita a todo
-          // `FilledButton`, então lado a lado eles quebrariam a linha sozinhos
-          // e o resultado pareceria acidental.
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              key: const Key('start-brothers-button'),
-              onPressed: onOpenBrothers,
-              icon: const Icon(Icons.group_outlined),
-              label: const Text('Irmãos'),
-            ),
-          ),
-          const SizedBox(height: 8),
-          FilledButton.icon(
-            key: const Key('start-companionships-button'),
-            onPressed: hasBrothers ? onOpenCompanionships : null,
-            icon: const Icon(Icons.people_outline),
-            label: const Text('Duplas'),
+          const SizedBox(height: Spacing.md),
+          Wrap(
+            spacing: Spacing.xs,
+            runSpacing: Spacing.xs,
+            children: [
+              OutlinedButton.icon(
+                key: const Key('start-brothers-button'),
+                onPressed: onOpenBrothers,
+                icon: const Icon(Icons.group_outlined),
+                label: const Text('Irmãos'),
+              ),
+              FilledButton.icon(
+                key: const Key('start-companionships-button'),
+                onPressed: hasBrothers ? onOpenCompanionships : null,
+                icon: const Icon(Icons.people_outline),
+                label: const Text('Duplas'),
+              ),
+            ],
           ),
         ],
       ),
