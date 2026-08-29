@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/app_info.dart';
 import 'package:meu_chamado/app/theme/theme_mode_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -70,9 +71,7 @@ class SettingsScreen extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.info_outline),
             title: Text('Meu Chamado'),
-            subtitle: Text(
-              '0.1.0-alpha.1 • projeto independente e não oficial',
-            ),
+            subtitle: Text(AppInfo.versionLine),
           ),
         ],
       ),

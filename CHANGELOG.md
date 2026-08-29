@@ -7,7 +7,55 @@ projeto pretende usar [Versionamento Semântico](https://semver.org/lang/pt-BR/)
 
 ## [Unreleased]
 
-Nenhuma mudança posterior à primeira alpha foi registrada.
+Nenhuma mudança posterior à `0.2.0-alpha.1` foi registrada.
+
+## [0.2.0-alpha.1] — 2026-08-28
+
+Primeira fatia funcional do módulo do Secretário da Ministração do Quórum de
+Élderes: o app deixa de apenas organizar instâncias de chamado e passa a
+atender a rotina de um deles.
+
+### Added
+
+- cadastro de irmãos ministradores com identificação mínima e ciclo
+  ativo/inativo;
+- composição de duplas de dois ou três integrantes, com rótulo próprio
+  opcional;
+- registro de entrevista realizada, com data e participantes;
+- histórico de entrevistas por dupla, com remoção para corrigir engano;
+- painel do trimestre corrente com duplas pendentes e entrevistadas;
+- entrada no módulo pelo card do chamado na tela inicial, decidida pela chave
+  do módulo;
+- schema local v3 com cinco tabelas do módulo, integridade referencial
+  composta por chamado e migração aditiva a partir da v2;
+- idioma pt-BR no Material, incluindo o seletor de data.
+
+### Changed
+
+- `userErrorMessage` traduz também as exceções do módulo de ministração;
+- o card de chamado ativo mostra "Abrir módulo" quando existe módulo pronto.
+
+### Fixed
+
+- a data da entrevista deixa de recuar um dia na leitura: o Drift devolvia
+  `DateTime` no fuso do aparelho e desfazia a normalização UTC, o que também
+  jogaria uma entrevista do primeiro dia do trimestre para o anterior;
+- a tela de Configurações mostrava `0.1.0-alpha.1` com a `0.2.0-alpha.1`
+  instalada; a versão passa a vir de `AppInfo`, com teste que a compara ao
+  `pubspec.yaml`.
+
+### Fora desta versão
+
+- agendamento de entrevistas, `status` e data prevista;
+- designações de famílias ou pessoas ministradas;
+- relatórios para a liderança e visão de líderes;
+- histórico de trimestres anteriores;
+- sincronização, Workspace compartilhado ou Google Drive;
+- atualização pelo aplicativo;
+- APK de release assinado com chave de produção.
+
+Continua sendo uma pré-versão alpha: schema local e interfaces ainda podem
+mudar de forma incompatível.
 
 ## [0.1.0-alpha.1] — 2026-08-25
 

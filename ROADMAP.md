@@ -37,9 +37,34 @@ cada chamado. Não há APK de release assinado nesta versão — ver
 
 ## 0.2.x — Secretário da Ministração
 
-- pesquisar e implementar rotinas próprias do módulo;
-- manter dados nominais locais e protegidos;
-- validar relatórios sem expor dados reais no repositório.
+### 0.2.0-alpha.1 — Entregue em 2026-08-28
+
+Escopo entregue e verificado:
+
+- cadastro de irmãos ministradores com identificação mínima;
+- ciclo ativo/inativo para irmãos e duplas, sem exclusão que destrua histórico;
+- duplas de dois ou três integrantes, com rótulo próprio opcional;
+- registro de entrevista realizada, com data e participantes;
+- histórico por dupla, com remoção para corrigir engano;
+- painel do trimestre corrente separando pendentes e entrevistadas;
+- schema local v3 com integridade composta por chamado e migração aditiva;
+- idioma pt-BR no Material.
+
+O trimestre é derivado da data da entrevista e não existe coluna de status: a
+existência do registro é o fato — ver
+[ADR 0012](docs/adr/0012-ministering-quarterly-model.md). A identificação
+guardada é a mínima — ver
+[ADR 0013](docs/adr/0013-ministering-minimal-identification.md).
+
+### Previsto para as próximas alphas da série
+
+- `alpha.2`: agendamento de entrevistas, `status` e visão de liderança;
+- `alpha.3`: revisão de segurança e proteção do banco local;
+- `alpha.4`: histórico de trimestres anteriores;
+- `alpha.5`: apoio ao "Aprender" da reunião do quórum.
+
+Designações de famílias ou pessoas ministradas seguem fora da série enquanto o
+tratamento desse dado não estiver documentado e justificado.
 
 ## 0.3.x — Secretário da Escola Dominical
 
