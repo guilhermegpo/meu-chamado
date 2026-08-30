@@ -5,11 +5,12 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
 
-/// Testes do schema v3 — o módulo de ministração.
+/// Testes da migração v2 → v3 (e adiante) — a fundação do módulo de ministração.
 ///
 /// A migração só cria tabelas, o que a torna segura por construção. Justamente
 /// por isso os testes precisam **provar** que os dados da v2 continuam
-/// intactos, em vez de assumir.
+/// intactos, em vez de assumir. A evolução v3 → v4 tem cobertura própria em
+/// `ministering_schema_v4_test.dart`.
 void main() {
   late Directory directory;
   late AppDatabase database;
@@ -66,7 +67,7 @@ void main() {
   test('migra v2 para v3 preservando os dados existentes', () async {
     await openMigratedDatabase();
 
-    expect(database.schemaVersion, 3);
+    expect(database.schemaVersion, 4);
 
     final workspace = await database
         .customSelect(

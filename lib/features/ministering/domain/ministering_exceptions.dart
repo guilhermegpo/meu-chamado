@@ -33,6 +33,35 @@ class InactiveBrotherException extends MinisteringException {
     : super('Há um irmão inativo na seleção. Reative antes de incluí-lo.');
 }
 
+/// Líder inativo sendo escolhido como entrevistador.
+class InactiveInterviewerException extends MinisteringException {
+  const InactiveInterviewerException()
+    : super(
+        'A liderança escolhida está inativa. Reative-a ou escolha outra para '
+        'conduzir a entrevista.',
+      );
+}
+
+/// Nenhuma liderança ativa cadastrada quando uma entrevista precisa de um
+/// entrevistador. O entrevistador nunca é inferido: sem liderança não há quem
+/// registrar.
+class NoActiveInterviewerException extends MinisteringException {
+  const NoActiveInterviewerException()
+    : super(
+        'Cadastre a liderança responsável pelas entrevistas antes de agendar '
+        'ou registrar.',
+      );
+}
+
+/// Segunda tentativa de agendar para uma dupla que já tem agendamento aberto.
+class CompanionshipAlreadyScheduledException extends MinisteringException {
+  const CompanionshipAlreadyScheduledException()
+    : super(
+        'Esta dupla já tem uma entrevista agendada. Reagende ou cancele a '
+        'existente.',
+      );
+}
+
 /// Entrevista registrada sem nenhum participante.
 class InterviewWithoutParticipantsException extends MinisteringException {
   const InterviewWithoutParticipantsException()
@@ -69,12 +98,35 @@ class MinisteringRecordInUseException extends MinisteringException {
 
   factory MinisteringRecordInUseException.companionship(
     MinisteringRemovalCheck check,
-  ) => MinisteringRecordInUseException(
-    'Esta dupla tem ${check.interviews} '
-    'entrevista${check.interviews == 1 ? '' : 's'} registrada'
-    '${check.interviews == 1 ? '' : 's'}. Desative-a em vez de excluir, para '
-    'não apagar o histórico.',
-  );
+  ) {
+    if (check.interviews > 0) {
+      return MinisteringRecordInUseException(
+        'Esta dupla tem ${check.interviews} '
+        'entrevista${check.interviews == 1 ? '' : 's'} registrada'
+        '${check.interviews == 1 ? '' : 's'}. Desative-a em vez de excluir, '
+        'para não apagar o histórico.',
+      );
+    }
+    return const MinisteringRecordInUseException(
+      'Esta dupla tem uma entrevista agendada. Cancele o agendamento antes de '
+      'excluir a dupla.',
+    );
+  }
+
+  factory MinisteringRecordInUseException.leader(
+    MinisteringRemovalCheck check,
+  ) {
+    if (check.hasHistory) {
+      return const MinisteringRecordInUseException(
+        'Esta liderança consta no histórico de entrevistas. Desative-a em vez '
+        'de excluir, para não apagar o histórico.',
+      );
+    }
+    return const MinisteringRecordInUseException(
+      'Esta liderança tem entrevistas agendadas. Reatribua ou cancele os '
+      'agendamentos, ou desative a liderança.',
+    );
+  }
 }
 
 /// Registro não encontrado no chamado informado.

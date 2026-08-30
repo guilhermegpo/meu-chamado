@@ -2162,6 +2162,487 @@ class MinisteringBrothersCompanion
   }
 }
 
+class $MinisteringLeadersTable extends MinisteringLeaders
+    with TableInfo<$MinisteringLeadersTable, MinisteringLeaderRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MinisteringLeadersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _callingIdMeta = const VerificationMeta(
+    'callingId',
+  );
+  @override
+  late final GeneratedColumn<String> callingId = GeneratedColumn<String>(
+    'calling_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES callings (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _displayLabelMeta = const VerificationMeta(
+    'displayLabel',
+  );
+  @override
+  late final GeneratedColumn<String> displayLabel = GeneratedColumn<String>(
+    'display_label',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 60,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    callingId,
+    displayLabel,
+    role,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ministering_leaders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MinisteringLeaderRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('calling_id')) {
+      context.handle(
+        _callingIdMeta,
+        callingId.isAcceptableOrUnknown(data['calling_id']!, _callingIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_callingIdMeta);
+    }
+    if (data.containsKey('display_label')) {
+      context.handle(
+        _displayLabelMeta,
+        displayLabel.isAcceptableOrUnknown(
+          data['display_label']!,
+          _displayLabelMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayLabelMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MinisteringLeaderRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MinisteringLeaderRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      callingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}calling_id'],
+      )!,
+      displayLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_label'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MinisteringLeadersTable createAlias(String alias) {
+    return $MinisteringLeadersTable(attachedDatabase, alias);
+  }
+}
+
+class MinisteringLeaderRow extends DataClass
+    implements Insertable<MinisteringLeaderRow> {
+  final String id;
+  final String callingId;
+  final String displayLabel;
+
+  /// `QUORUM_PRESIDENT`, `FIRST_COUNSELOR` ou `SECOND_COUNSELOR`. Guardado como
+  /// texto pela mesma razão dos outros enums do app: a coluna descreve um cargo,
+  /// e novos cargos entram sem migração de tipo.
+  final String role;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const MinisteringLeaderRow({
+    required this.id,
+    required this.callingId,
+    required this.displayLabel,
+    required this.role,
+    required this.isActive,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['calling_id'] = Variable<String>(callingId);
+    map['display_label'] = Variable<String>(displayLabel);
+    map['role'] = Variable<String>(role);
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MinisteringLeadersCompanion toCompanion(bool nullToAbsent) {
+    return MinisteringLeadersCompanion(
+      id: Value(id),
+      callingId: Value(callingId),
+      displayLabel: Value(displayLabel),
+      role: Value(role),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory MinisteringLeaderRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MinisteringLeaderRow(
+      id: serializer.fromJson<String>(json['id']),
+      callingId: serializer.fromJson<String>(json['callingId']),
+      displayLabel: serializer.fromJson<String>(json['displayLabel']),
+      role: serializer.fromJson<String>(json['role']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'callingId': serializer.toJson<String>(callingId),
+      'displayLabel': serializer.toJson<String>(displayLabel),
+      'role': serializer.toJson<String>(role),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  MinisteringLeaderRow copyWith({
+    String? id,
+    String? callingId,
+    String? displayLabel,
+    String? role,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => MinisteringLeaderRow(
+    id: id ?? this.id,
+    callingId: callingId ?? this.callingId,
+    displayLabel: displayLabel ?? this.displayLabel,
+    role: role ?? this.role,
+    isActive: isActive ?? this.isActive,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  MinisteringLeaderRow copyWithCompanion(MinisteringLeadersCompanion data) {
+    return MinisteringLeaderRow(
+      id: data.id.present ? data.id.value : this.id,
+      callingId: data.callingId.present ? data.callingId.value : this.callingId,
+      displayLabel: data.displayLabel.present
+          ? data.displayLabel.value
+          : this.displayLabel,
+      role: data.role.present ? data.role.value : this.role,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringLeaderRow(')
+          ..write('id: $id, ')
+          ..write('callingId: $callingId, ')
+          ..write('displayLabel: $displayLabel, ')
+          ..write('role: $role, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    callingId,
+    displayLabel,
+    role,
+    isActive,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MinisteringLeaderRow &&
+          other.id == this.id &&
+          other.callingId == this.callingId &&
+          other.displayLabel == this.displayLabel &&
+          other.role == this.role &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MinisteringLeadersCompanion
+    extends UpdateCompanion<MinisteringLeaderRow> {
+  final Value<String> id;
+  final Value<String> callingId;
+  final Value<String> displayLabel;
+  final Value<String> role;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const MinisteringLeadersCompanion({
+    this.id = const Value.absent(),
+    this.callingId = const Value.absent(),
+    this.displayLabel = const Value.absent(),
+    this.role = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MinisteringLeadersCompanion.insert({
+    required String id,
+    required String callingId,
+    required String displayLabel,
+    required String role,
+    this.isActive = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       callingId = Value(callingId),
+       displayLabel = Value(displayLabel),
+       role = Value(role),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<MinisteringLeaderRow> custom({
+    Expression<String>? id,
+    Expression<String>? callingId,
+    Expression<String>? displayLabel,
+    Expression<String>? role,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (callingId != null) 'calling_id': callingId,
+      if (displayLabel != null) 'display_label': displayLabel,
+      if (role != null) 'role': role,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MinisteringLeadersCompanion copyWith({
+    Value<String>? id,
+    Value<String>? callingId,
+    Value<String>? displayLabel,
+    Value<String>? role,
+    Value<bool>? isActive,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return MinisteringLeadersCompanion(
+      id: id ?? this.id,
+      callingId: callingId ?? this.callingId,
+      displayLabel: displayLabel ?? this.displayLabel,
+      role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (callingId.present) {
+      map['calling_id'] = Variable<String>(callingId.value);
+    }
+    if (displayLabel.present) {
+      map['display_label'] = Variable<String>(displayLabel.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringLeadersCompanion(')
+          ..write('id: $id, ')
+          ..write('callingId: $callingId, ')
+          ..write('displayLabel: $displayLabel, ')
+          ..write('role: $role, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MinisteringCompanionshipsTable extends MinisteringCompanionships
     with
         TableInfo<
@@ -2979,6 +3460,20 @@ class $MinisteringInterviewsTable extends MinisteringInterviews
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _interviewerIdMeta = const VerificationMeta(
+    'interviewerId',
+  );
+  @override
+  late final GeneratedColumn<String> interviewerId = GeneratedColumn<String>(
+    'interviewer_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES ministering_leaders (id) ON DELETE RESTRICT',
+    ),
+  );
   static const VerificationMeta _completedAtMeta = const VerificationMeta(
     'completedAt',
   );
@@ -3006,6 +3501,7 @@ class $MinisteringInterviewsTable extends MinisteringInterviews
     id,
     callingId,
     companionshipId,
+    interviewerId,
     completedAt,
     createdAt,
   ];
@@ -3044,6 +3540,15 @@ class $MinisteringInterviewsTable extends MinisteringInterviews
       );
     } else if (isInserting) {
       context.missing(_companionshipIdMeta);
+    }
+    if (data.containsKey('interviewer_id')) {
+      context.handle(
+        _interviewerIdMeta,
+        interviewerId.isAcceptableOrUnknown(
+          data['interviewer_id']!,
+          _interviewerIdMeta,
+        ),
+      );
     }
     if (data.containsKey('completed_at')) {
       context.handle(
@@ -3088,6 +3593,10 @@ class $MinisteringInterviewsTable extends MinisteringInterviews
         DriftSqlType.string,
         data['${effectivePrefix}companionship_id'],
       )!,
+      interviewerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}interviewer_id'],
+      ),
       completedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
@@ -3110,12 +3619,16 @@ class MinisteringInterviewRow extends DataClass
   final String id;
   final String callingId;
   final String companionshipId;
+
+  /// Líder que conduziu a entrevista. Ver nota da classe sobre a nulabilidade.
+  final String? interviewerId;
   final DateTime completedAt;
   final DateTime createdAt;
   const MinisteringInterviewRow({
     required this.id,
     required this.callingId,
     required this.companionshipId,
+    this.interviewerId,
     required this.completedAt,
     required this.createdAt,
   });
@@ -3125,6 +3638,9 @@ class MinisteringInterviewRow extends DataClass
     map['id'] = Variable<String>(id);
     map['calling_id'] = Variable<String>(callingId);
     map['companionship_id'] = Variable<String>(companionshipId);
+    if (!nullToAbsent || interviewerId != null) {
+      map['interviewer_id'] = Variable<String>(interviewerId);
+    }
     map['completed_at'] = Variable<DateTime>(completedAt);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -3135,6 +3651,9 @@ class MinisteringInterviewRow extends DataClass
       id: Value(id),
       callingId: Value(callingId),
       companionshipId: Value(companionshipId),
+      interviewerId: interviewerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(interviewerId),
       completedAt: Value(completedAt),
       createdAt: Value(createdAt),
     );
@@ -3149,6 +3668,7 @@ class MinisteringInterviewRow extends DataClass
       id: serializer.fromJson<String>(json['id']),
       callingId: serializer.fromJson<String>(json['callingId']),
       companionshipId: serializer.fromJson<String>(json['companionshipId']),
+      interviewerId: serializer.fromJson<String?>(json['interviewerId']),
       completedAt: serializer.fromJson<DateTime>(json['completedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -3160,6 +3680,7 @@ class MinisteringInterviewRow extends DataClass
       'id': serializer.toJson<String>(id),
       'callingId': serializer.toJson<String>(callingId),
       'companionshipId': serializer.toJson<String>(companionshipId),
+      'interviewerId': serializer.toJson<String?>(interviewerId),
       'completedAt': serializer.toJson<DateTime>(completedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -3169,12 +3690,16 @@ class MinisteringInterviewRow extends DataClass
     String? id,
     String? callingId,
     String? companionshipId,
+    Value<String?> interviewerId = const Value.absent(),
     DateTime? completedAt,
     DateTime? createdAt,
   }) => MinisteringInterviewRow(
     id: id ?? this.id,
     callingId: callingId ?? this.callingId,
     companionshipId: companionshipId ?? this.companionshipId,
+    interviewerId: interviewerId.present
+        ? interviewerId.value
+        : this.interviewerId,
     completedAt: completedAt ?? this.completedAt,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -3187,6 +3712,9 @@ class MinisteringInterviewRow extends DataClass
       companionshipId: data.companionshipId.present
           ? data.companionshipId.value
           : this.companionshipId,
+      interviewerId: data.interviewerId.present
+          ? data.interviewerId.value
+          : this.interviewerId,
       completedAt: data.completedAt.present
           ? data.completedAt.value
           : this.completedAt,
@@ -3200,6 +3728,7 @@ class MinisteringInterviewRow extends DataClass
           ..write('id: $id, ')
           ..write('callingId: $callingId, ')
           ..write('companionshipId: $companionshipId, ')
+          ..write('interviewerId: $interviewerId, ')
           ..write('completedAt: $completedAt, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -3207,8 +3736,14 @@ class MinisteringInterviewRow extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, callingId, companionshipId, completedAt, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    callingId,
+    companionshipId,
+    interviewerId,
+    completedAt,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3216,6 +3751,7 @@ class MinisteringInterviewRow extends DataClass
           other.id == this.id &&
           other.callingId == this.callingId &&
           other.companionshipId == this.companionshipId &&
+          other.interviewerId == this.interviewerId &&
           other.completedAt == this.completedAt &&
           other.createdAt == this.createdAt);
 }
@@ -3225,6 +3761,7 @@ class MinisteringInterviewsCompanion
   final Value<String> id;
   final Value<String> callingId;
   final Value<String> companionshipId;
+  final Value<String?> interviewerId;
   final Value<DateTime> completedAt;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
@@ -3232,6 +3769,7 @@ class MinisteringInterviewsCompanion
     this.id = const Value.absent(),
     this.callingId = const Value.absent(),
     this.companionshipId = const Value.absent(),
+    this.interviewerId = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3240,6 +3778,7 @@ class MinisteringInterviewsCompanion
     required String id,
     required String callingId,
     required String companionshipId,
+    this.interviewerId = const Value.absent(),
     required DateTime completedAt,
     required DateTime createdAt,
     this.rowid = const Value.absent(),
@@ -3252,6 +3791,7 @@ class MinisteringInterviewsCompanion
     Expression<String>? id,
     Expression<String>? callingId,
     Expression<String>? companionshipId,
+    Expression<String>? interviewerId,
     Expression<DateTime>? completedAt,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
@@ -3260,6 +3800,7 @@ class MinisteringInterviewsCompanion
       if (id != null) 'id': id,
       if (callingId != null) 'calling_id': callingId,
       if (companionshipId != null) 'companionship_id': companionshipId,
+      if (interviewerId != null) 'interviewer_id': interviewerId,
       if (completedAt != null) 'completed_at': completedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
@@ -3270,6 +3811,7 @@ class MinisteringInterviewsCompanion
     Value<String>? id,
     Value<String>? callingId,
     Value<String>? companionshipId,
+    Value<String?>? interviewerId,
     Value<DateTime>? completedAt,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
@@ -3278,6 +3820,7 @@ class MinisteringInterviewsCompanion
       id: id ?? this.id,
       callingId: callingId ?? this.callingId,
       companionshipId: companionshipId ?? this.companionshipId,
+      interviewerId: interviewerId ?? this.interviewerId,
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
@@ -3295,6 +3838,9 @@ class MinisteringInterviewsCompanion
     }
     if (companionshipId.present) {
       map['companionship_id'] = Variable<String>(companionshipId.value);
+    }
+    if (interviewerId.present) {
+      map['interviewer_id'] = Variable<String>(interviewerId.value);
     }
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
@@ -3314,6 +3860,7 @@ class MinisteringInterviewsCompanion
           ..write('id: $id, ')
           ..write('callingId: $callingId, ')
           ..write('companionshipId: $companionshipId, ')
+          ..write('interviewerId: $interviewerId, ')
           ..write('completedAt: $completedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
@@ -3668,6 +4215,499 @@ class MinisteringInterviewParticipantsCompanion
   }
 }
 
+class $MinisteringAppointmentsTable extends MinisteringAppointments
+    with TableInfo<$MinisteringAppointmentsTable, MinisteringAppointmentRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MinisteringAppointmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _callingIdMeta = const VerificationMeta(
+    'callingId',
+  );
+  @override
+  late final GeneratedColumn<String> callingId = GeneratedColumn<String>(
+    'calling_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES callings (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _companionshipIdMeta = const VerificationMeta(
+    'companionshipId',
+  );
+  @override
+  late final GeneratedColumn<String> companionshipId = GeneratedColumn<String>(
+    'companionship_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _interviewerIdMeta = const VerificationMeta(
+    'interviewerId',
+  );
+  @override
+  late final GeneratedColumn<String> interviewerId = GeneratedColumn<String>(
+    'interviewer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scheduledAtMeta = const VerificationMeta(
+    'scheduledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> scheduledAt = GeneratedColumn<DateTime>(
+    'scheduled_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    callingId,
+    companionshipId,
+    interviewerId,
+    scheduledAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ministering_appointments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MinisteringAppointmentRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('calling_id')) {
+      context.handle(
+        _callingIdMeta,
+        callingId.isAcceptableOrUnknown(data['calling_id']!, _callingIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_callingIdMeta);
+    }
+    if (data.containsKey('companionship_id')) {
+      context.handle(
+        _companionshipIdMeta,
+        companionshipId.isAcceptableOrUnknown(
+          data['companionship_id']!,
+          _companionshipIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_companionshipIdMeta);
+    }
+    if (data.containsKey('interviewer_id')) {
+      context.handle(
+        _interviewerIdMeta,
+        interviewerId.isAcceptableOrUnknown(
+          data['interviewer_id']!,
+          _interviewerIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_interviewerIdMeta);
+    }
+    if (data.containsKey('scheduled_at')) {
+      context.handle(
+        _scheduledAtMeta,
+        scheduledAt.isAcceptableOrUnknown(
+          data['scheduled_at']!,
+          _scheduledAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scheduledAtMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MinisteringAppointmentRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MinisteringAppointmentRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      callingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}calling_id'],
+      )!,
+      companionshipId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}companionship_id'],
+      )!,
+      interviewerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}interviewer_id'],
+      )!,
+      scheduledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}scheduled_at'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MinisteringAppointmentsTable createAlias(String alias) {
+    return $MinisteringAppointmentsTable(attachedDatabase, alias);
+  }
+}
+
+class MinisteringAppointmentRow extends DataClass
+    implements Insertable<MinisteringAppointmentRow> {
+  final String id;
+  final String callingId;
+  final String companionshipId;
+  final String interviewerId;
+
+  /// Instante planejado, **com hora do dia** — ao contrário de
+  /// `MinisteringInterviews.completedAt`, que é data de calendário. Um
+  /// agendamento tem horário; uma entrevista aconteceu num dia.
+  final DateTime scheduledAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const MinisteringAppointmentRow({
+    required this.id,
+    required this.callingId,
+    required this.companionshipId,
+    required this.interviewerId,
+    required this.scheduledAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['calling_id'] = Variable<String>(callingId);
+    map['companionship_id'] = Variable<String>(companionshipId);
+    map['interviewer_id'] = Variable<String>(interviewerId);
+    map['scheduled_at'] = Variable<DateTime>(scheduledAt);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MinisteringAppointmentsCompanion toCompanion(bool nullToAbsent) {
+    return MinisteringAppointmentsCompanion(
+      id: Value(id),
+      callingId: Value(callingId),
+      companionshipId: Value(companionshipId),
+      interviewerId: Value(interviewerId),
+      scheduledAt: Value(scheduledAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory MinisteringAppointmentRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MinisteringAppointmentRow(
+      id: serializer.fromJson<String>(json['id']),
+      callingId: serializer.fromJson<String>(json['callingId']),
+      companionshipId: serializer.fromJson<String>(json['companionshipId']),
+      interviewerId: serializer.fromJson<String>(json['interviewerId']),
+      scheduledAt: serializer.fromJson<DateTime>(json['scheduledAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'callingId': serializer.toJson<String>(callingId),
+      'companionshipId': serializer.toJson<String>(companionshipId),
+      'interviewerId': serializer.toJson<String>(interviewerId),
+      'scheduledAt': serializer.toJson<DateTime>(scheduledAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  MinisteringAppointmentRow copyWith({
+    String? id,
+    String? callingId,
+    String? companionshipId,
+    String? interviewerId,
+    DateTime? scheduledAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => MinisteringAppointmentRow(
+    id: id ?? this.id,
+    callingId: callingId ?? this.callingId,
+    companionshipId: companionshipId ?? this.companionshipId,
+    interviewerId: interviewerId ?? this.interviewerId,
+    scheduledAt: scheduledAt ?? this.scheduledAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  MinisteringAppointmentRow copyWithCompanion(
+    MinisteringAppointmentsCompanion data,
+  ) {
+    return MinisteringAppointmentRow(
+      id: data.id.present ? data.id.value : this.id,
+      callingId: data.callingId.present ? data.callingId.value : this.callingId,
+      companionshipId: data.companionshipId.present
+          ? data.companionshipId.value
+          : this.companionshipId,
+      interviewerId: data.interviewerId.present
+          ? data.interviewerId.value
+          : this.interviewerId,
+      scheduledAt: data.scheduledAt.present
+          ? data.scheduledAt.value
+          : this.scheduledAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringAppointmentRow(')
+          ..write('id: $id, ')
+          ..write('callingId: $callingId, ')
+          ..write('companionshipId: $companionshipId, ')
+          ..write('interviewerId: $interviewerId, ')
+          ..write('scheduledAt: $scheduledAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    callingId,
+    companionshipId,
+    interviewerId,
+    scheduledAt,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MinisteringAppointmentRow &&
+          other.id == this.id &&
+          other.callingId == this.callingId &&
+          other.companionshipId == this.companionshipId &&
+          other.interviewerId == this.interviewerId &&
+          other.scheduledAt == this.scheduledAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MinisteringAppointmentsCompanion
+    extends UpdateCompanion<MinisteringAppointmentRow> {
+  final Value<String> id;
+  final Value<String> callingId;
+  final Value<String> companionshipId;
+  final Value<String> interviewerId;
+  final Value<DateTime> scheduledAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const MinisteringAppointmentsCompanion({
+    this.id = const Value.absent(),
+    this.callingId = const Value.absent(),
+    this.companionshipId = const Value.absent(),
+    this.interviewerId = const Value.absent(),
+    this.scheduledAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MinisteringAppointmentsCompanion.insert({
+    required String id,
+    required String callingId,
+    required String companionshipId,
+    required String interviewerId,
+    required DateTime scheduledAt,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       callingId = Value(callingId),
+       companionshipId = Value(companionshipId),
+       interviewerId = Value(interviewerId),
+       scheduledAt = Value(scheduledAt),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<MinisteringAppointmentRow> custom({
+    Expression<String>? id,
+    Expression<String>? callingId,
+    Expression<String>? companionshipId,
+    Expression<String>? interviewerId,
+    Expression<DateTime>? scheduledAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (callingId != null) 'calling_id': callingId,
+      if (companionshipId != null) 'companionship_id': companionshipId,
+      if (interviewerId != null) 'interviewer_id': interviewerId,
+      if (scheduledAt != null) 'scheduled_at': scheduledAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MinisteringAppointmentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? callingId,
+    Value<String>? companionshipId,
+    Value<String>? interviewerId,
+    Value<DateTime>? scheduledAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return MinisteringAppointmentsCompanion(
+      id: id ?? this.id,
+      callingId: callingId ?? this.callingId,
+      companionshipId: companionshipId ?? this.companionshipId,
+      interviewerId: interviewerId ?? this.interviewerId,
+      scheduledAt: scheduledAt ?? this.scheduledAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (callingId.present) {
+      map['calling_id'] = Variable<String>(callingId.value);
+    }
+    if (companionshipId.present) {
+      map['companionship_id'] = Variable<String>(companionshipId.value);
+    }
+    if (interviewerId.present) {
+      map['interviewer_id'] = Variable<String>(interviewerId.value);
+    }
+    if (scheduledAt.present) {
+      map['scheduled_at'] = Variable<DateTime>(scheduledAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringAppointmentsCompanion(')
+          ..write('id: $id, ')
+          ..write('callingId: $callingId, ')
+          ..write('companionshipId: $companionshipId, ')
+          ..write('interviewerId: $interviewerId, ')
+          ..write('scheduledAt: $scheduledAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3678,6 +4718,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AppPreferencesTable appPreferences = $AppPreferencesTable(this);
   late final $MinisteringBrothersTable ministeringBrothers =
       $MinisteringBrothersTable(this);
+  late final $MinisteringLeadersTable ministeringLeaders =
+      $MinisteringLeadersTable(this);
   late final $MinisteringCompanionshipsTable ministeringCompanionships =
       $MinisteringCompanionshipsTable(this);
   late final $MinisteringCompanionshipMembersTable
@@ -3688,6 +4730,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ministeringInterviewParticipants = $MinisteringInterviewParticipantsTable(
     this,
   );
+  late final $MinisteringAppointmentsTable ministeringAppointments =
+      $MinisteringAppointmentsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3699,10 +4743,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     callings,
     appPreferences,
     ministeringBrothers,
+    ministeringLeaders,
     ministeringCompanionships,
     ministeringCompanionshipMembers,
     ministeringInterviews,
     ministeringInterviewParticipants,
+    ministeringAppointments,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3712,6 +4758,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('ministering_brothers', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'callings',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('ministering_leaders', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -3728,6 +4781,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('ministering_interviews', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'callings',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('ministering_appointments', kind: UpdateKind.delete),
+      ],
     ),
   ]);
 }
@@ -4945,6 +6007,30 @@ final class $$CallingsTableReferences
   }
 
   static MultiTypedResultKey<
+    $MinisteringLeadersTable,
+    List<MinisteringLeaderRow>
+  >
+  _ministeringLeadersRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.ministeringLeaders,
+        aliasName: 'callings__id__ministering_leaders__calling_id',
+      );
+
+  $$MinisteringLeadersTableProcessedTableManager get ministeringLeadersRefs {
+    final manager = $$MinisteringLeadersTableTableManager(
+      $_db,
+      $_db.ministeringLeaders,
+    ).filter((f) => f.callingId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _ministeringLeadersRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
     $MinisteringCompanionshipsTable,
     List<MinisteringCompanionshipRow>
   >
@@ -4988,6 +6074,31 @@ final class $$CallingsTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _ministeringInterviewsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $MinisteringAppointmentsTable,
+    List<MinisteringAppointmentRow>
+  >
+  _ministeringAppointmentsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.ministeringAppointments,
+        aliasName: 'callings__id__ministering_appointments__calling_id',
+      );
+
+  $$MinisteringAppointmentsTableProcessedTableManager
+  get ministeringAppointmentsRefs {
+    final manager = $$MinisteringAppointmentsTableTableManager(
+      $_db,
+      $_db.ministeringAppointments,
+    ).filter((f) => f.callingId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _ministeringAppointmentsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -5105,6 +6216,31 @@ class $$CallingsTableFilterComposer
     return f(composer);
   }
 
+  Expression<bool> ministeringLeadersRefs(
+    Expression<bool> Function($$MinisteringLeadersTableFilterComposer f) f,
+  ) {
+    final $$MinisteringLeadersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.ministeringLeaders,
+      getReferencedColumn: (t) => t.callingId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MinisteringLeadersTableFilterComposer(
+            $db: $db,
+            $table: $db.ministeringLeaders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<bool> ministeringCompanionshipsRefs(
     Expression<bool> Function($$MinisteringCompanionshipsTableFilterComposer f)
     f,
@@ -5149,6 +6285,32 @@ class $$CallingsTableFilterComposer
               }) => $$MinisteringInterviewsTableFilterComposer(
                 $db: $db,
                 $table: $db.ministeringInterviews,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> ministeringAppointmentsRefs(
+    Expression<bool> Function($$MinisteringAppointmentsTableFilterComposer f) f,
+  ) {
+    final $$MinisteringAppointmentsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringAppointments,
+          getReferencedColumn: (t) => t.callingId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringAppointmentsTableFilterComposer(
+                $db: $db,
+                $table: $db.ministeringAppointments,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -5346,6 +6508,32 @@ class $$CallingsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> ministeringLeadersRefs<T extends Object>(
+    Expression<T> Function($$MinisteringLeadersTableAnnotationComposer a) f,
+  ) {
+    final $$MinisteringLeadersTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringLeaders,
+          getReferencedColumn: (t) => t.callingId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringLeadersTableAnnotationComposer(
+                $db: $db,
+                $table: $db.ministeringLeaders,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> ministeringCompanionshipsRefs<T extends Object>(
     Expression<T> Function($$MinisteringCompanionshipsTableAnnotationComposer a)
     f,
@@ -5398,6 +6586,33 @@ class $$CallingsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> ministeringAppointmentsRefs<T extends Object>(
+    Expression<T> Function($$MinisteringAppointmentsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$MinisteringAppointmentsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringAppointments,
+          getReferencedColumn: (t) => t.callingId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringAppointmentsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.ministeringAppointments,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$CallingsTableTableManager
@@ -5417,8 +6632,10 @@ class $$CallingsTableTableManager
             bool workspaceId,
             bool userId,
             bool ministeringBrothersRefs,
+            bool ministeringLeadersRefs,
             bool ministeringCompanionshipsRefs,
             bool ministeringInterviewsRefs,
+            bool ministeringAppointmentsRefs,
           })
         > {
   $$CallingsTableTableManager(_$AppDatabase db, $CallingsTable table)
@@ -5489,16 +6706,20 @@ class $$CallingsTableTableManager
                 workspaceId = false,
                 userId = false,
                 ministeringBrothersRefs = false,
+                ministeringLeadersRefs = false,
                 ministeringCompanionshipsRefs = false,
                 ministeringInterviewsRefs = false,
+                ministeringAppointmentsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (ministeringBrothersRefs) db.ministeringBrothers,
+                    if (ministeringLeadersRefs) db.ministeringLeaders,
                     if (ministeringCompanionshipsRefs)
                       db.ministeringCompanionships,
                     if (ministeringInterviewsRefs) db.ministeringInterviews,
+                    if (ministeringAppointmentsRefs) db.ministeringAppointments,
                   ],
                   addJoins:
                       <
@@ -5564,6 +6785,27 @@ class $$CallingsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (ministeringLeadersRefs)
+                        await $_getPrefetchedData<
+                          CallingRow,
+                          $CallingsTable,
+                          MinisteringLeaderRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CallingsTableReferences
+                              ._ministeringLeadersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CallingsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ministeringLeadersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.callingId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (ministeringCompanionshipsRefs)
                         await $_getPrefetchedData<
                           CallingRow,
@@ -5606,6 +6848,27 @@ class $$CallingsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (ministeringAppointmentsRefs)
+                        await $_getPrefetchedData<
+                          CallingRow,
+                          $CallingsTable,
+                          MinisteringAppointmentRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CallingsTableReferences
+                              ._ministeringAppointmentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CallingsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ministeringAppointmentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.callingId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5630,8 +6893,10 @@ typedef $$CallingsTableProcessedTableManager =
         bool workspaceId,
         bool userId,
         bool ministeringBrothersRefs,
+        bool ministeringLeadersRefs,
         bool ministeringCompanionshipsRefs,
         bool ministeringInterviewsRefs,
+        bool ministeringAppointmentsRefs,
       })
     >;
 typedef $$AppPreferencesTableCreateCompanionBuilder =
@@ -6154,6 +7419,482 @@ typedef $$MinisteringBrothersTableProcessedTableManager =
       (MinisteringBrotherRow, $$MinisteringBrothersTableReferences),
       MinisteringBrotherRow,
       PrefetchHooks Function({bool callingId})
+    >;
+typedef $$MinisteringLeadersTableCreateCompanionBuilder =
+    MinisteringLeadersCompanion Function({
+      required String id,
+      required String callingId,
+      required String displayLabel,
+      required String role,
+      Value<bool> isActive,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$MinisteringLeadersTableUpdateCompanionBuilder =
+    MinisteringLeadersCompanion Function({
+      Value<String> id,
+      Value<String> callingId,
+      Value<String> displayLabel,
+      Value<String> role,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$MinisteringLeadersTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $MinisteringLeadersTable,
+          MinisteringLeaderRow
+        > {
+  $$MinisteringLeadersTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CallingsTable _callingIdTable(_$AppDatabase db) =>
+      db.callings.createAlias('ministering_leaders__calling_id__callings__id');
+
+  $$CallingsTableProcessedTableManager get callingId {
+    final $_column = $_itemColumn<String>('calling_id')!;
+
+    final manager = $$CallingsTableTableManager(
+      $_db,
+      $_db.callings,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_callingIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $MinisteringInterviewsTable,
+    List<MinisteringInterviewRow>
+  >
+  _ministeringInterviewsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.ministeringInterviews,
+        aliasName:
+            'ministering_leaders__id__ministering_interviews__interviewer_id',
+      );
+
+  $$MinisteringInterviewsTableProcessedTableManager
+  get ministeringInterviewsRefs {
+    final manager = $$MinisteringInterviewsTableTableManager(
+      $_db,
+      $_db.ministeringInterviews,
+    ).filter((f) => f.interviewerId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _ministeringInterviewsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$MinisteringLeadersTableFilterComposer
+    extends Composer<_$AppDatabase, $MinisteringLeadersTable> {
+  $$MinisteringLeadersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayLabel => $composableBuilder(
+    column: $table.displayLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CallingsTableFilterComposer get callingId {
+    final $$CallingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableFilterComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> ministeringInterviewsRefs(
+    Expression<bool> Function($$MinisteringInterviewsTableFilterComposer f) f,
+  ) {
+    final $$MinisteringInterviewsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringInterviews,
+          getReferencedColumn: (t) => t.interviewerId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringInterviewsTableFilterComposer(
+                $db: $db,
+                $table: $db.ministeringInterviews,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$MinisteringLeadersTableOrderingComposer
+    extends Composer<_$AppDatabase, $MinisteringLeadersTable> {
+  $$MinisteringLeadersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayLabel => $composableBuilder(
+    column: $table.displayLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CallingsTableOrderingComposer get callingId {
+    final $$CallingsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableOrderingComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringLeadersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MinisteringLeadersTable> {
+  $$MinisteringLeadersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get displayLabel => $composableBuilder(
+    column: $table.displayLabel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CallingsTableAnnotationComposer get callingId {
+    final $$CallingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> ministeringInterviewsRefs<T extends Object>(
+    Expression<T> Function($$MinisteringInterviewsTableAnnotationComposer a) f,
+  ) {
+    final $$MinisteringInterviewsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringInterviews,
+          getReferencedColumn: (t) => t.interviewerId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringInterviewsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.ministeringInterviews,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$MinisteringLeadersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MinisteringLeadersTable,
+          MinisteringLeaderRow,
+          $$MinisteringLeadersTableFilterComposer,
+          $$MinisteringLeadersTableOrderingComposer,
+          $$MinisteringLeadersTableAnnotationComposer,
+          $$MinisteringLeadersTableCreateCompanionBuilder,
+          $$MinisteringLeadersTableUpdateCompanionBuilder,
+          (MinisteringLeaderRow, $$MinisteringLeadersTableReferences),
+          MinisteringLeaderRow,
+          PrefetchHooks Function({
+            bool callingId,
+            bool ministeringInterviewsRefs,
+          })
+        > {
+  $$MinisteringLeadersTableTableManager(
+    _$AppDatabase db,
+    $MinisteringLeadersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MinisteringLeadersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MinisteringLeadersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MinisteringLeadersTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> callingId = const Value.absent(),
+                Value<String> displayLabel = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringLeadersCompanion(
+                id: id,
+                callingId: callingId,
+                displayLabel: displayLabel,
+                role: role,
+                isActive: isActive,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String callingId,
+                required String displayLabel,
+                required String role,
+                Value<bool> isActive = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringLeadersCompanion.insert(
+                id: id,
+                callingId: callingId,
+                displayLabel: displayLabel,
+                role: role,
+                isActive: isActive,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MinisteringLeadersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({callingId = false, ministeringInterviewsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (ministeringInterviewsRefs) db.ministeringInterviews,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (callingId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.callingId,
+                            referencedTable: $$MinisteringLeadersTableReferences
+                                ._callingIdTable(db),
+                            referencedColumn:
+                                $$MinisteringLeadersTableReferences
+                                    ._callingIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (ministeringInterviewsRefs)
+                        await $_getPrefetchedData<
+                          MinisteringLeaderRow,
+                          $MinisteringLeadersTable,
+                          MinisteringInterviewRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$MinisteringLeadersTableReferences
+                              ._ministeringInterviewsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$MinisteringLeadersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ministeringInterviewsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.interviewerId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$MinisteringLeadersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MinisteringLeadersTable,
+      MinisteringLeaderRow,
+      $$MinisteringLeadersTableFilterComposer,
+      $$MinisteringLeadersTableOrderingComposer,
+      $$MinisteringLeadersTableAnnotationComposer,
+      $$MinisteringLeadersTableCreateCompanionBuilder,
+      $$MinisteringLeadersTableUpdateCompanionBuilder,
+      (MinisteringLeaderRow, $$MinisteringLeadersTableReferences),
+      MinisteringLeaderRow,
+      PrefetchHooks Function({bool callingId, bool ministeringInterviewsRefs})
     >;
 typedef $$MinisteringCompanionshipsTableCreateCompanionBuilder =
     MinisteringCompanionshipsCompanion Function({
@@ -6723,6 +8464,7 @@ typedef $$MinisteringInterviewsTableCreateCompanionBuilder =
       required String id,
       required String callingId,
       required String companionshipId,
+      Value<String?> interviewerId,
       required DateTime completedAt,
       required DateTime createdAt,
       Value<int> rowid,
@@ -6732,6 +8474,7 @@ typedef $$MinisteringInterviewsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> callingId,
       Value<String> companionshipId,
+      Value<String?> interviewerId,
       Value<DateTime> completedAt,
       Value<DateTime> createdAt,
       Value<int> rowid,
@@ -6761,6 +8504,25 @@ final class $$MinisteringInterviewsTableReferences
       $_db.callings,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_callingIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $MinisteringLeadersTable _interviewerIdTable(_$AppDatabase db) =>
+      db.ministeringLeaders.createAlias(
+        'ministering_interviews__interviewer_id__ministering_leaders__id',
+      );
+
+  $$MinisteringLeadersTableProcessedTableManager? get interviewerId {
+    final $_column = $_itemColumn<String>('interviewer_id');
+    if ($_column == null) return null;
+    final manager = $$MinisteringLeadersTableTableManager(
+      $_db,
+      $_db.ministeringLeaders,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_interviewerIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -6811,6 +8573,29 @@ class $$MinisteringInterviewsTableFilterComposer
           }) => $$CallingsTableFilterComposer(
             $db: $db,
             $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$MinisteringLeadersTableFilterComposer get interviewerId {
+    final $$MinisteringLeadersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.interviewerId,
+      referencedTable: $db.ministeringLeaders,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MinisteringLeadersTableFilterComposer(
+            $db: $db,
+            $table: $db.ministeringLeaders,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6872,6 +8657,29 @@ class $$MinisteringInterviewsTableOrderingComposer
     );
     return composer;
   }
+
+  $$MinisteringLeadersTableOrderingComposer get interviewerId {
+    final $$MinisteringLeadersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.interviewerId,
+      referencedTable: $db.ministeringLeaders,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MinisteringLeadersTableOrderingComposer(
+            $db: $db,
+            $table: $db.ministeringLeaders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$MinisteringInterviewsTableAnnotationComposer
@@ -6921,6 +8729,30 @@ class $$MinisteringInterviewsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$MinisteringLeadersTableAnnotationComposer get interviewerId {
+    final $$MinisteringLeadersTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.interviewerId,
+          referencedTable: $db.ministeringLeaders,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringLeadersTableAnnotationComposer(
+                $db: $db,
+                $table: $db.ministeringLeaders,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
 }
 
 class $$MinisteringInterviewsTableTableManager
@@ -6936,7 +8768,7 @@ class $$MinisteringInterviewsTableTableManager
           $$MinisteringInterviewsTableUpdateCompanionBuilder,
           (MinisteringInterviewRow, $$MinisteringInterviewsTableReferences),
           MinisteringInterviewRow,
-          PrefetchHooks Function({bool callingId})
+          PrefetchHooks Function({bool callingId, bool interviewerId})
         > {
   $$MinisteringInterviewsTableTableManager(
     _$AppDatabase db,
@@ -6965,6 +8797,7 @@ class $$MinisteringInterviewsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> callingId = const Value.absent(),
                 Value<String> companionshipId = const Value.absent(),
+                Value<String?> interviewerId = const Value.absent(),
                 Value<DateTime> completedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6972,6 +8805,7 @@ class $$MinisteringInterviewsTableTableManager
                 id: id,
                 callingId: callingId,
                 companionshipId: companionshipId,
+                interviewerId: interviewerId,
                 completedAt: completedAt,
                 createdAt: createdAt,
                 rowid: rowid,
@@ -6981,6 +8815,7 @@ class $$MinisteringInterviewsTableTableManager
                 required String id,
                 required String callingId,
                 required String companionshipId,
+                Value<String?> interviewerId = const Value.absent(),
                 required DateTime completedAt,
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
@@ -6988,6 +8823,7 @@ class $$MinisteringInterviewsTableTableManager
                 id: id,
                 callingId: callingId,
                 companionshipId: companionshipId,
+                interviewerId: interviewerId,
                 completedAt: completedAt,
                 createdAt: createdAt,
                 rowid: rowid,
@@ -7000,7 +8836,7 @@ class $$MinisteringInterviewsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({callingId = false}) {
+          prefetchHooksCallback: ({callingId = false, interviewerId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -7031,6 +8867,17 @@ class $$MinisteringInterviewsTableTableManager
                             .id,
                       ) as T;
                     }
+                    if (interviewerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.interviewerId,
+                        referencedTable: $$MinisteringInterviewsTableReferences
+                            ._interviewerIdTable(db),
+                        referencedColumn: $$MinisteringInterviewsTableReferences
+                            ._interviewerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
 
                     return state;
                   },
@@ -7055,7 +8902,7 @@ typedef $$MinisteringInterviewsTableProcessedTableManager =
       $$MinisteringInterviewsTableUpdateCompanionBuilder,
       (MinisteringInterviewRow, $$MinisteringInterviewsTableReferences),
       MinisteringInterviewRow,
-      PrefetchHooks Function({bool callingId})
+      PrefetchHooks Function({bool callingId, bool interviewerId})
     >;
 typedef $$MinisteringInterviewParticipantsTableCreateCompanionBuilder =
     MinisteringInterviewParticipantsCompanion Function({
@@ -7261,6 +9108,387 @@ typedef $$MinisteringInterviewParticipantsTableProcessedTableManager =
       MinisteringInterviewParticipantRow,
       PrefetchHooks Function()
     >;
+typedef $$MinisteringAppointmentsTableCreateCompanionBuilder =
+    MinisteringAppointmentsCompanion Function({
+      required String id,
+      required String callingId,
+      required String companionshipId,
+      required String interviewerId,
+      required DateTime scheduledAt,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$MinisteringAppointmentsTableUpdateCompanionBuilder =
+    MinisteringAppointmentsCompanion Function({
+      Value<String> id,
+      Value<String> callingId,
+      Value<String> companionshipId,
+      Value<String> interviewerId,
+      Value<DateTime> scheduledAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$MinisteringAppointmentsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $MinisteringAppointmentsTable,
+          MinisteringAppointmentRow
+        > {
+  $$MinisteringAppointmentsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CallingsTable _callingIdTable(_$AppDatabase db) => db.callings
+      .createAlias('ministering_appointments__calling_id__callings__id');
+
+  $$CallingsTableProcessedTableManager get callingId {
+    final $_column = $_itemColumn<String>('calling_id')!;
+
+    final manager = $$CallingsTableTableManager(
+      $_db,
+      $_db.callings,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_callingIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MinisteringAppointmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $MinisteringAppointmentsTable> {
+  $$MinisteringAppointmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get interviewerId => $composableBuilder(
+    column: $table.interviewerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get scheduledAt => $composableBuilder(
+    column: $table.scheduledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CallingsTableFilterComposer get callingId {
+    final $$CallingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableFilterComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringAppointmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MinisteringAppointmentsTable> {
+  $$MinisteringAppointmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get interviewerId => $composableBuilder(
+    column: $table.interviewerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get scheduledAt => $composableBuilder(
+    column: $table.scheduledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CallingsTableOrderingComposer get callingId {
+    final $$CallingsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableOrderingComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringAppointmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MinisteringAppointmentsTable> {
+  $$MinisteringAppointmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get interviewerId => $composableBuilder(
+    column: $table.interviewerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get scheduledAt => $composableBuilder(
+    column: $table.scheduledAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CallingsTableAnnotationComposer get callingId {
+    final $$CallingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringAppointmentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MinisteringAppointmentsTable,
+          MinisteringAppointmentRow,
+          $$MinisteringAppointmentsTableFilterComposer,
+          $$MinisteringAppointmentsTableOrderingComposer,
+          $$MinisteringAppointmentsTableAnnotationComposer,
+          $$MinisteringAppointmentsTableCreateCompanionBuilder,
+          $$MinisteringAppointmentsTableUpdateCompanionBuilder,
+          (MinisteringAppointmentRow, $$MinisteringAppointmentsTableReferences),
+          MinisteringAppointmentRow,
+          PrefetchHooks Function({bool callingId})
+        > {
+  $$MinisteringAppointmentsTableTableManager(
+    _$AppDatabase db,
+    $MinisteringAppointmentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MinisteringAppointmentsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MinisteringAppointmentsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MinisteringAppointmentsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> callingId = const Value.absent(),
+                Value<String> companionshipId = const Value.absent(),
+                Value<String> interviewerId = const Value.absent(),
+                Value<DateTime> scheduledAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringAppointmentsCompanion(
+                id: id,
+                callingId: callingId,
+                companionshipId: companionshipId,
+                interviewerId: interviewerId,
+                scheduledAt: scheduledAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String callingId,
+                required String companionshipId,
+                required String interviewerId,
+                required DateTime scheduledAt,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringAppointmentsCompanion.insert(
+                id: id,
+                callingId: callingId,
+                companionshipId: companionshipId,
+                interviewerId: interviewerId,
+                scheduledAt: scheduledAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MinisteringAppointmentsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({callingId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (callingId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.callingId,
+                        referencedTable:
+                            $$MinisteringAppointmentsTableReferences
+                                ._callingIdTable(db),
+                        referencedColumn:
+                            $$MinisteringAppointmentsTableReferences
+                                ._callingIdTable(db)
+                                .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MinisteringAppointmentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MinisteringAppointmentsTable,
+      MinisteringAppointmentRow,
+      $$MinisteringAppointmentsTableFilterComposer,
+      $$MinisteringAppointmentsTableOrderingComposer,
+      $$MinisteringAppointmentsTableAnnotationComposer,
+      $$MinisteringAppointmentsTableCreateCompanionBuilder,
+      $$MinisteringAppointmentsTableUpdateCompanionBuilder,
+      (MinisteringAppointmentRow, $$MinisteringAppointmentsTableReferences),
+      MinisteringAppointmentRow,
+      PrefetchHooks Function({bool callingId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7277,6 +9505,8 @@ class $AppDatabaseManager {
       $$AppPreferencesTableTableManager(_db, _db.appPreferences);
   $$MinisteringBrothersTableTableManager get ministeringBrothers =>
       $$MinisteringBrothersTableTableManager(_db, _db.ministeringBrothers);
+  $$MinisteringLeadersTableTableManager get ministeringLeaders =>
+      $$MinisteringLeadersTableTableManager(_db, _db.ministeringLeaders);
   $$MinisteringCompanionshipsTableTableManager get ministeringCompanionships =>
       $$MinisteringCompanionshipsTableTableManager(
         _db,
@@ -7295,5 +9525,10 @@ class $AppDatabaseManager {
       $$MinisteringInterviewParticipantsTableTableManager(
         _db,
         _db.ministeringInterviewParticipants,
+      );
+  $$MinisteringAppointmentsTableTableManager get ministeringAppointments =>
+      $$MinisteringAppointmentsTableTableManager(
+        _db,
+        _db.ministeringAppointments,
       );
 }
