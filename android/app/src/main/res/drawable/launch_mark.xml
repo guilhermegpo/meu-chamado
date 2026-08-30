@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:antialias="true"
-    android:filter="true"
-    android:gravity="fill"
-    android:src="@drawable/meu_chamado_icon" />
+<!-- A marca do splash usa o mesmo vetor da frente do ícone: mesma identidade,
+     nítida em qualquer densidade e sem carregar o raster mestre só para
+     desenhar 120dp. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_launcher_foreground"
+    android:inset="0dp" />

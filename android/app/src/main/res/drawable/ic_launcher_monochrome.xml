@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Camada monocromática dos ícones temáticos do Android 13+.
+
+    Só o M e a meia-lua. O templo fica de fora de propósito: em uma cor só ele
+    se fundiria ao M e o resultado viraria um borrão — a silhueta que precisa
+    sobreviver ao tamanho pequeno é a da família Apps Meu.
+
+    O sistema pinta esta camada, então a cor aqui é apenas o preto opaco que
+    ele espera encontrar.
+    A arte inteira vive dentro de um grupo escalado: o canvas do ícone
+    adaptativo tem 108dp, mas só os 72dp centrais sobrevivem a qualquer
+    máscara de launcher. Sem a redução, o M encostava na borda e as pontas da
+    meia-lua eram cortadas. Escalar o grupo mantém as coordenadas legíveis e
+    faz a espessura do traço acompanhar junto.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#FF000000">
+
+    <group
+        android:pivotX="54" android:pivotY="54"
+        android:scaleX="0.68" android:scaleY="0.68">
+        <path
+            android:strokeColor="#FF000000"
+            android:strokeWidth="11.4"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M28.7,68.9 L28.7,27.5 L54,52 L79.3,27.5 L79.3,68.9" />
+
+        <path android:fillColor="#FF000000" android:fillType="nonZero"
+            android:pathData="M18.5,70.4
+                C22.2,82.6 36.4,89.6 54,89.6
+                C71.6,89.6 85.8,82.6 89.5,70.4
+                C83.6,79.4 70.2,84.4 54,84.4
+                C37.8,84.4 24.4,79.4 18.5,70.4 Z" />
+    </group>
+</vector>

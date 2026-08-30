@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
 
@@ -10,6 +12,11 @@ class AppsMeuMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final devicePixelRatio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    // O mestre tem mais de mil pixels de lado; sem isto ele seria decodificado
+    // inteiro na memória para desenhar poucas dezenas de pontos na tela.
+    final decodeSide = math.max(1, (size * devicePixelRatio).ceil());
+
     return Semantics(
       label: 'Apps Meu',
       image: true,
@@ -27,7 +34,9 @@ class AppsMeuMark extends StatelessWidget {
               child: Image.asset(
                 'assets/branding/meu_chamado_icon_master.png',
                 fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
+                filterQuality: FilterQuality.medium,
+                cacheWidth: decodeSide,
+                cacheHeight: decodeSide,
               ),
             ),
           ),
