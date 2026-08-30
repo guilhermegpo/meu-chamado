@@ -76,3 +76,49 @@ class MinisteringPrivacyNote extends StatelessWidget {
     );
   }
 }
+
+/// Falha de leitura com saída.
+///
+/// Sem o botão, uma falha transitória deixava a tela num beco: a mensagem
+/// aparecia e a única saída era sair do módulo e entrar de novo. O texto vem
+/// de `userErrorMessage`, então nunca é um stack trace.
+class MinisteringErrorState extends StatelessWidget {
+  const MinisteringErrorState({
+    required this.message,
+    required this.onRetry,
+    super.key,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(Spacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_outlined, size: 44, color: scheme.outline),
+            const SizedBox(height: Spacing.md),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            const SizedBox(height: Spacing.lg),
+            FilledButton.icon(
+              key: const Key('ministering-retry-button'),
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -60,17 +60,9 @@ class MinisteringDashboardScreen extends ConsumerWidget {
             ref.invalidate(ministeringModuleProvider(callingId)),
         child: module.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  userErrorMessage(error),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+          error: (error, _) => MinisteringErrorState(
+            message: userErrorMessage(error),
+            onRetry: () => ref.invalidate(ministeringModuleProvider(callingId)),
           ),
           data: (state) => _buildBody(context, ref, state),
         ),

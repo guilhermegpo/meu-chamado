@@ -55,7 +55,11 @@ class _MinisteringInterviewsScreenState
               ),
         body: module.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _CenteredMessage(text: userErrorMessage(error)),
+          error: (error, _) => MinisteringErrorState(
+            message: userErrorMessage(error),
+            onRetry: () =>
+                ref.invalidate(ministeringModuleProvider(widget.callingId)),
+          ),
           data: (state) => companionship == null
               ? const _CenteredMessage(
                   text: 'Esta dupla não existe mais neste chamado.',
@@ -119,7 +123,11 @@ class _MinisteringInterviewsScreenState
             padding: EdgeInsets.symmetric(vertical: 32),
             child: Center(child: CircularProgressIndicator()),
           ),
-          error: (error, _) => _CenteredMessage(text: userErrorMessage(error)),
+          error: (error, _) => MinisteringErrorState(
+            message: userErrorMessage(error),
+            onRetry: () =>
+                ref.invalidate(ministeringInterviewsProvider(_query)),
+          ),
           data: (interviews) => Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

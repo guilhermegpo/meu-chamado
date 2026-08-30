@@ -58,11 +58,10 @@ class _MinisteringCompanionshipsScreenState
             : null,
         body: module.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(userErrorMessage(error), textAlign: TextAlign.center),
-            ),
+          error: (error, _) => MinisteringErrorState(
+            message: userErrorMessage(error),
+            onRetry: () =>
+                ref.invalidate(ministeringModuleProvider(widget.callingId)),
           ),
           data: _buildList,
         ),
