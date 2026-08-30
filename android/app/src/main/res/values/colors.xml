@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="launch_background_color">#0B2239</color>
+    <!-- Mesmo navy do inicio do gradiente do splash em Flutter: sem isso a
+         passagem do splash nativo para a tela do app troca de tom. -->
+    <color name="launch_background_color">#071B30</color>
     <color name="launch_accent_color">#0D9488</color>
     <!-- Navy do quadrado da identidade aprovada. -->
     <color name="brand_icon_background">#0D2036</color>
