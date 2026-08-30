@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/callings/domain/calling_catalog.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_authorization.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class ManageCallingsScreen extends ConsumerStatefulWidget {
   const ManageCallingsScreen({
@@ -72,17 +74,38 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
               )
             : null,
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 104),
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.md,
+            Spacing.xs,
+            Spacing.md,
+            Spacing.fabClearance,
+          ),
           children: [
-            Text(
-              _target.name,
-              style: Theme.of(context).textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Chamados com módulo pronto abrem suas rotinas pela tela '
-              'inicial. Os demais ainda estão em desenvolvimento.',
+            AppSurface(
+              gradient: AppGradients.soft(Theme.of(context).brightness),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppIconTile(icon: Icons.assignment_ind_outlined),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _target.name,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: Spacing.xs),
+                        const Text(
+                          'Módulos prontos abrem suas rotinas pela tela inicial; '
+                          'os demais continuam sinalizados como futuros.',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             _SectionTitle(label: 'Ativos', count: active.length),
@@ -246,21 +269,8 @@ class _SectionTitle extends StatelessWidget {
   final int count;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ),
-      Semantics(
-        label: '$count itens',
-        child: Chip(label: Text('$count')),
-      ),
-    ],
-  );
+  Widget build(BuildContext context) =>
+      AppSectionHeader(title: label, count: count);
 }
 
 class _CallingCard extends StatelessWidget {
@@ -282,7 +292,10 @@ class _CallingCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       child: Row(
         children: [
-          const Icon(Icons.assignment_turned_in_outlined),
+          const AppIconTile(
+            icon: Icons.assignment_turned_in_outlined,
+            size: 44,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -320,16 +333,13 @@ class _EmptyState extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.secondary),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text)),
-        ],
-      ),
+  Widget build(BuildContext context) => AppSurface(
+    child: Row(
+      children: [
+        AppIconTile(icon: icon),
+        const SizedBox(width: Spacing.sm),
+        Expanded(child: Text(text)),
+      ],
     ),
   );
 }

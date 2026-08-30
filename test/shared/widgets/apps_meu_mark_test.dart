@@ -24,15 +24,15 @@ void main() {
       ),
     );
 
-    final painted = tester.getSize(
+    final image = tester.getSize(
       find.descendant(
         of: find.byType(AppsMeuMark),
-        matching: find.byType(CustomPaint),
+        matching: find.byType(Image),
       ),
     );
 
-    expect(painted.width, 64);
-    expect(painted.height, 64);
+    expect(image.width, 64);
+    expect(image.height, 64);
   });
 
   testWidgets('expõe rótulo semântico único para leitores de tela', (

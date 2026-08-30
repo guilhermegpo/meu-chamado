@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_brothers_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Composição das duplas de ministração.
 ///
@@ -75,7 +77,12 @@ class _MinisteringCompanionshipsScreenState
         .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.md,
+        Spacing.md,
+        Spacing.fabClearance,
+      ),
       children: [
         if (state.activeBrothers.length < 2)
           const MinisteringEmptyState(
@@ -361,39 +368,52 @@ class _CompanionshipCard extends StatelessWidget {
         .join(' · ');
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    companionship.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (companionship.displayLabel != null) ...[
-                    const SizedBox(height: 4),
-                    Text(members),
-                  ],
-                ],
+      child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(
+          Spacing.md,
+          Spacing.xs,
+          Spacing.xs,
+          Spacing.xs,
+        ),
+        leading: const AppIconTile(icon: Icons.people_outline, size: 44),
+        title: Text(companionship.title),
+        subtitle: companionship.displayLabel != null
+            ? Text(members)
+            : Text(toggleLabel == 'Desativar dupla' ? 'Ativa' : 'Inativa'),
+        trailing: PopupMenuButton<_CompanionshipAction>(
+          tooltip: 'Ações da dupla',
+          onSelected: (action) => switch (action) {
+            _CompanionshipAction.edit => onEdit?.call(),
+            _CompanionshipAction.toggle => onToggle?.call(),
+            _CompanionshipAction.delete => onDelete?.call(),
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: _CompanionshipAction.edit,
+              enabled: onEdit != null,
+              child: const ListTile(
+                leading: Icon(Icons.edit_outlined),
+                title: Text('Editar dupla'),
+                contentPadding: EdgeInsets.zero,
               ),
             ),
-            IconButton(
-              tooltip: 'Editar dupla',
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined),
+            PopupMenuItem(
+              value: _CompanionshipAction.toggle,
+              enabled: onToggle != null,
+              child: ListTile(
+                leading: Icon(toggleIcon),
+                title: Text(toggleLabel),
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
-            IconButton(
-              tooltip: toggleLabel,
-              onPressed: onToggle,
-              icon: Icon(toggleIcon),
-            ),
-            IconButton(
-              tooltip: 'Verificar exclusão da dupla',
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete_outline),
+            PopupMenuItem(
+              value: _CompanionshipAction.delete,
+              enabled: onDelete != null,
+              child: const ListTile(
+                leading: Icon(Icons.delete_outline),
+                title: Text('Verificar exclusão da dupla'),
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
           ],
         ),
@@ -401,6 +421,8 @@ class _CompanionshipCard extends StatelessWidget {
     );
   }
 }
+
+enum _CompanionshipAction { edit, toggle, delete }
 
 /// Composição escolhida no editor, antes de ir para o repositório.
 class _CompanionshipDraft {

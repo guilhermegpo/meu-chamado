@@ -40,6 +40,11 @@ void main() {
   Future<void> select(WidgetTester tester, String brotherId) =>
       tapVisible(tester, find.byKey(Key('companionship-member-$brotherId')));
 
+  Future<void> chooseAction(WidgetTester tester, String label) async {
+    await tapVisible(tester, find.byTooltip('Ações da dupla').first);
+    await tapVisible(tester, find.text(label).last);
+  }
+
   testWidgets('avisa que faltam irmãos antes de montar a primeira dupla', (
     tester,
   ) async {
@@ -122,7 +127,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Editar dupla'));
+    await chooseAction(tester, 'Editar dupla');
     await select(tester, ids[1]);
     await select(tester, ids[2]);
     await tapVisible(tester, find.byKey(const Key('companionship-confirm')));
@@ -141,11 +146,11 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Desativar dupla'));
+    await chooseAction(tester, 'Desativar dupla');
 
     expect(find.text('Irmão A · Irmão B'), findsOneWidget);
     expect(find.text('Nenhuma dupla montada.'), findsOneWidget);
-    expect(find.byTooltip('Reativar dupla'), findsOneWidget);
+    expect(find.text('Inativa'), findsOneWidget);
   });
 
   testWidgets('editor avisa quando um integrante ficou inativo', (
@@ -163,7 +168,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Editar dupla'));
+    await chooseAction(tester, 'Editar dupla');
 
     expect(find.textContaining('está inativo'), findsOneWidget);
     expect(find.byKey(Key('companionship-member-${ids[1]}')), findsNothing);
@@ -185,7 +190,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Verificar exclusão da dupla'));
+    await chooseAction(tester, 'Verificar exclusão da dupla');
     expect(find.text('Excluir dupla?'), findsOneWidget);
     await tapVisible(
       tester,
@@ -214,7 +219,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Verificar exclusão da dupla'));
+    await chooseAction(tester, 'Verificar exclusão da dupla');
 
     expect(find.text('Exclusão indisponível'), findsOneWidget);
     expect(find.textContaining('1 entrevista registrada'), findsOneWidget);
@@ -241,9 +246,9 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Reativar dupla'));
+    await chooseAction(tester, 'Reativar dupla');
 
     expect(find.textContaining('irmão inativo'), findsOneWidget);
-    expect(find.byTooltip('Reativar dupla'), findsOneWidget);
+    expect(find.text('Inativa'), findsOneWidget);
   });
 }

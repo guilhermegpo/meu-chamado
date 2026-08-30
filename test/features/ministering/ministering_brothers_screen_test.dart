@@ -29,6 +29,11 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('brother-label-confirm')));
   }
 
+  Future<void> chooseAction(WidgetTester tester, String label) async {
+    await tapVisible(tester, find.byTooltip('Ações do cadastro').first);
+    await tapVisible(tester, find.text(label).last);
+  }
+
   testWidgets('parte do estado vazio e lembra a política de privacidade', (
     tester,
   ) async {
@@ -64,7 +69,7 @@ void main() {
     await pump(tester);
     await addBrother(tester, 'Irmão A');
 
-    await tapVisible(tester, find.byTooltip('Editar identificação'));
+    await chooseAction(tester, 'Editar identificação');
     await tester.enterText(
       find.byKey(const Key('brother-label-field')),
       'Irmão B',
@@ -81,21 +86,21 @@ void main() {
     await pump(tester);
     await addBrother(tester, 'Irmão A');
 
-    await tapVisible(tester, find.byTooltip('Desativar'));
+    await chooseAction(tester, 'Desativar');
 
     expect(find.text('Irmão A'), findsOneWidget);
     expect(find.textContaining('Nenhum irmão cadastrado'), findsOneWidget);
-    expect(find.byTooltip('Reativar'), findsOneWidget);
+    expect(find.text('Inativo'), findsOneWidget);
     expect(find.textContaining('continuam nas'), findsOneWidget);
   });
 
   testWidgets('reativar devolve o irmão para a seleção ativa', (tester) async {
     await pump(tester);
     await addBrother(tester, 'Irmão A');
-    await tapVisible(tester, find.byTooltip('Desativar'));
-    await tapVisible(tester, find.byTooltip('Reativar'));
+    await chooseAction(tester, 'Desativar');
+    await chooseAction(tester, 'Reativar');
 
-    expect(find.byTooltip('Desativar'), findsOneWidget);
+    expect(find.text('Ativo'), findsOneWidget);
     expect(find.text('Nenhum irmão inativo.'), findsOneWidget);
   });
 
@@ -104,7 +109,7 @@ void main() {
     await addBrother(tester, 'Irmão A');
     await settleSnackBars(tester);
 
-    await tapVisible(tester, find.byTooltip('Verificar exclusão'));
+    await chooseAction(tester, 'Verificar exclusão');
     expect(find.text('Excluir cadastro?'), findsOneWidget);
     await tapVisible(tester, find.byKey(const Key('confirm-delete-brother')));
 
@@ -130,7 +135,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Verificar exclusão').first);
+    await chooseAction(tester, 'Verificar exclusão');
 
     expect(find.text('Exclusão indisponível'), findsOneWidget);
     expect(find.textContaining('compõe 1 dupla'), findsOneWidget);

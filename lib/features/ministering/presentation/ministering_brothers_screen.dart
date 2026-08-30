@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Cadastro dos irmãos que podem compor duplas.
 ///
@@ -59,7 +61,12 @@ class _MinisteringBrothersScreenState
         .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.md,
+        Spacing.md,
+        Spacing.fabClearance,
+      ),
       children: [
         const MinisteringPrivacyNote(
           text:
@@ -287,36 +294,58 @@ class _BrotherCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              brother.displayLabel,
-              style: Theme.of(context).textTheme.titleMedium,
+    child: ListTile(
+      contentPadding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.xs,
+        Spacing.xs,
+        Spacing.xs,
+      ),
+      leading: const AppIconTile(icon: Icons.person_outline, size: 44),
+      title: Text(brother.displayLabel),
+      subtitle: Text(toggleLabel == 'Desativar' ? 'Ativo' : 'Inativo'),
+      trailing: PopupMenuButton<_BrotherAction>(
+        tooltip: 'Ações do cadastro',
+        onSelected: (action) => switch (action) {
+          _BrotherAction.edit => onEdit?.call(),
+          _BrotherAction.toggle => onToggle?.call(),
+          _BrotherAction.delete => onDelete?.call(),
+        },
+        itemBuilder: (_) => [
+          PopupMenuItem(
+            value: _BrotherAction.edit,
+            enabled: onEdit != null,
+            child: const ListTile(
+              leading: Icon(Icons.edit_outlined),
+              title: Text('Editar identificação'),
+              contentPadding: EdgeInsets.zero,
             ),
           ),
-          IconButton(
-            tooltip: 'Editar identificação',
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined),
+          PopupMenuItem(
+            value: _BrotherAction.toggle,
+            enabled: onToggle != null,
+            child: ListTile(
+              leading: Icon(toggleIcon),
+              title: Text(toggleLabel),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-          IconButton(
-            tooltip: toggleLabel,
-            onPressed: onToggle,
-            icon: Icon(toggleIcon),
-          ),
-          IconButton(
-            tooltip: 'Verificar exclusão',
-            onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline),
+          PopupMenuItem(
+            value: _BrotherAction.delete,
+            enabled: onDelete != null,
+            child: const ListTile(
+              leading: Icon(Icons.delete_outline),
+              title: Text('Verificar exclusão'),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
         ],
       ),
     ),
   );
 }
+
+enum _BrotherAction { edit, toggle, delete }
 
 class _BrotherLabelDialog extends StatefulWidget {
   const _BrotherLabelDialog({required this.title, this.initial});

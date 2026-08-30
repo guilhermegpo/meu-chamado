@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Cabeçalho de seção com a contagem ao lado.
 ///
@@ -15,22 +17,8 @@ class MinisteringSectionTitle extends StatelessWidget {
   final int count;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.titleLarge
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ),
-      Semantics(
-        label: '$label: $count',
-        excludeSemantics: true,
-        child: Chip(label: Text('$count')),
-      ),
-    ],
-  );
+  Widget build(BuildContext context) =>
+      AppSectionHeader(title: label, count: count);
 }
 
 class MinisteringEmptyState extends StatelessWidget {
@@ -44,16 +32,14 @@ class MinisteringEmptyState extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.secondary),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text)),
-        ],
-      ),
+  Widget build(BuildContext context) => AppSurface(
+    padding: const EdgeInsets.all(Spacing.md),
+    child: Row(
+      children: [
+        AppIconTile(icon: icon, size: 42),
+        const SizedBox(width: Spacing.sm),
+        Expanded(child: Text(text)),
+      ],
     ),
   );
 }
@@ -70,12 +56,9 @@ class MinisteringPrivacyNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return AppSurface(
+      padding: const EdgeInsets.all(Spacing.md),
+      gradient: AppGradients.soft(Theme.of(context).brightness),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

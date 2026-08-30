@@ -8,12 +8,6 @@ import 'package:meu_chamado/app/theme/app_tokens.dart';
 /// que serve de tinta no claro não teria contraste sobre o carvão, então o
 /// papel de primária passa para o azul-céu.
 abstract final class AppTheme {
-  static const _navy = Color(0xFF0B2239);
-  static const _teal = Color(0xFF0D9488);
-  static const _blue = Color(0xFF2F6FED);
-  static const _offWhite = Color(0xFFF7F8FA);
-  static const _charcoal = Color(0xFF101820);
-
   static const _skyBlue = Color(0xFF8EC9FF);
   static const _tealLight = Color(0xFF5EEAD4);
 
@@ -25,29 +19,27 @@ abstract final class AppTheme {
 
     final colorScheme =
         ColorScheme.fromSeed(
-          seedColor: _teal,
+          seedColor: AppColors.teal600,
           brightness: brightness,
-          primary: isLight ? _navy : _skyBlue,
-          onPrimary: isLight ? Colors.white : _navy,
-          secondary: isLight ? _teal : _tealLight,
-          tertiary: _blue,
-          surface: isLight ? _offWhite : _charcoal,
+          primary: isLight ? AppColors.navy900 : _skyBlue,
+          onPrimary: isLight ? Colors.white : AppColors.navy950,
+          secondary: isLight ? AppColors.teal600 : _tealLight,
+          tertiary: AppColors.blue600,
+          surface: isLight ? AppColors.offWhite : AppColors.charcoal,
         ).copyWith(
           // Os degraus de superfície vêm declarados nos dois temas para os
           // cards não dependerem do tom que o Material derivaria sozinho.
-          surfaceContainerLowest: isLight
-              ? Colors.white
-              : const Color(0xFF0B121A),
-          surfaceContainerLow: isLight ? Colors.white : const Color(0xFF141D27),
+          surfaceContainerLowest: isLight ? Colors.white : AppColors.navy950,
+          surfaceContainerLow: isLight ? Colors.white : const Color(0xFF121F2B),
           surfaceContainer: isLight
-              ? const Color(0xFFF1F3F7)
-              : const Color(0xFF18222D),
+              ? const Color(0xFFF0F4F8)
+              : const Color(0xFF172633),
           surfaceContainerHigh: isLight
-              ? const Color(0xFFE9ECF2)
-              : const Color(0xFF1E2933),
+              ? const Color(0xFFE7EDF3)
+              : const Color(0xFF1D2E3C),
           surfaceContainerHighest: isLight
-              ? const Color(0xFFE2E6EE)
-              : const Color(0xFF243039),
+              ? const Color(0xFFDDE6EE)
+              : const Color(0xFF253845),
         );
 
     final baseText = isLight
@@ -107,7 +99,9 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: Radii.surfaceBorder,
-          side: BorderSide(color: colorScheme.outlineVariant),
+          side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.72),
+          ),
         ),
       ),
       // O tamanho mínimo declara altura **e** largura. `Size.fromHeight` é
@@ -198,7 +192,9 @@ abstract final class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: isLight ? _navy : colorScheme.surfaceContainerHighest,
+        backgroundColor: isLight
+            ? AppColors.navy900
+            : colorScheme.surfaceContainerHighest,
         contentTextStyle: baseText.bodyMedium?.copyWith(
           color: isLight ? Colors.white : colorScheme.onSurface,
         ),
@@ -224,8 +220,16 @@ abstract final class AppTheme {
         thickness: 1,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: colorScheme.primary,
+        color: colorScheme.secondary,
         linearTrackColor: colorScheme.secondaryContainer,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: colorScheme.surfaceContainerLow,
+        indicatorColor: colorScheme.secondaryContainer,
+        elevation: 0,
+        labelTextStyle: WidgetStatePropertyAll(
+          baseText.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(
@@ -245,6 +249,16 @@ abstract final class AppTheme {
   /// Títulos ganham peso e `height` menor para virarem âncora de leitura; o
   /// corpo ganha entrelinha para textos explicativos não ficarem apertados.
   static TextTheme _textTheme(TextTheme base) => base.copyWith(
+    displaySmall: base.displaySmall?.copyWith(
+      fontWeight: FontWeight.w800,
+      height: 1.02,
+      letterSpacing: -1.2,
+    ),
+    headlineMedium: base.headlineMedium?.copyWith(
+      fontWeight: FontWeight.w800,
+      height: 1.1,
+      letterSpacing: -0.7,
+    ),
     headlineSmall: base.headlineSmall?.copyWith(
       fontWeight: FontWeight.w800,
       height: 1.15,

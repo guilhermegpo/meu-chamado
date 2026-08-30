@@ -8,6 +8,7 @@ import 'package:meu_chamado/features/ministering/presentation/ministering_brothe
 import 'package:meu_chamado/features/ministering/presentation/ministering_companionships_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_interviews_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Painel do trimestre corrente.
 ///
@@ -91,12 +92,41 @@ class MinisteringDashboardScreen extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       children: [
-        Text(
-          callingTitle,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w700),
+        AppSurface(
+          gradient: AppGradients.soft(Theme.of(context).brightness),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const AppIconTile(icon: Icons.volunteer_activism_outlined),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Painel trimestral',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.xxs),
+                    Text(
+                      callingTitle,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: Spacing.xs),
+                    const Text(
+                      'Acompanhe o que falta e registre somente o trabalho '
+                      'administrativo necessário.',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Spacing.md),
         _QuarterCard(summary: state.summary),
         const SizedBox(height: 24),
         if (state.activeCompanionships.isEmpty)
@@ -181,13 +211,32 @@ class _QuarterCard extends StatelessWidget {
     final theme = Theme.of(context);
     final total = summary.activeCompanionships;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+    return AppSurface(
+      gradient: AppGradients.darkHero,
+      border: const Border(),
+      shadow: true,
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(color: Colors.white),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(summary.quarter.label, style: theme.textTheme.titleLarge),
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_month_outlined,
+                  color: AppColors.cyan400,
+                ),
+                const SizedBox(width: Spacing.xs),
+                Expanded(
+                  child: Text(
+                    summary.quarter.label,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.82),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             // A contagem vem antes da barra e a barra não carrega percentual:
             // o número mede o trabalho administrativo do secretário, não o
@@ -201,16 +250,24 @@ class _QuarterCard extends StatelessWidget {
                         'dupla${total == 1 ? '' : 's'} '
                         'entrevistada${total == 1 ? '' : 's'}',
               style: theme.textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                key: const Key('quarter-progress'),
-                value: summary.progress,
-                minHeight: 10,
+            TweenAnimationBuilder<double>(
+              tween: Tween(end: summary.progress),
+              duration: Motion.slow,
+              curve: Motion.enter,
+              builder: (context, value, _) => ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: LinearProgressIndicator(
+                  key: const Key('quarter-progress'),
+                  value: value,
+                  minHeight: 10,
+                  color: AppColors.cyan400,
+                  backgroundColor: Colors.white.withValues(alpha: 0.14),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -219,6 +276,7 @@ class _QuarterCard extends StatelessWidget {
                   ? 'Nada pendente por aqui.'
                   : '${summary.pending} dupla${summary.pending == 1 ? '' : 's'} '
                         'ainda sem entrevista neste trimestre.',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.76)),
             ),
           ],
         ),
@@ -249,13 +307,19 @@ class _CompanionshipRow extends StatelessWidget {
       child: ListTile(
         key: Key('dashboard-companionship-${companionship.id}'),
         contentPadding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
-        leading: Icon(
-          interviewed ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: interviewed ? scheme.primary : scheme.outline,
+        leading: AppIconTile(
+          icon: interviewed
+              ? Icons.check_circle_outline
+              : Icons.schedule_outlined,
+          size: 44,
         ),
         title: Text(companionship.title),
         subtitle: companionship.displayLabel == null ? null : Text(members),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 18,
+          color: scheme.onSurfaceVariant,
+        ),
         onTap: onTap,
       ),
     );
@@ -275,44 +339,41 @@ class _StartHere extends StatelessWidget {
   final VoidCallback onOpenCompanionships;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Comece por aqui',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            hasBrothers
-                ? 'Os irmãos já estão cadastrados. Monte as duplas para '
-                      'acompanhar as entrevistas do trimestre.'
-                : 'Cadastre os irmãos ministradores e depois monte as duplas.',
-          ),
-          const SizedBox(height: Spacing.md),
-          Wrap(
-            spacing: Spacing.xs,
-            runSpacing: Spacing.xs,
-            children: [
-              OutlinedButton.icon(
-                key: const Key('start-brothers-button'),
-                onPressed: onOpenBrothers,
-                icon: const Icon(Icons.group_outlined),
-                label: const Text('Irmãos'),
-              ),
-              FilledButton.icon(
-                key: const Key('start-companionships-button'),
-                onPressed: hasBrothers ? onOpenCompanionships : null,
-                icon: const Icon(Icons.people_outline),
-                label: const Text('Duplas'),
-              ),
-            ],
-          ),
-        ],
-      ),
+  Widget build(BuildContext context) => AppSurface(
+    gradient: AppGradients.soft(Theme.of(context).brightness),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppIconTile(icon: Icons.route_outlined, size: 48),
+        const SizedBox(height: Spacing.md),
+        Text('Comece por aqui', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 8),
+        Text(
+          hasBrothers
+              ? 'Os irmãos já estão cadastrados. Monte as duplas para '
+                    'acompanhar as entrevistas do trimestre.'
+              : 'Cadastre os irmãos ministradores e depois monte as duplas.',
+        ),
+        const SizedBox(height: Spacing.md),
+        Wrap(
+          spacing: Spacing.xs,
+          runSpacing: Spacing.xs,
+          children: [
+            OutlinedButton.icon(
+              key: const Key('start-brothers-button'),
+              onPressed: onOpenBrothers,
+              icon: const Icon(Icons.group_outlined),
+              label: const Text('Irmãos'),
+            ),
+            FilledButton.icon(
+              key: const Key('start-companionships-button'),
+              onPressed: hasBrothers ? onOpenCompanionships : null,
+              icon: const Icon(Icons.people_outline),
+              label: const Text('Duplas'),
+            ),
+          ],
+        ),
+      ],
     ),
   );
 }

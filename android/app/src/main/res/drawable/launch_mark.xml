@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M24,76L24,32L54,58L84,32L84,76"
-        android:strokeColor="#FFFFFF"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="10" />
-    <path
-        android:fillColor="@color/launch_accent_color"
-        android:pathData="M84,14a8,8 0,1 0,0 16a8,8 0,1 0,0 -16" />
-</vector>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:antialias="true"
+    android:filter="true"
+    android:gravity="fill"
+    android:src="@drawable/meu_chamado_icon" />

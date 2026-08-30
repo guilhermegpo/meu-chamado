@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Histórico de entrevistas de uma dupla.
 ///
@@ -72,44 +74,43 @@ class _MinisteringInterviewsScreenState
     final interviewed = state.isInterviewed(companionship.id);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.md,
+        Spacing.md,
+        Spacing.fabClearance,
+      ),
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        AppSurface(
+          gradient: AppGradients.soft(Theme.of(context).brightness),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                companionship.title,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              // Sem rótulo próprio, o título já é a lista de integrantes:
+              // repeti-la abaixo mostraria a mesma linha duas vezes.
+              if (companionship.displayLabel != null) ...[
+                const SizedBox(height: 6),
                 Text(
-                  companionship.title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                // Sem rótulo próprio, o título já é a lista de integrantes:
-                // repeti-la abaixo mostraria a mesma linha duas vezes.
-                if (companionship.displayLabel != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    companionship.members
-                        .map((member) => member.displayLabel)
-                        .join(' · '),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Chip(
-                  avatar: Icon(
-                    interviewed
-                        ? Icons.check_circle_outline
-                        : Icons.schedule_outlined,
-                    size: 18,
-                  ),
-                  label: Text(
-                    interviewed
-                        ? 'Entrevistada no ${state.summary.quarter.label}'
-                        : 'Pendente no ${state.summary.quarter.label}',
-                  ),
+                  companionship.members
+                      .map((member) => member.displayLabel)
+                      .join(' · '),
                 ),
               ],
-            ),
+              const SizedBox(height: 12),
+              AppStatusPill(
+                positive: interviewed,
+                icon: interviewed
+                    ? Icons.check_circle_outline
+                    : Icons.schedule_outlined,
+                label: interviewed
+                    ? 'Entrevistada no ${state.summary.quarter.label}'
+                    : 'Pendente no ${state.summary.quarter.label}',
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
@@ -306,33 +307,39 @@ class _InterviewCard extends StatelessWidget {
         .join(' · ');
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    MaterialLocalizations.of(context)
-                        .formatMediumDate(interview.completedAt),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    participants.isEmpty
-                        ? 'Participantes fora da composição atual'
-                        : participants,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    interview.quarter.label,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+      child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(
+          Spacing.md,
+          Spacing.xs,
+          Spacing.xs,
+          Spacing.xs,
+        ),
+        leading: const AppIconTile(icon: Icons.event_available_outlined),
+        title: Text(
+          MaterialLocalizations.of(context)
+              .formatMediumDate(interview.completedAt),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: Spacing.xxs),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                participants.isEmpty
+                    ? 'Participantes fora da composição atual'
+                    : participants,
               ),
-            ),
+              Text(
+                interview.quarter.label,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        isThreeLine: true,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             IconButton(
               tooltip: 'Corrigir entrevista',
               onPressed: onEdit,
