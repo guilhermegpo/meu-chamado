@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
-import 'package:meu_chamado/features/home/presentation/home_screen.dart';
+import 'package:meu_chamado/app/shell/app_shell.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
@@ -80,7 +80,7 @@ class UserSelectionScreen extends StatelessWidget {
                         ),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => HomeScreen(
+                            builder: (_) => AppShell(
                               dashboard: dashboard,
                               currentUser: user,
                             ),

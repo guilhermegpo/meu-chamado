@@ -13,12 +13,17 @@ class ManageCallingsScreen extends ConsumerStatefulWidget {
     required this.dashboard,
     required this.actorId,
     required this.targetUserId,
+    this.showBackButton = true,
     super.key,
   });
 
   final WorkspaceDashboard dashboard;
   final String actorId;
   final String targetUserId;
+
+  /// Como aba do shell a tela é um destino, não uma tela empilhada: exibir
+  /// uma seta de voltar ali sugeriria uma navegação que não existe.
+  final bool showBackButton;
 
   @override
   ConsumerState<ManageCallingsScreen> createState() =>
@@ -64,7 +69,10 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
     return PopScope(
       canPop: !_busy,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Chamados')),
+        appBar: AppBar(
+          automaticallyImplyLeading: widget.showBackButton,
+          title: const Text('Chamados'),
+        ),
         floatingActionButton: canCreate
             ? FloatingActionButton.extended(
                 key: const Key('add-calling-button'),

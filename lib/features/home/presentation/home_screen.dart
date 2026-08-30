@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
-import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/callings/domain/calling_catalog.dart';
 import 'package:meu_chamado/features/callings/presentation/manage_callings_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_dashboard_screen.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
-import 'package:meu_chamado/features/profile/presentation/user_editor_dialog.dart';
 import 'package:meu_chamado/features/settings/presentation/settings_screen.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
-import 'package:meu_chamado/features/workspace/domain/workspace_authorization.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
-import 'package:meu_chamado/features/workspace/presentation/manage_users_screen.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({
     required this.dashboard,
     required this.currentUser,
+    this.onOpenCallings,
+    this.onReloaded,
     super.key,
   });
 
   final WorkspaceDashboard dashboard;
   final UserProfile currentUser;
+
+  /// Leva para a aba Chamados quando a Home vive dentro do shell.
+  ///
+  /// Sem isto a Home empilharia a mesma tela que já é um destino da barra, e
+  /// o usuário terminaria com dois caminhos para o mesmo lugar.
+  final VoidCallback? onOpenCallings;
+
+  /// Avisa o shell de que o Workspace foi relido, para as outras abas não
+  /// continuarem mostrando o estado anterior.
+  final void Function(WorkspaceDashboard, UserProfile)? onReloaded;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -50,10 +58,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final archivedCount = userCallings
         .where((calling) => calling.status == CallingStatus.archived)
         .length;
-    final canManageUsers = WorkspaceRolePolicy.allows(
-      _currentUser.role,
-      WorkspacePermission.createUser,
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -81,35 +85,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             _WelcomeHero(user: _currentUser, workspaceName: _dashboard.name),
             const SizedBox(height: Spacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _editOwnProfile,
-                    icon: const Icon(Icons.manage_accounts_outlined),
-                    label: const Text('Meu perfil'),
-                  ),
-                ),
-                if (canManageUsers) ...[
-                  const SizedBox(width: Spacing.sm),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const Key('manage-users-button'),
-                      onPressed: _openUsers,
-                      icon: const Icon(Icons.group_outlined),
-                      label: const Text('Usuários'),
-                    ),
-                  ),
-                ],
-              ],
-            ),
             const SizedBox(height: Spacing.section),
             AppSectionHeader(
               title: 'Meus chamados',
               count: activeCallings.length,
               action: TextButton.icon(
                 key: const Key('manage-callings-button'),
-                onPressed: _openCallings,
+                onPressed: widget.onOpenCallings ?? _openCallings,
                 icon: const Icon(Icons.tune, size: 18),
                 label: const Text('Gerenciar'),
               ),
@@ -201,16 +183,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Future<void> _openUsers() async {
-    await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) =>
-            ManageUsersScreen(dashboard: _dashboard, actorId: _currentUser.id),
-      ),
-    );
-    await _reload();
-  }
-
   Future<void> _openCallings() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
@@ -222,45 +194,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
     await _reload();
-  }
-
-  Future<void> _editOwnProfile() async {
-    final result = await showDialog<UserEditorResult>(
-      context: context,
-      builder: (_) => UserEditorDialog(user: _currentUser, roleEditable: false),
-    );
-    if (result == null || !mounted) return;
-
-    final previousPhotoPath = _currentUser.photoPath;
-    final changedPhoto =
-        result.removePhoto || result.photoPath != previousPhotoPath;
-    try {
-      await ref
-          .read(workspaceRepositoryProvider)
-          .updateUser(
-            actorId: _currentUser.id,
-            workspaceId: _dashboard.id,
-            targetUserId: _currentUser.id,
-            name: result.name,
-            photoPath: result.photoPath,
-            removePhoto: result.removePhoto,
-          );
-      await _reload();
-      if (changedPhoto) {
-        await ref
-            .read(profilePhotoServiceProvider)
-            .deleteIfManaged(previousPhotoPath);
-      }
-    } catch (error) {
-      if (changedPhoto) {
-        await ref
-            .read(profilePhotoServiceProvider)
-            .deleteIfManaged(result.photoPath);
-      }
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
-    }
   }
 
   Future<void> _reload() async {
@@ -284,6 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _dashboard = dashboard;
       _currentUser = currentUser!;
     });
+    widget.onReloaded?.call(dashboard, currentUser);
   }
 }
 
