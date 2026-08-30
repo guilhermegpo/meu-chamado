@@ -124,6 +124,66 @@ class MinisteringRepository {
     if (updated == 0) throw const MinisteringRecordNotFoundException();
   }
 
+  /// O que cita este irmão hoje.
+  ///
+  /// A tela chama antes de mostrar a ação de excluir, para nunca oferecer algo
+  /// que vai falhar.
+  Future<MinisteringRemovalCheck> inspectBrotherRemoval({
+    required String callingId,
+    required String brotherId,
+  }) async {
+    await _requireBrother(callingId: callingId, brotherId: brotherId);
+
+    final memberships =
+        await (_database.select(_database.ministeringCompanionshipMembers)
+              ..where(
+                (row) =>
+                    row.callingId.equals(callingId) &
+                    row.brotherId.equals(brotherId),
+              ))
+            .get();
+    final participations =
+        await (_database.select(_database.ministeringInterviewParticipants)
+              ..where(
+                (row) =>
+                    row.callingId.equals(callingId) &
+                    row.brotherId.equals(brotherId),
+              ))
+            .get();
+
+    return MinisteringRemovalCheck(
+      companionships: memberships
+          .map((row) => row.companionshipId)
+          .toSet()
+          .length,
+      interviews: participations.map((row) => row.interviewId).toSet().length,
+    );
+  }
+
+  /// Exclui definitivamente um irmão que nunca foi usado.
+  ///
+  /// A checagem acontece dentro da transação da exclusão: fora dela, uma dupla
+  /// criada no intervalo entre consultar e apagar passaria despercebida.
+  Future<void> deleteBrother({
+    required String callingId,
+    required String brotherId,
+  }) async {
+    await _database.transaction(() async {
+      final check = await inspectBrotherRemoval(
+        callingId: callingId,
+        brotherId: brotherId,
+      );
+      if (!check.canDelete) {
+        throw MinisteringRecordInUseException.brother(check);
+      }
+
+      await (_database.delete(_database.ministeringBrothers)..where(
+            (row) => row.id.equals(brotherId) & row.callingId.equals(callingId),
+          ))
+          .go();
+    });
+  }
+
   Future<String> createCompanionship({
     required String callingId,
     required List<String> brotherIds,
@@ -206,26 +266,96 @@ class MinisteringRepository {
   /// Desativa ou reativa uma dupla.
   ///
   /// Dupla inativa sai do denominador do trimestre, mas suas entrevistas
-  /// anteriores permanecem registradas.
+  /// anteriores permanecem registradas. Reativar exige que todos os integrantes
+  /// ainda estejam ativos; do contrário o painel voltaria a contar uma dupla
+  /// que não pode ser usada em novos registros.
   Future<void> setCompanionshipActive({
     required String callingId,
     required String companionshipId,
     required bool isActive,
   }) async {
-    final updated =
-        await (_database.update(_database.ministeringCompanionships)..where(
-              (row) =>
-                  row.id.equals(companionshipId) &
-                  row.callingId.equals(callingId),
-            ))
-            .write(
-              MinisteringCompanionshipsCompanion(
-                isActive: Value(isActive),
-                updatedAt: Value(DateTime.now().toUtc()),
-              ),
-            );
+    await _database.transaction(() async {
+      if (isActive) {
+        final members = await _memberIds(
+          callingId: callingId,
+          companionshipId: companionshipId,
+        );
+        if (members.isEmpty) throw const MinisteringRecordNotFoundException();
+        await _assertUsableMembers(
+          callingId: callingId,
+          brotherIds: members.toList(growable: false),
+        );
+      }
 
-    if (updated == 0) throw const MinisteringRecordNotFoundException();
+      final updated =
+          await (_database.update(_database.ministeringCompanionships)..where(
+                (row) =>
+                    row.id.equals(companionshipId) &
+                    row.callingId.equals(callingId),
+              ))
+              .write(
+                MinisteringCompanionshipsCompanion(
+                  isActive: Value(isActive),
+                  updatedAt: Value(DateTime.now().toUtc()),
+                ),
+              );
+
+      if (updated == 0) throw const MinisteringRecordNotFoundException();
+    });
+  }
+
+  /// Quantas entrevistas esta dupla já tem.
+  Future<MinisteringRemovalCheck> inspectCompanionshipRemoval({
+    required String callingId,
+    required String companionshipId,
+  }) async {
+    final members = await _memberIds(
+      callingId: callingId,
+      companionshipId: companionshipId,
+    );
+    if (members.isEmpty) throw const MinisteringRecordNotFoundException();
+
+    final interviews =
+        await (_database.select(_database.ministeringInterviews)..where(
+              (row) =>
+                  row.callingId.equals(callingId) &
+                  row.companionshipId.equals(companionshipId),
+            ))
+            .get();
+
+    // A composição em si não é histórico: os integrantes continuam existindo
+    // como irmãos. O que não pode sumir é a entrevista.
+    return MinisteringRemovalCheck(
+      companionships: 0,
+      interviews: interviews.length,
+    );
+  }
+
+  /// Exclui uma dupla montada por engano, desde que não tenha entrevistas.
+  ///
+  /// A FK de entrevista para dupla é CASCADE, então apagar uma dupla com
+  /// histórico levaria as entrevistas junto e em silêncio. A checagem roda
+  /// dentro da mesma transação da exclusão justamente por isso.
+  Future<void> deleteCompanionship({
+    required String callingId,
+    required String companionshipId,
+  }) async {
+    await _database.transaction(() async {
+      final check = await inspectCompanionshipRemoval(
+        callingId: callingId,
+        companionshipId: companionshipId,
+      );
+      if (!check.canDelete) {
+        throw MinisteringRecordInUseException.companionship(check);
+      }
+
+      await (_database.delete(_database.ministeringCompanionships)..where(
+            (row) =>
+                row.id.equals(companionshipId) &
+                row.callingId.equals(callingId),
+          ))
+          .go();
+    });
   }
 
   /// Registra uma entrevista realizada.
@@ -292,6 +422,67 @@ class MinisteringRepository {
       completedAt: date,
       participantIds: participants,
     );
+  }
+
+  /// Corrige uma entrevista já registrada.
+  ///
+  /// Errar a data ou marcar o participante errado é o engano comum, e sem isto
+  /// a única saída seria apagar e registrar de novo — o que perde o registro
+  /// original e parece, para quem olha, que a entrevista nunca aconteceu.
+  Future<void> updateInterview({
+    required String callingId,
+    required String interviewId,
+    required DateTime completedOn,
+    required List<String> participantBrotherIds,
+  }) async {
+    final date = calendarDate(completedOn);
+    if (date.isAfter(calendarDate(DateTime.now()))) {
+      throw const FutureInterviewDateException();
+    }
+    if (participantBrotherIds.isEmpty) {
+      throw const InterviewWithoutParticipantsException();
+    }
+
+    final participants = participantBrotherIds.toSet().toList(growable: false);
+
+    await _database.transaction(() async {
+      final interview =
+          await (_database.select(_database.ministeringInterviews)..where(
+                (row) =>
+                    row.id.equals(interviewId) &
+                    row.callingId.equals(callingId),
+              ))
+              .getSingleOrNull();
+      if (interview == null) throw const MinisteringRecordNotFoundException();
+
+      final members = await _memberIds(
+        callingId: callingId,
+        companionshipId: interview.companionshipId,
+      );
+      if (!members.containsAll(participants)) {
+        throw const ParticipantOutsideCompanionshipException();
+      }
+
+      await (_database.update(_database.ministeringInterviews)
+            ..where((row) => row.id.equals(interviewId)))
+          .write(MinisteringInterviewsCompanion(completedAt: Value(date)));
+
+      await (_database.delete(
+        _database.ministeringInterviewParticipants,
+      )..where((row) => row.interviewId.equals(interviewId))).go();
+
+      await _database.batch((batch) {
+        batch.insertAll(_database.ministeringInterviewParticipants, [
+          for (final brotherId in participants)
+            MinisteringInterviewParticipantsCompanion.insert(
+              interviewId: interviewId,
+              brotherId: brotherId,
+              callingId: callingId,
+              companionshipId: interview.companionshipId,
+            ),
+        ]);
+      });
+    });
   }
 
   /// Remove uma entrevista registrada por engano. Participantes vão em cascata.
@@ -431,6 +622,20 @@ class MinisteringRepository {
           (row) => row.read(_database.ministeringInterviews.companionshipId)!,
         )
         .toSet();
+  }
+
+  /// Garante que o irmão existe neste chamado.
+  Future<void> _requireBrother({
+    required String callingId,
+    required String brotherId,
+  }) async {
+    final row =
+        await (_database.select(_database.ministeringBrothers)..where(
+              (item) =>
+                  item.id.equals(brotherId) & item.callingId.equals(callingId),
+            ))
+            .getSingleOrNull();
+    if (row == null) throw const MinisteringRecordNotFoundException();
   }
 
   Future<Set<String>> _memberIds({

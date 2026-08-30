@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_brothers_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Composição das duplas de ministração.
 ///
 /// Uma dupla tem dois integrantes, ou três quando um jovem acompanha. Assim
-/// como o irmão, a dupla é desativada em vez de apagada: desativada ela sai do
-/// denominador do trimestre, mas as entrevistas que já teve permanecem.
+/// como o irmão, uma dupla com histórico é desativada em vez de apagada. Uma
+/// composição criada por engano ainda pode ser excluída enquanto não houver
+/// entrevista vinculada.
 class MinisteringCompanionshipsScreen extends ConsumerStatefulWidget {
   const MinisteringCompanionshipsScreen({required this.callingId, super.key});
 
@@ -55,11 +58,10 @@ class _MinisteringCompanionshipsScreenState
             : null,
         body: module.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(userErrorMessage(error), textAlign: TextAlign.center),
-            ),
+          error: (error, _) => MinisteringErrorState(
+            message: userErrorMessage(error),
+            onRetry: () =>
+                ref.invalidate(ministeringModuleProvider(widget.callingId)),
           ),
           data: _buildList,
         ),
@@ -74,7 +76,12 @@ class _MinisteringCompanionshipsScreenState
         .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.md,
+        Spacing.md,
+        Spacing.fabClearance,
+      ),
       children: [
         if (state.activeBrothers.length < 2)
           const MinisteringEmptyState(
@@ -105,6 +112,7 @@ class _MinisteringCompanionshipsScreenState
                   ? null
                   : () => _edit(companionship, state.activeBrothers),
               onToggle: _busy ? null : () => _setActive(companionship, false),
+              onDelete: _busy ? null : () => _considerDelete(companionship),
               toggleLabel: 'Desativar dupla',
               toggleIcon: Icons.pause_circle_outline,
             ),
@@ -131,6 +139,7 @@ class _MinisteringCompanionshipsScreenState
                   ? null
                   : () => _edit(companionship, state.activeBrothers),
               onToggle: _busy ? null : () => _setActive(companionship, true),
+              onDelete: _busy ? null : () => _considerDelete(companionship),
               toggleLabel: 'Reativar dupla',
               toggleIcon: Icons.play_circle_outline,
             ),
@@ -213,6 +222,89 @@ class _MinisteringCompanionshipsScreenState
     isActive ? 'Dupla reativada.' : 'Dupla desativada.',
   );
 
+  Future<void> _considerDelete(MinisteringCompanionship companionship) async {
+    late final MinisteringRemovalCheck check;
+    setState(() => _busy = true);
+    try {
+      check = await ref
+          .read(ministeringRepositoryProvider)
+          .inspectCompanionshipRemoval(
+            callingId: widget.callingId,
+            companionshipId: companionship.id,
+          );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
+      return;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (!mounted) return;
+
+    if (!check.canDelete) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Exclusão indisponível'),
+          content: Text(
+            'Esta dupla tem ${check.interviews} '
+            'entrevista${check.interviews == 1 ? '' : 's'} registrada'
+            '${check.interviews == 1 ? '' : 's'}. Desative-a para preservar '
+            'o histórico.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Entendi'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('Excluir dupla?'),
+          content: const Text(
+            'Esta dupla ainda não tem entrevistas e pode ser excluída '
+            'definitivamente. Os cadastros dos integrantes serão mantidos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              key: const Key('confirm-delete-companionship'),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                foregroundColor: scheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) return;
+
+    await _runMutation(
+      () => ref
+          .read(ministeringRepositoryProvider)
+          .deleteCompanionship(
+            callingId: widget.callingId,
+            companionshipId: companionship.id,
+          ),
+      'Dupla excluída.',
+    );
+  }
+
   Future<_CompanionshipDraft?> _askComposition({
     required String title,
     required List<MinisteringBrother> candidates,
@@ -256,6 +348,7 @@ class _CompanionshipCard extends StatelessWidget {
     required this.companionship,
     required this.onEdit,
     required this.onToggle,
+    required this.onDelete,
     required this.toggleLabel,
     required this.toggleIcon,
   });
@@ -263,6 +356,7 @@ class _CompanionshipCard extends StatelessWidget {
   final MinisteringCompanionship companionship;
   final VoidCallback? onEdit;
   final VoidCallback? onToggle;
+  final VoidCallback? onDelete;
   final String toggleLabel;
   final IconData toggleIcon;
 
@@ -273,34 +367,52 @@ class _CompanionshipCard extends StatelessWidget {
         .join(' · ');
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    companionship.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (companionship.displayLabel != null) ...[
-                    const SizedBox(height: 4),
-                    Text(members),
-                  ],
-                ],
+      child: ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(
+          Spacing.md,
+          Spacing.xs,
+          Spacing.xs,
+          Spacing.xs,
+        ),
+        leading: const AppIconTile(icon: Icons.people_outline, size: 44),
+        title: Text(companionship.title),
+        subtitle: companionship.displayLabel != null
+            ? Text(members)
+            : Text(toggleLabel == 'Desativar dupla' ? 'Ativa' : 'Inativa'),
+        trailing: PopupMenuButton<_CompanionshipAction>(
+          tooltip: 'Ações da dupla',
+          onSelected: (action) => switch (action) {
+            _CompanionshipAction.edit => onEdit?.call(),
+            _CompanionshipAction.toggle => onToggle?.call(),
+            _CompanionshipAction.delete => onDelete?.call(),
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: _CompanionshipAction.edit,
+              enabled: onEdit != null,
+              child: const ListTile(
+                leading: Icon(Icons.edit_outlined),
+                title: Text('Editar dupla'),
+                contentPadding: EdgeInsets.zero,
               ),
             ),
-            IconButton(
-              tooltip: 'Editar dupla',
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined),
+            PopupMenuItem(
+              value: _CompanionshipAction.toggle,
+              enabled: onToggle != null,
+              child: ListTile(
+                leading: Icon(toggleIcon),
+                title: Text(toggleLabel),
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
-            IconButton(
-              tooltip: toggleLabel,
-              onPressed: onToggle,
-              icon: Icon(toggleIcon),
+            PopupMenuItem(
+              value: _CompanionshipAction.delete,
+              enabled: onDelete != null,
+              child: const ListTile(
+                leading: Icon(Icons.delete_outline),
+                title: Text('Verificar exclusão da dupla'),
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
           ],
         ),
@@ -308,6 +420,8 @@ class _CompanionshipCard extends StatelessWidget {
     );
   }
 }
+
+enum _CompanionshipAction { edit, toggle, delete }
 
 /// Composição escolhida no editor, antes de ir para o repositório.
 class _CompanionshipDraft {

@@ -40,6 +40,11 @@ void main() {
   Future<void> select(WidgetTester tester, String brotherId) =>
       tapVisible(tester, find.byKey(Key('companionship-member-$brotherId')));
 
+  Future<void> chooseAction(WidgetTester tester, String label) async {
+    await tapVisible(tester, find.byTooltip('Ações da dupla').first);
+    await tapVisible(tester, find.text(label).last);
+  }
+
   testWidgets('avisa que faltam irmãos antes de montar a primeira dupla', (
     tester,
   ) async {
@@ -122,7 +127,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Editar dupla'));
+    await chooseAction(tester, 'Editar dupla');
     await select(tester, ids[1]);
     await select(tester, ids[2]);
     await tapVisible(tester, find.byKey(const Key('companionship-confirm')));
@@ -141,11 +146,11 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Desativar dupla'));
+    await chooseAction(tester, 'Desativar dupla');
 
     expect(find.text('Irmão A · Irmão B'), findsOneWidget);
     expect(find.text('Nenhuma dupla montada.'), findsOneWidget);
-    expect(find.byTooltip('Reativar dupla'), findsOneWidget);
+    expect(find.text('Inativa'), findsOneWidget);
   });
 
   testWidgets('editor avisa quando um integrante ficou inativo', (
@@ -163,7 +168,7 @@ void main() {
     );
     await pump(tester);
 
-    await tapVisible(tester, find.byTooltip('Editar dupla'));
+    await chooseAction(tester, 'Editar dupla');
 
     expect(find.textContaining('está inativo'), findsOneWidget);
     expect(find.byKey(Key('companionship-member-${ids[1]}')), findsNothing);
@@ -173,5 +178,77 @@ void main() {
           .onPressed,
       isNull,
     );
+  });
+
+  testWidgets('exclui dupla sem entrevista e mantém os integrantes', (
+    tester,
+  ) async {
+    final ids = await seedBrothers(2);
+    await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    await pump(tester);
+
+    await chooseAction(tester, 'Verificar exclusão da dupla');
+    expect(find.text('Excluir dupla?'), findsOneWidget);
+    await tapVisible(
+      tester,
+      find.byKey(const Key('confirm-delete-companionship')),
+    );
+
+    expect(find.text('Dupla excluída.'), findsOneWidget);
+    expect(find.text('Nenhuma dupla montada.'), findsOneWidget);
+    final state = await repository.loadModule(
+      callingId: ministeringTestCallingId,
+    );
+    expect(state.brothers, hasLength(2));
+  });
+
+  testWidgets('não oferece exclusão para dupla com entrevista', (tester) async {
+    final ids = await seedBrothers(2);
+    final companionship = await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    await repository.recordInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionship,
+      completedOn: DateTime.now(),
+      participantBrotherIds: ids,
+    );
+    await pump(tester);
+
+    await chooseAction(tester, 'Verificar exclusão da dupla');
+
+    expect(find.text('Exclusão indisponível'), findsOneWidget);
+    expect(find.textContaining('1 entrevista registrada'), findsOneWidget);
+    expect(find.byKey(const Key('confirm-delete-companionship')), findsNothing);
+  });
+
+  testWidgets('não reativa dupla enquanto houver integrante inativo', (
+    tester,
+  ) async {
+    final ids = await seedBrothers(2);
+    final companionship = await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    await repository.setCompanionshipActive(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionship,
+      isActive: false,
+    );
+    await repository.setBrotherActive(
+      callingId: ministeringTestCallingId,
+      brotherId: ids.first,
+      isActive: false,
+    );
+    await pump(tester);
+
+    await chooseAction(tester, 'Reativar dupla');
+
+    expect(find.textContaining('irmão inativo'), findsOneWidget);
+    expect(find.text('Inativa'), findsOneWidget);
   });
 }

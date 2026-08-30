@@ -170,7 +170,8 @@ void main() {
       tester,
       find.byKey(const Key('open-companionships-button')),
     );
-    await tapVisible(tester, find.byTooltip('Desativar dupla'));
+    await tapVisible(tester, find.byTooltip('Ações da dupla'));
+    await tapVisible(tester, find.text('Desativar dupla').last);
     await settleSnackBars(tester);
     await goBack(tester);
 

@@ -25,5 +25,10 @@ documentada. Não devem ser adicionados:
 
 A identidade própria usa navy, teal e azul, superfícies claras e escuras e uma
 linguagem limpa e reverente. O `M` é o elemento recorrente da família Apps Meu.
-Essas diretrizes orientam a criação futura; não afirmam que os assets finais já
-existem.
+
+A marca escolhida combina esse `M` com uma silhueta arquitetônica genérica e
+original, orientada para cima, e um arco teal. Ela não usa logotipo, estátua,
+cruz, templo oficial nem outro ativo institucional de terceiros. O master
+raster versionado está em
+`assets/branding/meu_chamado_icon_master.png` e é a fonte para launcher, splash
+e marca interna.

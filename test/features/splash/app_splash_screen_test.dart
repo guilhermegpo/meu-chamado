@@ -14,13 +14,14 @@ void main() {
       ),
     );
 
-    expect(find.text('MEU CHAMADO'), findsOneWidget);
+    expect(find.text('Meu Chamado'), findsOneWidget);
     expect(find.text('Abrindo dados locais…'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Meu Chamado. Abrindo dados locais…'),
       findsOneWidget,
     );
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('Organize. Sirva. Faça a diferença.'), findsOneWidget);
     semantics.dispose();
   });
 
@@ -44,6 +45,6 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(find.text('MEU CHAMADO'), findsOneWidget);
+    expect(find.text('Meu Chamado'), findsOneWidget);
   });
 }

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Cadastro dos irmãos que podem compor duplas.
 ///
-/// Um irmão nunca é apagado: é desativado. Apagar destruiria as entrevistas em
-/// que ele participou, e o histórico é o registro do trabalho já feito.
+/// Um irmão que já foi usado é desativado, nunca apagado. Exclusão definitiva
+/// existe somente para corrigir um cadastro que ainda não compôs dupla nem
+/// participou de entrevista.
 class MinisteringBrothersScreen extends ConsumerStatefulWidget {
   const MinisteringBrothersScreen({required this.callingId, super.key});
 
@@ -39,11 +42,10 @@ class _MinisteringBrothersScreenState
         ),
         body: module.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(userErrorMessage(error), textAlign: TextAlign.center),
-            ),
+          error: (error, _) => MinisteringErrorState(
+            message: userErrorMessage(error),
+            onRetry: () =>
+                ref.invalidate(ministeringModuleProvider(widget.callingId)),
           ),
           data: _buildList,
         ),
@@ -58,7 +60,12 @@ class _MinisteringBrothersScreenState
         .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.md,
+        Spacing.md,
+        Spacing.fabClearance,
+      ),
       children: [
         const MinisteringPrivacyNote(
           text:
@@ -81,6 +88,7 @@ class _MinisteringBrothersScreenState
               brother: brother,
               onEdit: _busy ? null : () => _rename(brother),
               onToggle: _busy ? null : () => _setActive(brother, false),
+              onDelete: _busy ? null : () => _considerDelete(brother),
               toggleLabel: 'Desativar',
               toggleIcon: Icons.person_off_outlined,
             ),
@@ -105,6 +113,7 @@ class _MinisteringBrothersScreenState
               brother: brother,
               onEdit: _busy ? null : () => _rename(brother),
               onToggle: _busy ? null : () => _setActive(brother, true),
+              onDelete: _busy ? null : () => _considerDelete(brother),
               toggleLabel: 'Reativar',
               toggleIcon: Icons.person_add_alt_outlined,
             ),
@@ -156,6 +165,88 @@ class _MinisteringBrothersScreenState
         isActive ? 'Irmão reativado.' : 'Irmão desativado.',
       );
 
+  Future<void> _considerDelete(MinisteringBrother brother) async {
+    late final MinisteringRemovalCheck check;
+    setState(() => _busy = true);
+    try {
+      check = await ref
+          .read(ministeringRepositoryProvider)
+          .inspectBrotherRemoval(
+            callingId: widget.callingId,
+            brotherId: brother.id,
+          );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
+      return;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (!mounted) return;
+
+    if (!check.canDelete) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Exclusão indisponível'),
+          content: Text(
+            check.hasHistory
+                ? 'Este cadastro já participa do histórico de entrevistas. '
+                      'Desative-o para preservá-lo.'
+                : 'Este cadastro compõe ${check.companionships} '
+                      'dupla${check.companionships == 1 ? '' : 's'}. '
+                      'Remova-o da composição ou desative-o.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Entendi'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final scheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('Excluir cadastro?'),
+          content: const Text(
+            'Este cadastro nunca foi usado e pode ser excluído definitivamente. '
+            'Esta ação não pode ser desfeita.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              key: const Key('confirm-delete-brother'),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                foregroundColor: scheme.onError,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) return;
+
+    await _runMutation(
+      () => ref
+          .read(ministeringRepositoryProvider)
+          .deleteBrother(callingId: widget.callingId, brotherId: brother.id),
+      'Cadastro excluído.',
+    );
+  }
+
   Future<String?> _askLabel({required String title, String? initial}) =>
       showDialog<String>(
         context: context,
@@ -188,6 +279,7 @@ class _BrotherCard extends StatelessWidget {
     required this.brother,
     required this.onEdit,
     required this.onToggle,
+    required this.onDelete,
     required this.toggleLabel,
     required this.toggleIcon,
   });
@@ -195,36 +287,64 @@ class _BrotherCard extends StatelessWidget {
   final MinisteringBrother brother;
   final VoidCallback? onEdit;
   final VoidCallback? onToggle;
+  final VoidCallback? onDelete;
   final String toggleLabel;
   final IconData toggleIcon;
 
   @override
   Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              brother.displayLabel,
-              style: Theme.of(context).textTheme.titleMedium,
+    child: ListTile(
+      contentPadding: const EdgeInsets.fromLTRB(
+        Spacing.md,
+        Spacing.xs,
+        Spacing.xs,
+        Spacing.xs,
+      ),
+      leading: const AppIconTile(icon: Icons.person_outline, size: 44),
+      title: Text(brother.displayLabel),
+      subtitle: Text(toggleLabel == 'Desativar' ? 'Ativo' : 'Inativo'),
+      trailing: PopupMenuButton<_BrotherAction>(
+        tooltip: 'Ações do cadastro',
+        onSelected: (action) => switch (action) {
+          _BrotherAction.edit => onEdit?.call(),
+          _BrotherAction.toggle => onToggle?.call(),
+          _BrotherAction.delete => onDelete?.call(),
+        },
+        itemBuilder: (_) => [
+          PopupMenuItem(
+            value: _BrotherAction.edit,
+            enabled: onEdit != null,
+            child: const ListTile(
+              leading: Icon(Icons.edit_outlined),
+              title: Text('Editar identificação'),
+              contentPadding: EdgeInsets.zero,
             ),
           ),
-          IconButton(
-            tooltip: 'Editar identificação',
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined),
+          PopupMenuItem(
+            value: _BrotherAction.toggle,
+            enabled: onToggle != null,
+            child: ListTile(
+              leading: Icon(toggleIcon),
+              title: Text(toggleLabel),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-          IconButton(
-            tooltip: toggleLabel,
-            onPressed: onToggle,
-            icon: Icon(toggleIcon),
+          PopupMenuItem(
+            value: _BrotherAction.delete,
+            enabled: onDelete != null,
+            child: const ListTile(
+              leading: Icon(Icons.delete_outline),
+              title: Text('Verificar exclusão'),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
         ],
       ),
     ),
   );
 }
+
+enum _BrotherAction { edit, toggle, delete }
 
 class _BrotherLabelDialog extends StatefulWidget {
   const _BrotherLabelDialog({required this.title, this.initial});

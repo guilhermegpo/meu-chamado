@@ -7,7 +7,22 @@ projeto pretende usar [Versionamento Semântico](https://semver.org/lang/pt-BR/)
 
 ## [Unreleased]
 
-Nenhuma mudança posterior à `0.2.0-alpha.1` foi registrada.
+### Added
+
+- exclusão definitiva e confirmada de irmãos e duplas que nunca foram usados,
+  preservando qualquer cadastro com vínculo ou histórico;
+- correção de data e participantes de uma entrevista existente, sem criar
+  outro registro;
+- nova marca original aplicada ao launcher, splash e superfícies internas.
+
+### Changed
+
+- home, painel trimestral, telas de Ministração, perfis, chamados e
+  configurações passam a compartilhar tokens e componentes visuais do novo
+  design system;
+- ações de irmãos e duplas foram agrupadas em menus compactos para reduzir
+  ruído visual em telas pequenas;
+- reativar uma dupla agora exige que todos os integrantes estejam ativos.
 
 ## [0.2.0-alpha.1] — 2026-08-28
 
