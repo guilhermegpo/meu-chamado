@@ -31,7 +31,12 @@ class MoreScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mais')),
+      appBar: AppBar(
+        title: const Text('Mais'),
+        // Aba, não tela empilhada: a seta de voltar sairia do shell
+        // inteiro e sugeriria uma navegação que não existe aqui.
+        automaticallyImplyLeading: false,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           Spacing.md,
