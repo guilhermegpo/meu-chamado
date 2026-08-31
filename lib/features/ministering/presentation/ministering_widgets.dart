@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
+/// Formata o instante de um agendamento no fuso do aparelho: "12 de set. ·
+/// 19:30". Recebe o valor em UTC, como o domínio guarda.
+String formatAppointmentMoment(BuildContext context, DateTime scheduledAtUtc) {
+  final local = scheduledAtUtc.toLocal();
+  final localizations = MaterialLocalizations.of(context);
+  final time = localizations.formatTimeOfDay(
+    TimeOfDay.fromDateTime(local),
+    alwaysUse24HourFormat: true,
+  );
+  return '${localizations.formatMediumDate(local)} · $time';
+}
+
 /// Cabeçalho de seção com a contagem ao lado.
 ///
 /// A contagem ganha rótulo semântico próprio porque, sozinho, um número em

@@ -42,17 +42,6 @@ class InactiveInterviewerException extends MinisteringException {
       );
 }
 
-/// Nenhuma liderança ativa cadastrada quando uma entrevista precisa de um
-/// entrevistador. O entrevistador nunca é inferido: sem liderança não há quem
-/// registrar.
-class NoActiveInterviewerException extends MinisteringException {
-  const NoActiveInterviewerException()
-    : super(
-        'Cadastre a liderança responsável pelas entrevistas antes de agendar '
-        'ou registrar.',
-      );
-}
-
 /// Segunda tentativa de agendar para uma dupla que já tem agendamento aberto.
 class CompanionshipAlreadyScheduledException extends MinisteringException {
   const CompanionshipAlreadyScheduledException()
