@@ -530,7 +530,7 @@ class MinisteringRepository {
   }) async {
     final id = 'appointment-${_nextIdentifier()}';
     final now = DateTime.now().toUtc();
-    final instant = scheduledInstant(scheduledAt);
+    final instant = _validatedScheduledInstant(scheduledAt);
 
     await _database.transaction(() async {
       await _requireActiveCompanionship(
@@ -583,6 +583,8 @@ class MinisteringRepository {
     required DateTime scheduledAt,
     required String interviewerId,
   }) async {
+    final instant = _validatedScheduledInstant(scheduledAt);
+
     await _database.transaction(() async {
       final existing =
           await (_database.select(_database.ministeringAppointments)..where(
@@ -602,7 +604,7 @@ class MinisteringRepository {
         _database.ministeringAppointments,
       )..where((row) => row.id.equals(appointmentId))).write(
         MinisteringAppointmentsCompanion(
-          scheduledAt: Value(scheduledInstant(scheduledAt)),
+          scheduledAt: Value(instant),
           interviewerId: Value(interviewerId),
           updatedAt: Value(DateTime.now().toUtc()),
         ),
@@ -1148,6 +1150,15 @@ class MinisteringRepository {
           ),
       ]);
     });
+  }
+
+  DateTime _validatedScheduledInstant(DateTime value) {
+    final instant = scheduledInstant(value);
+    final currentMinute = scheduledInstant(DateTime.now());
+    if (instant.isBefore(currentMinute)) {
+      throw const PastAppointmentDateTimeException();
+    }
+    return instant;
   }
 
   String _validatedLabel(String value) {

@@ -254,6 +254,24 @@ void main() {
       expect(state.isInterviewed(companionship), isFalse);
     });
 
+    test('recusa agendamento no passado', () async {
+      final leader = await seedLeader();
+      final companionship = await seedCompanionship();
+
+      await expectLater(
+        repository.scheduleInterview(
+          callingId: callingA,
+          companionshipId: companionship,
+          scheduledAt: DateTime.now().subtract(const Duration(minutes: 5)),
+          interviewerId: leader.id,
+        ),
+        throwsA(isA<PastAppointmentDateTimeException>()),
+      );
+
+      final state = await repository.loadModule(callingId: callingA);
+      expect(state.appointments, isEmpty);
+    });
+
     test('recusa segundo agendamento aberto para a mesma dupla', () async {
       final leader = await seedLeader();
       final companionship = await seedCompanionship();
@@ -357,6 +375,35 @@ void main() {
       expect(state.appointments.single.id, appointment.id);
       expect(state.appointments.single.interviewerId, counselor.id);
       expect(state.appointments.single.scheduledAt, scheduledInstant(newWhen));
+    });
+
+    test('recusa reagendamento para o passado e mantém o original', () async {
+      final leader = await seedLeader();
+      final companionship = await seedCompanionship();
+      final originalWhen = DateTime.now().add(const Duration(days: 1));
+      final appointment = await repository.scheduleInterview(
+        callingId: callingA,
+        companionshipId: companionship,
+        scheduledAt: originalWhen,
+        interviewerId: leader.id,
+      );
+
+      await expectLater(
+        repository.rescheduleInterview(
+          callingId: callingA,
+          appointmentId: appointment.id,
+          scheduledAt: DateTime.now().subtract(const Duration(minutes: 5)),
+          interviewerId: leader.id,
+        ),
+        throwsA(isA<PastAppointmentDateTimeException>()),
+      );
+
+      final state = await repository.loadModule(callingId: callingA);
+      expect(state.appointments, hasLength(1));
+      expect(
+        state.appointments.single.scheduledAt,
+        scheduledInstant(originalWhen),
+      );
     });
 
     test(

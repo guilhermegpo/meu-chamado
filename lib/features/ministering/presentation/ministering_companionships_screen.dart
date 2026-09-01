@@ -111,7 +111,12 @@ class _MinisteringCompanionshipsScreenState
               onEdit: _busy
                   ? null
                   : () => _edit(companionship, state.activeBrothers),
-              onToggle: _busy ? null : () => _setActive(companionship, false),
+              onToggle: _busy
+                  ? null
+                  : () => _considerDeactivate(
+                      companionship,
+                      state.appointmentFor(companionship.id),
+                    ),
               onDelete: _busy ? null : () => _considerDelete(companionship),
               toggleLabel: 'Desativar dupla',
               toggleIcon: Icons.pause_circle_outline,
@@ -208,6 +213,39 @@ class _MinisteringCompanionshipsScreenState
     );
   }
 
+  Future<void> _considerDeactivate(
+    MinisteringCompanionship companionship,
+    MinisteringAppointment? appointment,
+  ) async {
+    if (appointment != null) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Desativar e cancelar agendamento?'),
+          content: const Text(
+            'Esta dupla tem uma entrevista agendada. Ao desativá-la, o '
+            'agendamento será cancelado. Entrevistas já realizadas serão '
+            'preservadas.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Voltar'),
+            ),
+            FilledButton(
+              key: const Key('confirm-deactivate-companionship'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Desativar'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
+    await _setActive(companionship, false);
+  }
+
   Future<void> _setActive(
     MinisteringCompanionship companionship,
     bool isActive,
@@ -247,12 +285,7 @@ class _MinisteringCompanionshipsScreenState
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Exclusão indisponível'),
-          content: Text(
-            'Esta dupla tem ${check.interviews} '
-            'entrevista${check.interviews == 1 ? '' : 's'} registrada'
-            '${check.interviews == 1 ? '' : 's'}. Desative-a para preservar '
-            'o histórico.',
-          ),
+          content: Text(_removalBlockedMessage(check)),
           actions: [
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
@@ -303,6 +336,23 @@ class _MinisteringCompanionshipsScreenState
           ),
       'Dupla excluída.',
     );
+  }
+
+  String _removalBlockedMessage(MinisteringRemovalCheck check) {
+    if (check.interviews > 0 && check.appointments > 0) {
+      return 'Esta dupla tem ${check.interviews} '
+          'entrevista${check.interviews == 1 ? '' : 's'} registrada'
+          '${check.interviews == 1 ? '' : 's'} e uma entrevista agendada. '
+          'Cancele o agendamento e desative a dupla para preservar o histórico.';
+    }
+    if (check.interviews > 0) {
+      return 'Esta dupla tem ${check.interviews} '
+          'entrevista${check.interviews == 1 ? '' : 's'} registrada'
+          '${check.interviews == 1 ? '' : 's'}. Desative-a para preservar '
+          'o histórico.';
+    }
+    return 'Esta dupla tem uma entrevista agendada. Cancele o agendamento '
+        'antes de excluir a dupla.';
   }
 
   Future<_CompanionshipDraft?> _askComposition({

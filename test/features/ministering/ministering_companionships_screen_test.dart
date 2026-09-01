@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
 import 'package:meu_chamado/features/ministering/data/ministering_repository.dart';
+import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_companionships_screen.dart';
 
 import 'ministering_harness.dart';
@@ -203,6 +204,72 @@ void main() {
       callingId: ministeringTestCallingId,
     );
     expect(state.brothers, hasLength(2));
+  });
+
+  testWidgets('desativar dupla com agendamento pede confirmação', (
+    tester,
+  ) async {
+    final ids = await seedBrothers(2);
+    final companionship = await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    final leader = await repository.createLeader(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão P',
+      role: MinisteringLeadershipRole.quorumPresident,
+    );
+    await repository.scheduleInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionship,
+      scheduledAt: DateTime.now().add(const Duration(days: 1)),
+      interviewerId: leader.id,
+    );
+    await pump(tester);
+
+    await chooseAction(tester, 'Desativar dupla');
+
+    expect(find.text('Desativar e cancelar agendamento?'), findsOneWidget);
+    expect(find.textContaining('o agendamento será cancelado'), findsOneWidget);
+
+    await tapVisible(
+      tester,
+      find.byKey(const Key('confirm-deactivate-companionship')),
+    );
+
+    final state = await repository.loadModule(
+      callingId: ministeringTestCallingId,
+    );
+    expect(state.appointments, isEmpty);
+    expect(state.companionships.single.isActive, isFalse);
+  });
+
+  testWidgets('exclusão bloqueada por agendamento explica o motivo correto', (
+    tester,
+  ) async {
+    final ids = await seedBrothers(2);
+    final companionship = await repository.createCompanionship(
+      callingId: ministeringTestCallingId,
+      brotherIds: ids,
+    );
+    final leader = await repository.createLeader(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão P',
+      role: MinisteringLeadershipRole.quorumPresident,
+    );
+    await repository.scheduleInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionship,
+      scheduledAt: DateTime.now().add(const Duration(days: 1)),
+      interviewerId: leader.id,
+    );
+    await pump(tester);
+
+    await chooseAction(tester, 'Verificar exclusão da dupla');
+
+    expect(find.text('Exclusão indisponível'), findsOneWidget);
+    expect(find.textContaining('entrevista agendada'), findsOneWidget);
+    expect(find.textContaining('0 entrevistas registradas'), findsNothing);
   });
 
   testWidgets('não oferece exclusão para dupla com entrevista', (tester) async {

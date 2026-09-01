@@ -161,14 +161,22 @@ class _MinisteringInterviewsScreenState
                       count: interviews.length,
                     ),
                   ),
-                  TextButton.icon(
-                    key: const Key('record-interview-button'),
-                    onPressed: _busy
-                        ? null
-                        : () => _record(companionship, activeLeaders),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Registrar'),
-                  ),
+                  if (activeLeaders.isEmpty)
+                    TextButton.icon(
+                      key: const Key('open-leaders-for-record-button'),
+                      onPressed: _busy ? null : _openLeaders,
+                      icon: const Icon(Icons.badge_outlined),
+                      label: const Text('Liderança'),
+                    )
+                  else
+                    TextButton.icon(
+                      key: const Key('record-interview-button'),
+                      onPressed: _busy
+                          ? null
+                          : () => _record(companionship, activeLeaders),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Registrar'),
+                    ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -343,6 +351,7 @@ class _MinisteringInterviewsScreenState
             .map((member) => member.id)
             .toSet(),
         interviewerChoices: leaders,
+        initialInterviewerId: leaders.length == 1 ? leaders.single.id : null,
       ),
     );
     if (draft == null) return;
@@ -671,7 +680,7 @@ class _InterviewCard extends StatelessWidget {
         leading: const AppIconTile(icon: Icons.event_available_outlined),
         title: Text(
           MaterialLocalizations.of(context)
-              .formatMediumDate(interview.completedAt),
+              .formatMediumDate(displayCalendarDate(interview.completedAt)),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: Spacing.xxs),
@@ -748,22 +757,33 @@ class _ScheduleDialog extends StatefulWidget {
 class _ScheduleDialogState extends State<_ScheduleDialog> {
   late DateTime _moment =
       widget.initialDateTime ?? DateTime.now().add(const Duration(days: 1));
-  late String? _interviewerId =
-      widget.initialInterviewerId ??
-      (widget.leaders.length == 1 ? widget.leaders.single.id : null);
+  late String? _interviewerId = _resolveInitialInterviewerId();
 
-  bool get _isValid => _interviewerId != null;
+  String? _resolveInitialInterviewerId() {
+    final requested = widget.initialInterviewerId;
+    if (requested != null &&
+        widget.leaders.any((leader) => leader.id == requested)) {
+      return requested;
+    }
+    return widget.leaders.length == 1 ? widget.leaders.single.id : null;
+  }
+
+  bool get _isPast =>
+      scheduledInstant(_moment).isBefore(scheduledInstant(DateTime.now()));
+
+  bool get _isValid => _interviewerId != null && !_isPast;
 
   @override
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
 
     return AlertDialog(
+      scrollable: true,
       title: Text(widget.title),
       content: SizedBox(
         width: 380,
-        child: ListView(
-          shrinkWrap: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               key: const Key('schedule-date-field'),
@@ -788,10 +808,25 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
               trailing: const Icon(Icons.more_time_outlined),
               onTap: _pickTime,
             ),
+            if (_isPast)
+              Padding(
+                key: const Key('schedule-past-error'),
+                padding: const EdgeInsets.only(bottom: Spacing.xs),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Escolha um horário atual ou futuro.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
             const Divider(),
             DropdownButtonFormField<String>(
               key: const Key('schedule-interviewer-field'),
               initialValue: _interviewerId,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Entrevistador'),
               items: widget.leaders
                   .map(
@@ -799,6 +834,8 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
                       value: leader.id,
                       child: Text(
                         '${leader.displayLabel} · ${leader.role.label}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   )
@@ -867,9 +904,15 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
     });
   }
 
-  void _submit() => Navigator.of(
-    context,
-  ).pop(_ScheduleDraft(scheduledAt: _moment, interviewerId: _interviewerId!));
+  void _submit() {
+    if (!_isValid) {
+      setState(() {});
+      return;
+    }
+    Navigator.of(
+      context,
+    ).pop(_ScheduleDraft(scheduledAt: _moment, interviewerId: _interviewerId!));
+  }
 }
 
 /// Entrevista escolhida no editor, antes de ir para o repositório.
@@ -917,7 +960,11 @@ class _InterviewEditorDialog extends StatefulWidget {
 class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
   late DateTime _date = widget.initialDate;
   late final Set<String> _participants = widget.initialParticipantIds.toSet();
-  late String? _interviewerId = widget.initialInterviewerId;
+  late String? _interviewerId =
+      widget.initialInterviewerId ??
+      (widget.interviewerChoices.length == 1
+          ? widget.interviewerChoices.single.id
+          : null);
 
   bool get _needsInterviewer =>
       widget.fixedInterviewer == null && widget.interviewerChoices.isNotEmpty;
@@ -931,11 +978,12 @@ class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
     final localizations = MaterialLocalizations.of(context);
 
     return AlertDialog(
+      scrollable: true,
       title: Text(widget.title),
       content: SizedBox(
         width: 380,
-        child: ListView(
-          shrinkWrap: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               key: const Key('interview-date-field'),
@@ -961,6 +1009,7 @@ class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
               DropdownButtonFormField<String>(
                 key: const Key('interview-interviewer-field'),
                 initialValue: _interviewerId,
+                isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Entrevistador'),
                 items: widget.interviewerChoices
                     .map(
@@ -969,6 +1018,8 @@ class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
                         child: Text(
                           '${leader.displayLabel} · ${leader.role.label}'
                           '${leader.isActive ? '' : ' (inativo)'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     )

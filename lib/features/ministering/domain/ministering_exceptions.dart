@@ -51,6 +51,12 @@ class CompanionshipAlreadyScheduledException extends MinisteringException {
       );
 }
 
+/// Data/hora de agendamento anterior ao minuto corrente.
+class PastAppointmentDateTimeException extends MinisteringException {
+  const PastAppointmentDateTimeException()
+    : super('O horário da entrevista não pode estar no passado.');
+}
+
 /// Entrevista registrada sem nenhum participante.
 class InterviewWithoutParticipantsException extends MinisteringException {
   const InterviewWithoutParticipantsException()

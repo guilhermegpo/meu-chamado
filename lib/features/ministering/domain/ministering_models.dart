@@ -223,8 +223,8 @@ class MinisteringRemovalCheck {
   /// Entrevistas realizadas que citam o cadastro.
   final int interviews;
 
-  /// Agendamentos abertos que citam o cadastro. Sempre zero para irmãos e
-  /// duplas, que não são referenciados diretamente por um agendamento.
+  /// Agendamentos abertos que citam o cadastro. É zero para irmãos; duplas e
+  /// lideranças podem ser citadas diretamente por um agendamento.
   final int appointments;
 
   /// Só é seguro apagar o que nunca foi usado.
