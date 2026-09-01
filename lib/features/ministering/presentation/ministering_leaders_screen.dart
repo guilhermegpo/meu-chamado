@@ -406,13 +406,14 @@ class _LeaderDialogState extends State<_LeaderDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: Text(widget.title),
     content: SizedBox(
       width: 380,
       child: Form(
         key: _formKey,
-        child: ListView(
-          shrinkWrap: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
               key: const Key('leader-label-field'),
@@ -432,13 +433,32 @@ class _LeaderDialogState extends State<_LeaderDialog> {
             DropdownButtonFormField<MinisteringLeadershipRole>(
               key: const Key('leader-role-field'),
               initialValue: _role,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Cargo na presidência do quórum',
               ),
               items: MinisteringLeadershipRole.values
                   .map(
-                    (role) =>
-                        DropdownMenuItem(value: role, child: Text(role.label)),
+                    (role) => DropdownMenuItem(
+                      value: role,
+                      child: Text(
+                        role.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(growable: false),
+              selectedItemBuilder: (context) => MinisteringLeadershipRole.values
+                  .map(
+                    (role) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        role.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   )
                   .toList(growable: false),
               onChanged: (value) {
