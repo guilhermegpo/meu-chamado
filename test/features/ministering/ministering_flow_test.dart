@@ -40,6 +40,15 @@ void main() {
   }
 
   testWidgets('do painel vazio ao trimestre fechado', (tester) async {
+    // Desde a 0.2.0-alpha.2 registrar entrevista exige liderança ativa. Este
+    // percurso é sobre o painel, não sobre o cadastro da presidência, então a
+    // liderança entra pelo repositório.
+    await MinisteringRepository(database).createLeader(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão P',
+      role: MinisteringLeadershipRole.quorumPresident,
+    );
+
     await pumpDashboard(tester);
 
     // 1. O painel vazio aponta o primeiro passo.
