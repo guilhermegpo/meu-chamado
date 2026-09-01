@@ -46,6 +46,12 @@ prompt, e não precisam ser reproduzidas nos relatórios.
   ([ADR 0013](docs/adr/0013-ministering-minimal-identification.md)).
 - Progresso nunca aparece como percentual isolado — mede trabalho
   administrativo, não desempenho espiritual.
+- Quem conduz a entrevista é um líder cadastrado de propósito, separado do
+  papel técnico do Workspace, nunca inferido do usuário logado
+  ([ADR 0014](docs/adr/0014-ministering-leadership-domain.md)).
+- O agendamento também não tem `status`: é linha própria em
+  `ministering_appointments`; cancelar apaga, concluir cria a entrevista.
+  Não se agenda no passado ([ADR 0015](docs/adr/0015-ministering-scheduling-model.md)).
 
 ## UX
 
@@ -97,5 +103,10 @@ Não reduzir testes existentes para obter verde.
 
 ## Fora de escopo até liberação explícita
 
-`0.2.0-alpha.2` e além: liderança/entrevistadores, agendamento, PIN/biometria,
-criptografia, Google Drive, updater, Aprender, Escola Dominical completa.
+`0.2.0-alpha.3` e além: PIN/biometria, criptografia, Google Drive, sync,
+updater, Aprender, Escola Dominical completa, relatório/visão para a liderança,
+histórico de trimestres anteriores.
+
+Liderança/entrevistadores e agendamento entraram na `0.2.0-alpha.2`
+([ADR 0014](docs/adr/0014-ministering-leadership-domain.md),
+[ADR 0015](docs/adr/0015-ministering-scheduling-model.md)).

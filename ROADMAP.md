@@ -56,11 +56,32 @@ existência do registro é o fato — ver
 guardada é a mínima — ver
 [ADR 0013](docs/adr/0013-ministering-minimal-identification.md).
 
+### 0.2.0-alpha.2 — Entregue em 2026-09-01
+
+Escopo entregue e verificado:
+
+- liderança do Quórum de Élderes como cadastro próprio, com cargo e ciclo
+  ativo/inativo, separada do papel técnico do Workspace;
+- entrevistador registrado em cada entrevista, escolhido de propósito;
+- agendamento de entrevista a partir de uma dupla pendente, com reagendar e
+  cancelar; concluir cria a entrevista com o entrevistador do plano;
+- recusa de agendamento no passado; agendamento cancelado ao desativar a dupla,
+  com confirmação;
+- schema local v4 com as tabelas de liderança e de agendamento, em migração
+  aditiva a partir da v3;
+- design system aplicado a home, painel, Ministração, perfis, chamados e
+  configurações; marca original no launcher e na splash.
+
+O agendamento é linha própria e também não tem coluna de status — ver
+[ADR 0015](docs/adr/0015-ministering-scheduling-model.md). Quem conduz a
+entrevista é um líder cadastrado de propósito — ver
+[ADR 0014](docs/adr/0014-ministering-leadership-domain.md).
+
 ### Previsto para as próximas alphas da série
 
-- `alpha.2`: agendamento de entrevistas, `status` e visão de liderança;
-- `alpha.3`: revisão de segurança e proteção do banco local;
-- `alpha.4`: histórico de trimestres anteriores;
+- `alpha.3`: revisão de segurança e proteção do banco local (PIN, biometria,
+  criptografia);
+- `alpha.4`: histórico de trimestres anteriores e relatório para a liderança;
 - `alpha.5`: apoio ao "Aprender" da reunião do quórum.
 
 Designações de famílias ou pessoas ministradas seguem fora da série enquanto o
