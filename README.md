@@ -10,7 +10,7 @@ Workspace local, com uma base modular para evoluções futuras.
 
 ## Status
 
-**`0.2.0-alpha.2` — Alpha.**
+**`0.2.0-alpha.3` — Alpha.**
 
 > [!WARNING]
 > Pré-versão em desenvolvimento ativo. A modelagem de dados, o schema local e as
@@ -18,11 +18,11 @@ Workspace local, com uma base modular para evoluções futuras.
 > caminho de atualização garantido entre pré-versões. Use apenas para avaliação,
 > com dados fictícios.
 
-Esta versão amplia o módulo do Secretário da Ministração: além de registrar a
-entrevista realizada, o app passa a guardar a liderança que a conduz e a agendar
-a entrevista que ainda vai acontecer. Não é uma versão estável nem distribuída
-publicamente — não há APK de release assinado com chave de produção, apenas
-artefatos de debug para validação.
+Esta versão fecha a segurança local: o app pede um PIN antes de mostrar qualquer
+dado, aceita biometria como atalho e passa a guardar o banco local
+criptografado. Não é uma versão estável nem distribuída publicamente — não há
+APK de release assinado com chave de produção, apenas artefatos de debug para
+validação.
 
 As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
 existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
@@ -36,6 +36,30 @@ distintos. Planilhas, papel e mensagens fragmentam esse acompanhamento.
 O projeto busca oferecer uma base Android local para organizar Workspaces,
 usuários e chamados. A primeira alpha funciona sem conta ou serviço externo e
 mantém os dados no dispositivo.
+
+## Implementado na `0.2.0-alpha.3`
+
+Segurança local dos dados.
+
+- bloqueio do app por PIN de seis dígitos antes de qualquer tela com dados; o
+  PIN nunca é guardado em claro (verificador PBKDF2-HMAC-SHA256);
+- biometria opcional como atalho para o PIN, ativável nas Configurações; o PIN
+  continua sendo o método principal e sempre disponível;
+- banco local criptografado (SQLite3 Multiple Ciphers); a chave é aleatória,
+  criada uma vez e guardada só no armazenamento seguro do sistema, nunca
+  derivada do PIN;
+- migração do banco texto puro da `alpha.2` para o formato criptografado, sem
+  perda: verifica, mantém backup e desfaz em caso de erro;
+- relock no cold start e após 30 s em segundo plano; "Alterar PIN" e
+  "Bloquear agora" nas Configurações;
+- atraso progressivo após PINs errados, com teto, sem nunca apagar dados;
+- `FLAG_SECURE` nas telas desbloqueadas em builds de release.
+
+O que o modelo de ameaças protege e o que **não** protege está em
+[docs/security/threat-model.md](docs/security/threat-model.md) e na
+[ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md). Não existe
+recuperação do PIN pela internet. A criptografia de dados é independente da
+assinatura do APK ([ADR 0011](docs/adr/0011-android-release-signing.md)).
 
 ## Implementado na `0.2.0-alpha.2`
 
@@ -107,7 +131,7 @@ decisões de arquitetura já registradas:
 - sincronização e integração com Google Drive;
 - Workspace compartilhado entre dispositivos ou pessoas;
 - atualização pelo próprio aplicativo;
-- PIN, biometria e criptografia do banco local;
+- recuperação do PIN pela internet;
 - designações de famílias, relatórios para a liderança e histórico de
   trimestres anteriores;
 - rotinas internas do módulo de Escola Dominical;
@@ -180,8 +204,8 @@ requer SDK e dispositivo ou emulador configurado.
 
 ## Versionamento
 
-O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.2+3`,
-`0.2.0-alpha.2` identifica a pré-versão do aplicativo e o número após `+` é o
+O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.3+4`,
+`0.2.0-alpha.3` identifica a pré-versão do aplicativo e o número após `+` é o
 número de build. No Android, esse número de build alimenta o `versionCode`, que
 deve crescer a cada pacote publicado, sem substituir o significado da versão
 SemVer exibida ao usuário.

@@ -36,6 +36,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(
+      find.textContaining(AppInfo.version),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+
     expect(find.textContaining(AppInfo.version), findsOneWidget);
     expect(find.textContaining('não oficial'), findsOneWidget);
   });

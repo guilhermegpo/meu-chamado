@@ -103,10 +103,24 @@ Não reduzir testes existentes para obter verde.
 
 ## Fora de escopo até liberação explícita
 
-`0.2.0-alpha.3` e além: PIN/biometria, criptografia, Google Drive, sync,
-updater, Aprender, Escola Dominical completa, relatório/visão para a liderança,
-histórico de trimestres anteriores.
+`0.2.0-alpha.4` e além: Google Drive, sync, updater, Aprender, Escola Dominical
+completa, relatório/visão para a liderança, histórico de trimestres anteriores,
+recuperação de PIN pela internet.
 
 Liderança/entrevistadores e agendamento entraram na `0.2.0-alpha.2`
 ([ADR 0014](docs/adr/0014-ministering-leadership-domain.md),
-[ADR 0015](docs/adr/0015-ministering-scheduling-model.md)).
+[ADR 0015](docs/adr/0015-ministering-scheduling-model.md)). Bloqueio por PIN,
+biometria e banco criptografado entraram na `0.2.0-alpha.3`
+([ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md)).
+
+### Segurança local (0.2.3+)
+
+- O bloqueio é do app, não por irmão/chamado/usuário, e não se mistura com o
+  RBAC do Workspace.
+- Chave do banco ≠ PIN: chave aleatória só no secure storage; PIN é verificador
+  derivado. Nunca guardar PIN em claro, nunca derivar a chave do PIN, nunca
+  logar segredo.
+- Nunca apagar dados por tentativas de PIN erradas.
+- Biometria é opcional e nunca o único método — sempre há o PIN.
+- Migração texto puro → criptografado é atômica e preserva o original até
+  confirmar.
