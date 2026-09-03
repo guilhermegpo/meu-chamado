@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'package:meu_chamado/core/security/encrypted_database.dart';
 
 part 'app_database.g.dart';
 
@@ -313,7 +315,10 @@ class MinisteringAppointments extends Table {
 final class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
-  AppDatabase.defaults() : super(driftDatabase(name: 'meu_chamado'));
+  /// Caminho de produção: abre [file] criptografado com [key]
+  /// ([ADR 0016](../../../docs/adr/0016-local-security-and-encrypted-storage.md)).
+  AppDatabase.encrypted(File file, String key)
+    : super(encryptedExecutor(file, key));
 
   @override
   int get schemaVersion => 4;
