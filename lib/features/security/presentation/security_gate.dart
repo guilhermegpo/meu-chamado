@@ -27,6 +27,11 @@ class SecurityGate extends ConsumerWidget {
       const SecureWindow().setSecure(
         secure: next.value != AppLockPhase.needsSetup,
       );
+      // Ao trancar, fecha qualquer rota aberta (Configurações, diálogos,
+      // subtelas) para a tela de bloqueio ficar à frente.
+      if (next.value == AppLockPhase.locked) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     });
 
     return lock.when(
