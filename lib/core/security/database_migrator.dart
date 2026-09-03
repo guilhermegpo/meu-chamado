@@ -1,15 +1,26 @@
 import 'dart:io';
 
+import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
+import 'package:meu_chamado/core/database/app_database.dart';
 import 'package:meu_chamado/core/security/encrypted_database.dart';
 import 'package:meu_chamado/core/security/security_exceptions.dart';
 import 'package:sqlite3/sqlite3.dart';
+
+/// Ponto de injeção de falha da migração. Só existe para os testes provarem que
+/// o rollback funciona sem depender de truques de sistema de arquivos.
+@visibleForTesting
+enum DatabaseMigrationFault { afterCopyBeforeSwap, afterSwapBeforeVerify }
 
 /// Leva um banco texto puro da `alpha.2` (schema v4) para o formato
 /// criptografado, sem apagar nada antes de confirmar.
 ///
 /// Ver [ADR 0016](../../../docs/adr/0016-local-security-and-encrypted-storage.md).
 class DatabaseMigrator {
-  const DatabaseMigrator();
+  const DatabaseMigrator({@visibleForTesting this.fault});
+
+  @visibleForTesting
+  final DatabaseMigrationFault? fault;
 
   /// Garante que [file] está criptografado com [key].
   ///
@@ -62,8 +73,18 @@ class DatabaseMigrator {
     File working,
   ) async {
     // 1. Copia schema + dados para o arquivo criptografado temporário e
-    //    confere a contagem de linhas antes de tocar no original.
-    final expectedCounts = _copyToEncrypted(file, key, working);
+    //    confere a contagem de linhas antes de tocar no original. Qualquer
+    //    falha aqui deixa o texto puro original intacto.
+    final Map<String, int> expectedCounts;
+    try {
+      expectedCounts = await _copyToEncrypted(file, key, working);
+      if (fault == DatabaseMigrationFault.afterCopyBeforeSwap) {
+        throw StateError('fault');
+      }
+    } catch (_) {
+      _safeDelete(working);
+      throw const DatabaseEncryptionMigrationException();
+    }
 
     // 2. Swap: original -> .bak, criptografado -> nome oficial.
     file.renameSync(backup.path);
@@ -77,6 +98,9 @@ class DatabaseMigrator {
 
     // 3. Confirma que o oficial abre criptografado com os mesmos dados.
     try {
+      if (fault == DatabaseMigrationFault.afterSwapBeforeVerify) {
+        throw StateError('fault');
+      }
       _verifyEncrypted(file, key, expectedCounts);
     } catch (_) {
       _safeDelete(file);
@@ -92,25 +116,57 @@ class DatabaseMigrator {
     _safeDelete(backup);
   }
 
-  /// Copia via `sqlcipher_export` (disponível no SQLite3 Multiple Ciphers) e
-  /// devolve a contagem de linhas por tabela do original.
-  Map<String, int> _copyToEncrypted(File source, String key, File target) {
+  /// Monta o arquivo criptografado com o schema v4 completo e copia os dados do
+  /// texto puro, coluna a coluna por nome — um banco `alpha.2` que chegou à v4
+  /// por migração pode ter as colunas em ordem diferente de um `createAll`.
+  ///
+  /// Devolve a contagem de linhas por tabela do original, para conferência.
+  Future<Map<String, int>> _copyToEncrypted(
+    File source,
+    String key,
+    File target,
+  ) async {
     _safeDelete(target);
-    final db = sqlite3.open(source.path);
-    try {
-      final counts = _tableRowCounts(db);
-      final userVersion =
-          db.select('PRAGMA user_version;').first.values.first as int;
 
-      db.execute(
-        "ATTACH DATABASE '${_escape(target.path)}' AS enc "
-        "KEY '${_escape(key)}';",
+    // 1. Schema: o onCreate do AppDatabase cria tabelas, índices e grava
+    //    user_version = 4 no arquivo já criptografado.
+    final schema = AppDatabase(
+      NativeDatabase(target, setup: (db) => applyDatabaseKey(db, key)),
+    );
+    try {
+      await schema.customSelect('SELECT 1').get();
+    } finally {
+      await schema.close();
+    }
+
+    // 2. Dados: anexa o texto puro e copia tabela a tabela, sem FK durante a
+    //    cópia.
+    final db = sqlite3.open(target.path);
+    try {
+      applyDatabaseKey(db, key);
+      db.execute("ATTACH DATABASE '${_escape(source.path)}' AS plain KEY '';");
+      db.execute('PRAGMA foreign_keys = OFF;');
+
+      final counts = <String, int>{};
+      final tables = db.select(
+        "SELECT name FROM plain.sqlite_master WHERE type = 'table' "
+        "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'android_%';",
       );
-      db.execute("SELECT sqlcipher_export('enc');");
-      // sqlcipher_export não copia o user_version; o Drift usa isso como
-      // schemaVersion, então precisa ir à mão.
-      db.execute('PRAGMA enc.user_version = $userVersion;');
-      db.execute('DETACH DATABASE enc;');
+      for (final row in tables) {
+        final name = row['name'] as String;
+        final columns = db
+            .select('PRAGMA plain.table_info("$name");')
+            .map((c) => '"${c['name']}"')
+            .join(', ');
+        db.execute(
+          'INSERT INTO main."$name" ($columns) '
+          'SELECT $columns FROM plain."$name";',
+        );
+        counts[name] =
+            db.select('SELECT count(*) AS c FROM plain."$name";').first['c']
+                as int;
+      }
+      db.execute('DETACH DATABASE plain;');
       return counts;
     } catch (_) {
       _safeDelete(target);
@@ -162,7 +218,11 @@ class DatabaseMigrator {
   bool _hasContent(File file) => file.existsSync() && file.lengthSync() > 0;
 
   void _safeDelete(File file) {
-    if (file.existsSync()) file.deleteSync();
+    if (file.existsSync()) {
+      file.deleteSync();
+    } else if (Directory(file.path).existsSync()) {
+      Directory(file.path).deleteSync(recursive: true);
+    }
   }
 
   String _escape(String value) => value.replaceAll("'", "''");
