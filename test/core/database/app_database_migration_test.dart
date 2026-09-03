@@ -26,7 +26,7 @@ void main() {
       final repository = WorkspaceRepository(database);
       try {
         final dashboard = await repository.loadDashboard();
-        expect(database.schemaVersion, 2);
+        expect(database.schemaVersion, 4);
         expect(dashboard, isNotNull);
         expect(dashboard!.users.single.name, 'Administrador v1');
         expect(dashboard.callings.single.title, 'Chamado v1');

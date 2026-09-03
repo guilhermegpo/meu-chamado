@@ -37,9 +37,55 @@ cada chamado. Não há APK de release assinado nesta versão — ver
 
 ## 0.2.x — Secretário da Ministração
 
-- pesquisar e implementar rotinas próprias do módulo;
-- manter dados nominais locais e protegidos;
-- validar relatórios sem expor dados reais no repositório.
+### 0.2.0-alpha.1 — Entregue em 2026-08-28
+
+Escopo entregue e verificado:
+
+- cadastro de irmãos ministradores com identificação mínima;
+- ciclo ativo/inativo para irmãos e duplas, sem exclusão que destrua histórico;
+- duplas de dois ou três integrantes, com rótulo próprio opcional;
+- registro de entrevista realizada, com data e participantes;
+- histórico por dupla, com remoção para corrigir engano;
+- painel do trimestre corrente separando pendentes e entrevistadas;
+- schema local v3 com integridade composta por chamado e migração aditiva;
+- idioma pt-BR no Material.
+
+O trimestre é derivado da data da entrevista e não existe coluna de status: a
+existência do registro é o fato — ver
+[ADR 0012](docs/adr/0012-ministering-quarterly-model.md). A identificação
+guardada é a mínima — ver
+[ADR 0013](docs/adr/0013-ministering-minimal-identification.md).
+
+### 0.2.0-alpha.2 — Entregue em 2026-09-01
+
+Escopo entregue e verificado:
+
+- liderança do Quórum de Élderes como cadastro próprio, com cargo e ciclo
+  ativo/inativo, separada do papel técnico do Workspace;
+- entrevistador registrado em cada entrevista, escolhido de propósito;
+- agendamento de entrevista a partir de uma dupla pendente, com reagendar e
+  cancelar; concluir cria a entrevista com o entrevistador do plano;
+- recusa de agendamento no passado; agendamento cancelado ao desativar a dupla,
+  com confirmação;
+- schema local v4 com as tabelas de liderança e de agendamento, em migração
+  aditiva a partir da v3;
+- design system aplicado a home, painel, Ministração, perfis, chamados e
+  configurações; marca original no launcher e na splash.
+
+O agendamento é linha própria e também não tem coluna de status — ver
+[ADR 0015](docs/adr/0015-ministering-scheduling-model.md). Quem conduz a
+entrevista é um líder cadastrado de propósito — ver
+[ADR 0014](docs/adr/0014-ministering-leadership-domain.md).
+
+### Previsto para as próximas alphas da série
+
+- `alpha.3`: revisão de segurança e proteção do banco local (PIN, biometria,
+  criptografia);
+- `alpha.4`: histórico de trimestres anteriores e relatório para a liderança;
+- `alpha.5`: apoio ao "Aprender" da reunião do quórum.
+
+Designações de famílias ou pessoas ministradas seguem fora da série enquanto o
+tratamento desse dado não estiver documentado e justificado.
 
 ## 0.3.x — Secretário da Escola Dominical
 

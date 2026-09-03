@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A frente usa o PNG extraído do raster mestre (@mipmap/ic_launcher_foreground),
+    não o vetor em drawable/: aquele vetor era uma reconstrução aproximada à
+    mão da marca (M, meia-lua, templo) e divergia visivelmente da identidade
+    aprovada que aparece dentro do app. O PNG vem do mesmo master.png que
+    AppsMeuMark usa, com o fundo do quadrado removido por segmentação de
+    região — não por chave de cor, porque a sombra interna do M tem tom quase
+    igual ao fundo — e recentralizado na zona segura de 108dp.
+
+    O vetor em drawable/ic_launcher_foreground.xml continua existindo e em uso:
+    é a marca do splash nativo (launch_mark.xml), que não faz parte desta
+    correção.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

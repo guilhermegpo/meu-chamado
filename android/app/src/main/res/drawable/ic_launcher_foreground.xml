@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Camada de frente do ícone adaptativo: o M da família Apps Meu, a meia-lua
+    e o templo estilizado.
+
+    Vetor, e não o raster mestre, porque o launcher aplica a própria máscara:
+    um bitmap com o quadrado arredondado e a sombra já embutidos seria
+    mascarado de novo e apareceria recortado. Aqui a arte vive dentro da zona
+    segura de 72dp do canvas de 108dp e o fundo fica na camada de trás.
+
+    A ordem dos caminhos é a ordem de pintura: o M ao fundo, a meia-lua sobre
+    ele e o templo à frente de tudo, como na identidade aprovada.
+    A arte inteira vive dentro de um grupo escalado: o canvas do ícone
+    adaptativo tem 108dp, mas só os 72dp centrais sobrevivem a qualquer
+    máscara de launcher. Sem a redução, o M encostava na borda e as pontas da
+    meia-lua eram cortadas. Escalar o grupo mantém as coordenadas legíveis e
+    faz a espessura do traço acompanhar junto.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:pivotX="54" android:pivotY="54"
+        android:scaleX="0.68" android:scaleY="0.68">
+        <!-- O M, traço único com pontas e junções arredondadas. -->
+        <path
+            android:strokeWidth="11.4"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M28.7,68.9 L28.7,27.5 L54,52 L79.3,27.5 L79.3,68.9">
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:startX="28.7" android:startY="27.5"
+                    android:endX="79.3" android:endY="68.9"
+                    android:type="linear">
+                    <item android:offset="0" android:color="#FF0EB7AC" />
+                    <item android:offset="0.5" android:color="#FF0F8FB8" />
+                    <item android:offset="1" android:color="#FF1267D5" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Meia-lua: dois arcos que se encontram nas pontas, o que afina as
+             extremidades sem precisar de traço de espessura variável. -->
+        <path android:fillType="nonZero"
+            android:pathData="M18.5,70.4
+                C22.2,82.6 36.4,89.6 54,89.6
+                C71.6,89.6 85.8,82.6 89.5,70.4
+                C83.6,79.4 70.2,84.4 54,84.4
+                C37.8,84.4 24.4,79.4 18.5,70.4 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="18.5" android:startY="70.4"
+                    android:endX="89.5" android:endY="89.6"
+                    android:type="linear">
+                    <item android:offset="0" android:color="#FF0EB7AC" />
+                    <item android:offset="1" android:color="#FF31D6CF" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Templo. Silhueta simétrica: torre central com pináculo, duas torres
+             menores e a base. -->
+        <path android:fillColor="#FFFFFFFF" android:fillType="nonZero"
+            android:pathData="M54,46.5 L57.7,63.5 L57.7,86 L50.3,86 L50.3,63.5 Z
+                M44.6,57.5 L47.3,69.5 L47.3,86 L41.9,86 L41.9,69.5 Z
+                M63.4,57.5 L66.1,69.5 L66.1,86 L60.7,86 L60.7,69.5 Z
+                M40.2,77.5 L67.8,77.5 L67.8,86 L40.2,86 Z" />
+    </group>
+</vector>

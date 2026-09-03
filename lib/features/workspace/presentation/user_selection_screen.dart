@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:meu_chamado/features/home/presentation/home_screen.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
+import 'package:meu_chamado/app/shell/app_shell.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
-import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class UserSelectionScreen extends StatelessWidget {
   const UserSelectionScreen({required this.dashboard, super.key});
@@ -15,42 +16,71 @@ class UserSelectionScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(Spacing.md),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const AppsMeuMark(size: 64),
-                  const SizedBox(height: 24),
-                  Text(
-                    dashboard.name,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                  AppSurface(
+                    gradient: AppGradients.darkHero,
+                    border: const Border(),
+                    shadow: true,
+                    child: Column(
+                      children: [
+                        const AppBrandLockup(onDark: true),
+                        const SizedBox(height: Spacing.xl),
+                        Text(
+                          dashboard.name,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                        const SizedBox(height: Spacing.xs),
+                        Text(
+                          'Quem está usando o Meu Chamado?',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.76),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Quem está usando o Meu Chamado?',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
+                  const SizedBox(height: Spacing.section),
+                  AppSectionHeader(
+                    title: 'Escolha seu perfil',
+                    count: dashboard.users.length,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: Spacing.sm),
                   for (final user in dashboard.users)
                     Card(
                       child: ListTile(
                         key: Key('select-user-${user.id}'),
-                        contentPadding: const EdgeInsets.all(14),
-                        leading: ProfileAvatar(
-                          name: user.name,
-                          photoPath: user.photoPath,
+                        contentPadding: const EdgeInsets.all(Spacing.sm),
+                        leading: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            gradient: AppGradients.brand,
+                            shape: BoxShape.circle,
+                          ),
+                          child: ProfileAvatar(
+                            name: user.name,
+                            photoPath: user.photoPath,
+                          ),
                         ),
                         title: Text(user.name),
                         subtitle: Text(_roleLabel(user.role)),
-                        trailing: const Icon(Icons.arrow_forward),
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 18,
+                        ),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => HomeScreen(
+                            builder: (_) => AppShell(
                               dashboard: dashboard,
                               currentUser: user,
                             ),
@@ -58,11 +88,23 @@ class UserSelectionScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Nesta versão local, a seleção de perfil não substitui '
-                    'autenticação individual.',
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: Spacing.md),
+                  AppSurface(
+                    padding: const EdgeInsets.all(Spacing.sm),
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, size: 20),
+                        SizedBox(width: Spacing.sm),
+                        Expanded(
+                          child: Text(
+                            'Nesta versão local, a seleção de perfil não '
+                            'substitui autenticação individual.',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

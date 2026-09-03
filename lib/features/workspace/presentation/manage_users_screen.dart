@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
 import 'package:meu_chamado/features/profile/presentation/user_editor_dialog.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_authorization.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class ManageUsersScreen extends ConsumerStatefulWidget {
   const ManageUsersScreen({
@@ -54,16 +56,30 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
               )
             : null,
         body: ListView.separated(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 104),
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.md,
+            Spacing.xs,
+            Spacing.md,
+            Spacing.fabClearance,
+          ),
           itemCount: _dashboard.users.length + 1,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             if (index == 0) {
-              return const Padding(
-                padding: EdgeInsets.fromLTRB(4, 4, 4, 12),
-                child: Text(
-                  'Perfis deste Workspace local. A seleção de perfil ainda '
-                  'não equivale a autenticação individual.',
+              return AppSurface(
+                gradient: AppGradients.soft(Theme.of(context).brightness),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppIconTile(icon: Icons.manage_accounts_outlined),
+                    SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Text(
+                        'Perfis deste Workspace local. A seleção de perfil '
+                        'ainda não equivale a autenticação individual.',
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -232,22 +248,29 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
   Future<void> _deleteUser(UserProfile target) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir usuário?'),
-        content: Text(
-          'O perfil de ${target.name} e seus chamados locais serão removidos.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+      builder: (context) {
+        final scheme = Theme.of(context).colorScheme;
+        return AlertDialog(
+          title: const Text('Excluir usuário?'),
+          content: Text(
+            'O perfil de ${target.name} e seus chamados locais serão removidos.',
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                foregroundColor: scheme.onError,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true || !mounted) return;
 

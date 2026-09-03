@@ -10,18 +10,19 @@ Workspace local, com uma base modular para evoluções futuras.
 
 ## Status
 
-**`0.1.0-alpha.1` — Alpha.**
+**`0.2.0-alpha.2` — Alpha.**
 
 > [!WARNING]
 > Pré-versão em desenvolvimento ativo. A modelagem de dados, o schema local e as
-> interfaces podem mudar de forma incompatível antes da `0.1.0` estável, e não há
+> interfaces podem mudar de forma incompatível antes da `1.0.0` estável, e não há
 > caminho de atualização garantido entre pré-versões. Use apenas para avaliação,
 > com dados fictícios.
 
-Esta versão fecha o app shell: a experiência inicial, a persistência local e as
-regras mínimas necessárias para exercitar o produto no Android. Não é uma versão
-estável nem distribuída publicamente — não há APK de release assinado com chave
-de produção, apenas artefatos de debug para validação.
+Esta versão amplia o módulo do Secretário da Ministração: além de registrar a
+entrevista realizada, o app passa a guardar a liderança que a conduz e a agendar
+a entrevista que ainda vai acontecer. Não é uma versão estável nem distribuída
+publicamente — não há APK de release assinado com chave de produção, apenas
+artefatos de debug para validação.
 
 As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
 existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
@@ -35,6 +36,49 @@ distintos. Planilhas, papel e mensagens fragmentam esse acompanhamento.
 O projeto busca oferecer uma base Android local para organizar Workspaces,
 usuários e chamados. A primeira alpha funciona sem conta ou serviço externo e
 mantém os dados no dispositivo.
+
+## Implementado na `0.2.0-alpha.2`
+
+Operação das entrevistas de ministração: quem conduz e o que está agendado.
+
+- liderança do Quórum de Élderes como cadastro próprio, com identificação
+  mínima, cargo e ciclo ativo/inativo, separada do papel técnico do Workspace;
+- entrevistador registrado em cada entrevista, sempre escolhido de propósito;
+- agendamento de entrevista a partir de uma dupla pendente, com data, hora e
+  entrevistador; reagendar edita a mesma linha, cancelar a remove;
+- conclusão de um agendamento cria a entrevista com o entrevistador do plano;
+- recusa de agendamento no passado; ao desativar a dupla, o agendamento aberto
+  é cancelado após confirmação, sem tocar em entrevistas realizadas;
+- schema local v4 com as tabelas de liderança e de agendamento, em migração
+  aditiva a partir da v3;
+- design system compartilhado por home, painel, telas de Ministração, perfis,
+  chamados e configurações, com a marca original no launcher e na splash.
+
+Quem conduz a entrevista é um líder cadastrado de propósito, nunca inferido do
+usuário logado ([ADR 0014](docs/adr/0014-ministering-leadership-domain.md)). O
+agendamento é uma linha própria e não tem coluna de status: cancelar é apagar,
+concluir é criar a entrevista ([ADR 0015](docs/adr/0015-ministering-scheduling-model.md)).
+
+## Implementado na `0.2.0-alpha.1`
+
+Módulo do Secretário da Ministração do Quórum de Élderes, primeira fatia
+funcional:
+
+- cadastro de irmãos ministradores com identificação mínima e ciclo
+  ativo/inativo;
+- duplas de dois ou três integrantes, com rótulo próprio opcional;
+- registro de entrevista realizada, com data e participantes;
+- histórico por dupla, com remoção para corrigir engano;
+- painel do trimestre corrente separando duplas pendentes e entrevistadas;
+- schema local v3 com integridade referencial composta por chamado e migração
+  aditiva a partir da v2;
+- idioma pt-BR no Material, incluindo o seletor de data.
+
+O trimestre é derivado da data da entrevista e não há coluna de status: a
+existência do registro é o fato de a entrevista ter ocorrido
+([ADR 0012](docs/adr/0012-ministering-quarterly-model.md)). O módulo guarda a
+identificação mínima que permite reconhecer uma dupla, e nada além disso
+([ADR 0013](docs/adr/0013-ministering-minimal-identification.md)).
 
 ## Implementado na `0.1.0-alpha.1`
 
@@ -63,16 +107,22 @@ decisões de arquitetura já registradas:
 - sincronização e integração com Google Drive;
 - Workspace compartilhado entre dispositivos ou pessoas;
 - atualização pelo próprio aplicativo;
-- rotinas internas dos módulos de Ministração e de Escola Dominical;
+- PIN, biometria e criptografia do banco local;
+- designações de famílias, relatórios para a liderança e histórico de
+  trimestres anteriores;
+- rotinas internas do módulo de Escola Dominical;
 - APK de release assinado e distribuição pública.
 
 ## Catálogo inicial
 
 O catálogo usa identificadores estáveis, independentes do texto mostrado na
-interface. Nesta alpha, ele permite associar e arquivar os chamados de
-Secretário da Ministração do Quórum de Élderes e Secretário da Escola Dominical.
-As rotinas próprias desses módulos continuam sinalizadas como **Em
-desenvolvimento**.
+interface. Ele permite associar e arquivar os chamados de Secretário da
+Ministração do Quórum de Élderes e Secretário da Escola Dominical.
+
+O chamado de Ministração abre o módulo a partir da `0.2.0-alpha.1`. A decisão
+usa a chave do módulo, nunca o título: o título é texto livre e renomeá-lo não
+muda comportamento. As rotinas da Escola Dominical continuam sinalizadas como
+**Em desenvolvimento**.
 
 ## Stack
 
@@ -130,8 +180,8 @@ requer SDK e dispositivo ou emulador configurado.
 
 ## Versionamento
 
-O projeto usa SemVer para a versão pública. Em `0.1.0-alpha.1+1`,
-`0.1.0-alpha.1` identifica a pré-versão do aplicativo e o número após `+` é o
+O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.2+3`,
+`0.2.0-alpha.2` identifica a pré-versão do aplicativo e o número após `+` é o
 número de build. No Android, esse número de build alimenta o `versionCode`, que
 deve crescer a cada pacote publicado, sem substituir o significado da versão
 SemVer exibida ao usuário.

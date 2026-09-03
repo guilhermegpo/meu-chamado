@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/app_info.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/app/theme/theme_mode_controller.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,11 +20,43 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(
+          Spacing.md,
+          Spacing.sm,
+          Spacing.md,
+          Spacing.xxxl,
+        ),
         children: [
-          Text('Aparência', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
+          AppSurface(
+            gradient: AppGradients.soft(Theme.of(context).brightness),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppIconTile(icon: Icons.tune_outlined),
+                SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Seu app, do seu jeito',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      SizedBox(height: Spacing.xxs),
+                      Text(
+                        'A preferência de tema fica salva neste dispositivo.',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Spacing.section),
+          const AppSectionHeader(title: 'Aparência'),
+          const SizedBox(height: Spacing.sm),
           SegmentedButton<ThemeMode>(
+            showSelectedIcon: false,
             segments: const [
               ButtonSegment(
                 value: ThemeMode.system,
@@ -59,20 +94,34 @@ class SettingsScreen extends ConsumerWidget {
                     }
                   },
           ),
-          const SizedBox(height: 28),
-          const ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.cloud_off_outlined),
-            title: Text('Compartilhamento'),
-            subtitle: Text('Planejado para uma versão futura'),
-          ),
-          const ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.info_outline),
-            title: Text('Meu Chamado'),
-            subtitle: Text(
-              '0.1.0-alpha.1 • projeto independente e não oficial',
+          const SizedBox(height: Spacing.section),
+          const AppSectionHeader(title: 'Sobre o produto'),
+          const SizedBox(height: Spacing.sm),
+          const AppSurface(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: AppIconTile(icon: Icons.cloud_off_outlined),
+                  title: Text('Compartilhamento'),
+                  subtitle: Text('Planejado para uma versão futura'),
+                ),
+                Divider(height: 1),
+                ListTile(
+                  leading: AppIconTile(icon: Icons.info_outline),
+                  title: Text('Meu Chamado'),
+                  subtitle: Text(AppInfo.versionLine),
+                ),
+              ],
             ),
+          ),
+          const SizedBox(height: Spacing.xxl),
+          const Center(child: AppBrandLockup()),
+          const SizedBox(height: Spacing.sm),
+          Text(
+            'Projeto independente e não oficial.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),

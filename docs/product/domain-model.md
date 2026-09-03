@@ -68,6 +68,46 @@ Os módulos compartilham somente infraestrutura genuinamente genérica. Regras d
 ministração não devem ser forçadas sobre Escola Dominical, e nenhuma regra pode
 depender de nomes de pessoas específicas.
 
+## Módulo do Secretário da Ministração
+
+Implementado a partir da `0.2.0-alpha.1`. Todas as entidades pertencem a um
+`Calling` e nenhuma consulta atravessa essa fronteira.
+
+### MinisteringBrother
+
+Irmão que pode compor uma dupla. Guarda apenas uma identificação curta e o
+estado ativo/inativo — ver
+[ADR 0013](../adr/0013-ministering-minimal-identification.md). Não é sinônimo
+de membro do quórum: um jovem ordenado mestre ou sacerdote pode compor uma
+dupla sem pertencer ao Quórum de Élderes.
+
+### MinisteringCompanionship
+
+Dupla de dois ou três integrantes, com rótulo próprio opcional. Inativa, sai do
+denominador do trimestre e mantém as entrevistas que já teve.
+
+### MinisteringInterview
+
+Entrevista **realizada**. Não possui status: a existência do registro é o fato.
+Não possui ano nem trimestre: ambos derivam de `completedAt` — ver
+[ADR 0012](../adr/0012-ministering-quarterly-model.md). Mais de uma entrevista
+da mesma dupla no mesmo trimestre é permitida, e o resumo conta duplas
+distintas, não entrevistas.
+
+### Quarter
+
+Valor derivado, nunca persistido. Define a janela meio aberta
+`start <= completedAt < nextStart` usada em toda contagem trimestral.
+
+### Invariantes do módulo
+
+- uma dupla tem de dois a três integrantes, sem repetição, todos ativos e do
+  mesmo chamado;
+- participante de entrevista compõe a dupla entrevistada;
+- data de entrevista não está no futuro;
+- irmão e dupla são desativados, nunca apagados;
+- alcançar registro de outro chamado responde "registro não encontrado".
+
 ## Invariantes iniciais
 
 - o primeiro usuário de um Workspace local recebe `ADMIN`;
