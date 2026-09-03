@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 /// Paleta proprietária da família Apps Meu.
+///
+/// Ver [docs/design/product-experience-2.md] para os princípios que estes
+/// tokens sustentam.
 abstract final class AppColors {
   static const navy950 = Color(0xFF04111F);
   static const navy900 = Color(0xFF071B30);
@@ -60,10 +63,24 @@ abstract final class Spacing {
   static const xl = 24.0;
   static const xxl = 32.0;
   static const xxxl = 40.0;
+  static const huge = 48.0;
   static const section = 28.0;
 
+  /// Recuo lateral de tela. 20dp é o piso da Product Experience 2.0; telas com
+  /// composição mais densa podem subir para 24.
+  static const screenGutter = 20.0;
+
   /// Margem lateral padrão das telas.
-  static const screenInset = EdgeInsets.symmetric(horizontal: md);
+  static const screenInset = EdgeInsets.symmetric(horizontal: screenGutter);
+
+  /// Recuo completo de uma tela em lista: laterais + respiro no topo e um fim
+  /// generoso para o último item não colar na barra.
+  static const screenPadding = EdgeInsets.fromLTRB(
+    screenGutter,
+    md,
+    screenGutter,
+    xxxl,
+  );
 
   /// Espaço extra no fim de listas com botão flutuante, para o último item não
   /// ficar embaixo dele.
@@ -86,14 +103,47 @@ abstract final class Radii {
 /// Durações de movimento.
 ///
 /// Curtas de propósito: a animação existe para explicar o que mudou, não para
-/// ser percebida como animação.
+/// ser percebida como animação. Os degraus seguem o Motion System da
+/// Product Experience 2.0 — feedback instantâneo até folha/modal.
 abstract final class Motion {
-  static const fast = Duration(milliseconds: 140);
-  static const base = Duration(milliseconds: 220);
+  /// Feedback imediato de toque: realce, ripple, mudança de cor.
+  static const instant = Duration(milliseconds: 100);
+
+  /// Microinteração: check, chip, ícone que alterna estado.
+  static const micro = Duration(milliseconds: 180);
+
+  /// Transição de componente: seção que troca, lista que reordena.
+  static const component = Duration(milliseconds: 240);
+
+  /// Transição de página dentro do app.
+  static const page = Duration(milliseconds: 300);
+
+  /// Folha ou modal subindo/descendo.
+  static const sheet = Duration(milliseconds: 320);
+
+  // Aliases herdados, mantidos para não quebrar chamadas existentes.
+  static const fast = micro;
+  static const base = component;
   static const slow = Duration(milliseconds: 340);
 
   static const enter = Curves.easeOutCubic;
   static const exit = Curves.easeInCubic;
+
+  /// Duração respeitando "reduzir movimento" do sistema: quando a pessoa
+  /// desativou animações, colapsa para instantâneo em vez de animar.
+  static Duration adaptive(BuildContext context, Duration duration) =>
+      MediaQuery.maybeOf(context)?.disableAnimations ?? false
+      ? Duration.zero
+      : duration;
+}
+
+/// Elevação por papel de superfície. Três degraus: apoiada, flutuante e
+/// destacada do fundo (folhas, diálogos). Sombra vem de [AppShadows].
+abstract final class Elevation {
+  static const flat = 0.0;
+  static const raised = 1.0;
+  static const floating = 3.0;
+  static const overlay = 6.0;
 }
 
 /// Altura mínima de alvos de toque.
