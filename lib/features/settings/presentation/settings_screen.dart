@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/app/app_info.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/app/theme/theme_mode_controller.dart';
+import 'package:meu_chamado/features/security/presentation/security_settings_section.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -94,6 +95,10 @@ class SettingsScreen extends ConsumerWidget {
                     }
                   },
           ),
+          const SizedBox(height: Spacing.section),
+          const AppSectionHeader(title: 'Segurança'),
+          const SizedBox(height: Spacing.sm),
+          const SecuritySettingsSection(),
           const SizedBox(height: Spacing.section),
           const AppSectionHeader(title: 'Sobre o produto'),
           const SizedBox(height: Spacing.sm),

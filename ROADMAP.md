@@ -77,10 +77,28 @@ O agendamento é linha própria e também não tem coluna de status — ver
 entrevista é um líder cadastrado de propósito — ver
 [ADR 0014](docs/adr/0014-ministering-leadership-domain.md).
 
+### 0.2.0-alpha.3 — Entregue em 2026-09-03
+
+Escopo entregue e verificado:
+
+- bloqueio do app por PIN de seis dígitos, com verificador derivado
+  (PBKDF2-HMAC-SHA256), antes de qualquer tela com dados;
+- biometria opcional como atalho para o PIN, com o PIN sempre disponível;
+- banco local criptografado com SQLite3 Multiple Ciphers; chave aleatória
+  guardada só no armazenamento seguro do sistema;
+- migração atômica do banco texto puro da `alpha.2` para o formato
+  criptografado, com verificação e rollback;
+- relock no cold start e após 30 s em segundo plano; atraso progressivo após
+  PINs errados, sem nunca apagar dados;
+- `FLAG_SECURE` nas telas desbloqueadas em builds de release.
+
+O que o modelo protege e o que não protege está em
+[docs/security/threat-model.md](docs/security/threat-model.md) e na
+[ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md). Não há
+recuperação do PIN pela internet.
+
 ### Previsto para as próximas alphas da série
 
-- `alpha.3`: revisão de segurança e proteção do banco local (PIN, biometria,
-  criptografia);
 - `alpha.4`: histórico de trimestres anteriores e relatório para a liderança;
 - `alpha.5`: apoio ao "Aprender" da reunião do quórum.
 

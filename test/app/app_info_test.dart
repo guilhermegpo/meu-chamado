@@ -7,11 +7,13 @@ import 'package:meu_chamado/app/app_info.dart';
 import 'package:meu_chamado/app/theme/app_theme.dart';
 import 'package:meu_chamado/features/settings/presentation/settings_screen.dart';
 
+import '../support/security_test_scope.dart';
+
 void main() {
   test('a versão exibida acompanha o pubspec', () {
     final pubspec = File('pubspec.yaml').readAsLinesSync();
     final line = pubspec.firstWhere((line) => line.startsWith('version:'));
-    // `0.2.0-alpha.2+3` → `0.2.0-alpha.2`: o número de build é do Android e
+    // `0.2.0-alpha.3+4` → `0.2.0-alpha.3`: o número de build é do Android e
     // não faz parte da versão que o usuário lê.
     final declared = line.split(':').last.trim().split('+').first;
 
@@ -28,10 +30,17 @@ void main() {
   testWidgets('as Configurações mostram a versão instalada', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
+        overrides: unlockedSecurityOverrides(),
         child: MaterialApp(theme: AppTheme.light, home: const SettingsScreen()),
       ),
     );
     await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.textContaining(AppInfo.version),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
 
     expect(find.textContaining(AppInfo.version), findsOneWidget);
     expect(find.textContaining('não oficial'), findsOneWidget);

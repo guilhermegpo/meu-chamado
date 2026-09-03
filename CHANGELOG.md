@@ -7,6 +7,46 @@ projeto pretende usar [Versionamento Semântico](https://semver.org/lang/pt-BR/)
 
 ## [Unreleased]
 
+## [0.2.0-alpha.3] — 2026-09-03
+
+Segurança local: o app deixa de guardar tudo em texto puro e acessível a
+qualquer pessoa com o aparelho na mão.
+
+### Added
+
+- bloqueio do app por PIN de seis dígitos antes de qualquer tela com dados,
+  com verificador PBKDF2-HMAC-SHA256 — o PIN nunca é guardado em claro
+  ([ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md));
+- biometria opcional como atalho para o PIN, ativável nas Configurações; o PIN
+  continua funcionando sempre e nunca deixa o usuário para fora;
+- banco local criptografado com SQLite3 Multiple Ciphers; a chave é aleatória,
+  criada uma vez e guardada só no armazenamento seguro do sistema (Keystore no
+  Android), nunca derivada do PIN;
+- migração atômica do banco texto puro da `alpha.2` (schema v4) para o formato
+  criptografado, com verificação, backup e rollback — nenhum dado é apagado
+  antes da confirmação;
+- relock ao abrir o app e após 30 s em segundo plano; "Bloquear agora" e
+  "Alterar PIN" nas Configurações;
+- atraso progressivo após o quinto PIN errado, com teto — sem nunca apagar
+  dados;
+- `FLAG_SECURE` nas telas desbloqueadas (builds de release): oculta o conteúdo
+  no seletor de apps e bloqueia captura de tela.
+
+### Changed
+
+- a abertura do app agora resolve chave, migração e banco criptografado antes
+  da primeira tela; a splash cobre esse trabalho.
+
+### Fora desta versão
+
+- recuperação do PIN pela internet — não existe e não é planejada nesta série;
+- Google Drive, sincronização, atualização pelo aplicativo;
+- histórico de trimestres anteriores;
+- APK de release assinado com chave de produção
+  ([ADR 0011](docs/adr/0011-android-release-signing.md), independente).
+
+Continua sendo uma pré-versão alpha.
+
 ## [0.2.0-alpha.2] — 2026-09-01
 
 Segunda fatia do módulo do Secretário da Ministração: a operação das
