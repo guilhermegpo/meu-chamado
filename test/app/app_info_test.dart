@@ -11,7 +11,7 @@ void main() {
   test('a versão exibida acompanha o pubspec', () {
     final pubspec = File('pubspec.yaml').readAsLinesSync();
     final line = pubspec.firstWhere((line) => line.startsWith('version:'));
-    // `0.2.0-alpha.1+2` → `0.2.0-alpha.1`: o número de build é do Android e
+    // `0.2.0-alpha.2+3` → `0.2.0-alpha.2`: o número de build é do Android e
     // não faz parte da versão que o usuário lê.
     final declared = line.split(':').last.trim().split('+').first;
 

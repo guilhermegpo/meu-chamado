@@ -68,9 +68,12 @@ derivado gravado.
 Filtrar por trimestre em memória deixa de ser possível sem carregar as datas —
 o que é aceitável no volume de uma ala e evita a duplicação de estado.
 
-Quando a `0.2.x` posterior trouxer agendamento, `status` e `scheduled_at`
-entram como colunas novas numa migração aditiva. A entrevista realizada
-continua sendo a linha que já existe hoje.
+Esta ADR previa que o agendamento chegaria como colunas `status` e
+`scheduled_at` nesta tabela. Na `0.2.0-alpha.2` a decisão foi outra: o
+agendamento é uma linha própria em `ministering_appointments`, também sem
+coluna de status — ver [ADR 0015](0015-ministering-scheduling-model.md). A
+entrevista realizada continua sendo a linha que já existe aqui, agora com a
+coluna `interviewer_id` da v4 ([ADR 0014](0014-ministering-leadership-domain.md)).
 
 O progresso do trimestre nunca é exibido como percentual isolado: o número mede
 o trabalho administrativo do secretário, não o desempenho espiritual de

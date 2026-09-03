@@ -7,6 +7,7 @@ import 'package:meu_chamado/features/ministering/domain/ministering_models.dart'
 import 'package:meu_chamado/features/ministering/presentation/ministering_brothers_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_companionships_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_interviews_screen.dart';
+import 'package:meu_chamado/features/ministering/presentation/ministering_leaders_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
@@ -53,6 +54,16 @@ class MinisteringDashboardScreen extends ConsumerWidget {
             ),
             icon: const Icon(Icons.group_outlined),
           ),
+          IconButton(
+            key: const Key('open-leaders-from-dashboard'),
+            tooltip: 'Liderança',
+            onPressed: () => _open(
+              context,
+              ref,
+              MinisteringLeadersScreen(callingId: callingId),
+            ),
+            icon: const Icon(Icons.badge_outlined),
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -76,6 +87,7 @@ class MinisteringDashboardScreen extends ConsumerWidget {
     MinisteringModuleState state,
   ) {
     final pending = state.pendingCompanionships;
+    final upcoming = state.appointments;
     final done = state.activeCompanionships
         .where((item) => state.isInterviewed(item.id))
         .toList(growable: false);
@@ -136,14 +148,44 @@ class MinisteringDashboardScreen extends ConsumerWidget {
             ),
           )
         else ...[
+          MinisteringSectionTitle(
+            label: 'Próximas entrevistas',
+            count: upcoming.length,
+          ),
+          const SizedBox(height: 8),
+          if (upcoming.isEmpty)
+            const MinisteringEmptyState(
+              icon: Icons.event_outlined,
+              text: 'Nenhuma entrevista agendada.',
+            )
+          else
+            for (final appointment in upcoming)
+              _AppointmentRow(
+                appointment: appointment,
+                companionship: state.companionshipById(
+                  appointment.companionshipId,
+                ),
+                interviewer: state.leaderById(appointment.interviewerId),
+                onTap: () => _open(
+                  context,
+                  ref,
+                  MinisteringInterviewsScreen(
+                    callingId: callingId,
+                    companionshipId: appointment.companionshipId,
+                  ),
+                ),
+              ),
+          const SizedBox(height: 24),
           MinisteringSectionTitle(label: 'Pendentes', count: pending.length),
           const SizedBox(height: 8),
           if (pending.isEmpty)
-            const MinisteringEmptyState(
+            MinisteringEmptyState(
               icon: Icons.done_all,
-              text:
-                  'Todas as duplas ativas já foram entrevistadas neste '
-                  'trimestre.',
+              text: upcoming.isEmpty
+                  ? 'Todas as duplas ativas já foram entrevistadas neste '
+                        'trimestre.'
+                  : 'Nada a agendar: as duplas restantes já foram '
+                        'entrevistadas ou já têm entrevista marcada.',
             )
           else
             for (final companionship in pending)
@@ -307,6 +349,64 @@ class _CompanionshipRow extends StatelessWidget {
         ),
         title: Text(companionship.title),
         subtitle: companionship.displayLabel == null ? null : Text(members),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 18,
+          color: scheme.onSurfaceVariant,
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+/// Uma entrevista marcada, na seção "Próximas entrevistas".
+class _AppointmentRow extends StatelessWidget {
+  const _AppointmentRow({
+    required this.appointment,
+    required this.companionship,
+    required this.interviewer,
+    required this.onTap,
+  });
+
+  final MinisteringAppointment appointment;
+  final MinisteringCompanionship? companionship;
+  final MinisteringLeader? interviewer;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final overdue = appointment.isOverdueAt(DateTime.now());
+    final interviewerLabel = interviewer == null
+        ? 'Entrevistador não encontrado'
+        : 'com ${interviewer!.displayLabel}';
+
+    return Card(
+      child: ListTile(
+        key: Key('dashboard-appointment-${appointment.id}'),
+        contentPadding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+        isThreeLine: true,
+        leading: AppIconTile(
+          icon: overdue ? Icons.event_busy_outlined : Icons.event_outlined,
+          size: 44,
+        ),
+        title: Text(companionship?.title ?? 'Dupla removida'),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: Spacing.xxs),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(formatAppointmentMoment(context, appointment.scheduledAt)),
+              Text(
+                overdue ? '$interviewerLabel · atrasada' : interviewerLabel,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: overdue ? scheme.error : scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
         trailing: Icon(
           Icons.arrow_forward_ios_rounded,
           size: 18,

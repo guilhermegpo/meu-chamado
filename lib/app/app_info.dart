@@ -6,7 +6,7 @@
 /// alguém como uma versão que não corresponde ao que está instalado.
 abstract final class AppInfo {
   /// Versão SemVer publicada, sem o número de build.
-  static const version = '0.2.0-alpha.1';
+  static const version = '0.2.0-alpha.2';
 
   /// Ressalva permanente: o app não é oficial nem endossado pela Igreja.
   static const disclaimer = 'projeto independente e não oficial';

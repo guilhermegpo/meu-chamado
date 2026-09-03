@@ -10,7 +10,7 @@ Workspace local, com uma base modular para evoluções futuras.
 
 ## Status
 
-**`0.2.0-alpha.1` — Alpha.**
+**`0.2.0-alpha.2` — Alpha.**
 
 > [!WARNING]
 > Pré-versão em desenvolvimento ativo. A modelagem de dados, o schema local e as
@@ -18,10 +18,11 @@ Workspace local, com uma base modular para evoluções futuras.
 > caminho de atualização garantido entre pré-versões. Use apenas para avaliação,
 > com dados fictícios.
 
-Esta versão fecha o app shell: a experiência inicial, a persistência local e as
-regras mínimas necessárias para exercitar o produto no Android. Não é uma versão
-estável nem distribuída publicamente — não há APK de release assinado com chave
-de produção, apenas artefatos de debug para validação.
+Esta versão amplia o módulo do Secretário da Ministração: além de registrar a
+entrevista realizada, o app passa a guardar a liderança que a conduz e a agendar
+a entrevista que ainda vai acontecer. Não é uma versão estável nem distribuída
+publicamente — não há APK de release assinado com chave de produção, apenas
+artefatos de debug para validação.
 
 As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
 existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
@@ -35,6 +36,28 @@ distintos. Planilhas, papel e mensagens fragmentam esse acompanhamento.
 O projeto busca oferecer uma base Android local para organizar Workspaces,
 usuários e chamados. A primeira alpha funciona sem conta ou serviço externo e
 mantém os dados no dispositivo.
+
+## Implementado na `0.2.0-alpha.2`
+
+Operação das entrevistas de ministração: quem conduz e o que está agendado.
+
+- liderança do Quórum de Élderes como cadastro próprio, com identificação
+  mínima, cargo e ciclo ativo/inativo, separada do papel técnico do Workspace;
+- entrevistador registrado em cada entrevista, sempre escolhido de propósito;
+- agendamento de entrevista a partir de uma dupla pendente, com data, hora e
+  entrevistador; reagendar edita a mesma linha, cancelar a remove;
+- conclusão de um agendamento cria a entrevista com o entrevistador do plano;
+- recusa de agendamento no passado; ao desativar a dupla, o agendamento aberto
+  é cancelado após confirmação, sem tocar em entrevistas realizadas;
+- schema local v4 com as tabelas de liderança e de agendamento, em migração
+  aditiva a partir da v3;
+- design system compartilhado por home, painel, telas de Ministração, perfis,
+  chamados e configurações, com a marca original no launcher e na splash.
+
+Quem conduz a entrevista é um líder cadastrado de propósito, nunca inferido do
+usuário logado ([ADR 0014](docs/adr/0014-ministering-leadership-domain.md)). O
+agendamento é uma linha própria e não tem coluna de status: cancelar é apagar,
+concluir é criar a entrevista ([ADR 0015](docs/adr/0015-ministering-scheduling-model.md)).
 
 ## Implementado na `0.2.0-alpha.1`
 
@@ -84,8 +107,9 @@ decisões de arquitetura já registradas:
 - sincronização e integração com Google Drive;
 - Workspace compartilhado entre dispositivos ou pessoas;
 - atualização pelo próprio aplicativo;
-- agendamento de entrevistas, designações de famílias, relatórios para a
-  liderança e histórico de trimestres anteriores;
+- PIN, biometria e criptografia do banco local;
+- designações de famílias, relatórios para a liderança e histórico de
+  trimestres anteriores;
 - rotinas internas do módulo de Escola Dominical;
 - APK de release assinado e distribuição pública.
 
@@ -156,8 +180,8 @@ requer SDK e dispositivo ou emulador configurado.
 
 ## Versionamento
 
-O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.1+2`,
-`0.2.0-alpha.1` identifica a pré-versão do aplicativo e o número após `+` é o
+O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.2+3`,
+`0.2.0-alpha.2` identifica a pré-versão do aplicativo e o número após `+` é o
 número de build. No Android, esse número de build alimenta o `versionCode`, que
 deve crescer a cada pacote publicado, sem substituir o significado da versão
 SemVer exibida ao usuário.

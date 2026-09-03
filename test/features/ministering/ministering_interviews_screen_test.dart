@@ -12,6 +12,7 @@ void main() {
   late MinisteringRepository repository;
   late List<String> brotherIds;
   late String companionshipId;
+  late MinisteringLeader leader;
 
   setUp(() async {
     database = await openMinisteringTestDatabase();
@@ -28,6 +29,11 @@ void main() {
     companionshipId = await repository.createCompanionship(
       callingId: ministeringTestCallingId,
       brotherIds: brotherIds,
+    );
+    leader = await repository.createLeader(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão P',
+      role: MinisteringLeadershipRole.quorumPresident,
     );
   });
 
@@ -56,6 +62,23 @@ void main() {
     expect(find.text('Pendente no ${quarter.label}'), findsOneWidget);
     expect(
       find.text('Nenhuma entrevista registrada para esta dupla.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('sem liderança ativa direciona ao cadastro em vez de registrar', (
+    tester,
+  ) async {
+    await repository.setLeaderActive(
+      callingId: ministeringTestCallingId,
+      leaderId: leader.id,
+      isActive: false,
+    );
+    await pump(tester);
+
+    expect(find.byKey(const Key('record-interview-button')), findsNothing);
+    expect(
+      find.byKey(const Key('open-leaders-for-record-button')),
       findsOneWidget,
     );
   });
@@ -207,6 +230,100 @@ void main() {
     await tapVisible(tester, find.text('Cancelar'));
 
     expect(find.byTooltip('Remover entrevista'), findsOneWidget);
+  });
+
+  testWidgets('agenda com o único entrevistador ativo', (tester) async {
+    await pump(tester);
+
+    await tapVisible(
+      tester,
+      find.byKey(const Key('schedule-interview-button')),
+    );
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('schedule-confirm')))
+          .onPressed,
+      isNotNull,
+    );
+    await tapVisible(tester, find.byKey(const Key('schedule-confirm')));
+
+    expect(find.text('Entrevista agendada.'), findsOneWidget);
+    await settleSnackBars(tester);
+    expect(
+      find.byKey(const Key('complete-appointment-button')),
+      findsOneWidget,
+    );
+
+    final state = await repository.loadModule(
+      callingId: ministeringTestCallingId,
+    );
+    expect(state.appointments.single.interviewerId, leader.id);
+  });
+
+  testWidgets('reagendar troca entrevistador inativo sem quebrar o editor', (
+    tester,
+  ) async {
+    final appointment = await repository.scheduleInterview(
+      callingId: ministeringTestCallingId,
+      companionshipId: companionshipId,
+      scheduledAt: DateTime.now().add(const Duration(days: 1)),
+      interviewerId: leader.id,
+    );
+    await repository.setLeaderActive(
+      callingId: ministeringTestCallingId,
+      leaderId: leader.id,
+      isActive: false,
+    );
+    final replacement = await repository.createLeader(
+      callingId: ministeringTestCallingId,
+      displayLabel: 'Irmão C',
+      role: MinisteringLeadershipRole.firstCounselor,
+    );
+
+    await pump(tester);
+    await tapVisible(
+      tester,
+      find.byKey(const Key('reschedule-appointment-button')),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('schedule-confirm')))
+          .onPressed,
+      isNotNull,
+    );
+    await tapVisible(tester, find.byKey(const Key('schedule-confirm')));
+
+    final state = await repository.loadModule(
+      callingId: ministeringTestCallingId,
+    );
+    expect(state.appointments.single.id, appointment.id);
+    expect(state.appointments.single.interviewerId, replacement.id);
+  });
+
+  testWidgets('dialogs operacionais cabem em tela estreita', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await pump(tester);
+    await tapVisible(
+      tester,
+      find.byKey(const Key('schedule-interview-button')),
+    );
+    await tester.pumpAndSettle();
+
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget);
+    expect(
+      find.descendant(of: dialog, matching: find.text('Agendar entrevista')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('o seletor de data não oferece datas futuras', (tester) async {
