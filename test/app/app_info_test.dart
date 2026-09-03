@@ -7,6 +7,8 @@ import 'package:meu_chamado/app/app_info.dart';
 import 'package:meu_chamado/app/theme/app_theme.dart';
 import 'package:meu_chamado/features/settings/presentation/settings_screen.dart';
 
+import '../support/security_test_scope.dart';
+
 void main() {
   test('a versão exibida acompanha o pubspec', () {
     final pubspec = File('pubspec.yaml').readAsLinesSync();
@@ -28,6 +30,7 @@ void main() {
   testWidgets('as Configurações mostram a versão instalada', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
+        overrides: unlockedSecurityOverrides(),
         child: MaterialApp(theme: AppTheme.light, home: const SettingsScreen()),
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meu_chamado/core/security/security_repository.dart';
 
-import 'fake_secure_store.dart';
+import '../../support/security_test_scope.dart';
 
 void main() {
   late FakeSecureStore store;

@@ -28,6 +28,10 @@ class AppLock extends AsyncNotifier<AppLockPhase> {
   _LifecycleBridge? _bridge;
   DateTime? _pausedAt;
 
+  /// Relógio — trocado só nos testes de ciclo de vida.
+  @visibleForTesting
+  DateTime Function() clock = DateTime.now;
+
   UnlockThrottle get throttle => _throttle;
 
   @override
@@ -93,14 +97,16 @@ class AppLock extends AsyncNotifier<AppLockPhase> {
     state = const AsyncData(AppLockPhase.locked);
   }
 
-  void _onPaused() => _pausedAt = DateTime.now();
+  @visibleForTesting
+  void onPaused() => _pausedAt = clock();
 
-  void _onResumed() {
+  @visibleForTesting
+  void onResumed() {
     final since = _pausedAt;
     _pausedAt = null;
     if (since == null) return;
     if (state.value != AppLockPhase.unlocked) return;
-    if (DateTime.now().difference(since) >= appLockGracePeriod) {
+    if (clock().difference(since) >= appLockGracePeriod) {
       state = const AsyncData(AppLockPhase.locked);
     }
   }
@@ -123,9 +129,9 @@ class _LifecycleBridge with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.paused:
-        _lock._onPaused();
+        _lock.onPaused();
       case AppLifecycleState.resumed:
-        _lock._onResumed();
+        _lock.onResumed();
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
       case AppLifecycleState.detached:
