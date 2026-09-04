@@ -30,9 +30,17 @@ class _AppSkeletonBoxState extends State<AppSkeletonBox>
   );
 
   @override
-  void initState() {
-    super.initState();
-    _controller.repeat(reverse: true);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Só pulsa quando o sistema permite animação: sob "reduzir movimento" o
+    // controlador fica parado para não deixar um timer pendente vivo.
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reduceMotion) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override

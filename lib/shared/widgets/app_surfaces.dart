@@ -18,28 +18,32 @@ class AppBrandLockup extends StatelessWidget {
       children: [
         AppsMeuMark(size: compact ? 42 : 54, shadow: !onDark),
         SizedBox(width: compact ? Spacing.sm : Spacing.md),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Meu Chamado',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-              ),
-            ),
-            if (!compact)
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'ORGANIZE · SIRVA · FAÇA A DIFERENÇA',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: foreground.withValues(alpha: 0.72),
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.75,
+                'Meu Chamado',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
                 ),
               ),
-          ],
+              if (!compact)
+                Text(
+                  'ORGANIZE · SIRVA · FAÇA A DIFERENÇA',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.72),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.75,
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );
