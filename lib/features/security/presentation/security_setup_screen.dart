@@ -6,6 +6,7 @@ import 'package:meu_chamado/core/security/security_repository.dart';
 import 'package:meu_chamado/features/security/application/app_lock.dart';
 import 'package:meu_chamado/features/security/application/security_providers.dart';
 import 'package:meu_chamado/features/security/presentation/pin_field.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
 
 enum _Step { create, confirm, biometric }
@@ -95,6 +96,7 @@ class _SecuritySetupScreenState extends ConsumerState<SecuritySetupScreen> {
   }
 
   void _reject(String message) {
+    AppHaptics.warning();
     setState(() => _error = message);
     _resetField();
   }

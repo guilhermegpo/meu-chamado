@@ -41,7 +41,7 @@ class AppSplashScreen extends StatelessWidget {
                             // não para ser percebida como animação.
                             TweenAnimationBuilder<double>(
                               tween: Tween(begin: 0, end: 1),
-                              duration: Motion.slow,
+                              duration: Motion.adaptive(context, Motion.slow),
                               curve: Motion.enter,
                               builder: (context, value, child) => Opacity(
                                 opacity: value,

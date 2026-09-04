@@ -9,6 +9,7 @@ import 'package:meu_chamado/features/ministering/presentation/ministering_compan
 import 'package:meu_chamado/features/ministering/presentation/ministering_interviews_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_leaders_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/widgets/app_skeleton.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Painel do trimestre corrente.
@@ -31,46 +32,13 @@ class MinisteringDashboardScreen extends ConsumerWidget {
     final module = ref.watch(ministeringModuleProvider(callingId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ministração'),
-        actions: [
-          IconButton(
-            key: const Key('open-companionships-button'),
-            tooltip: 'Duplas',
-            onPressed: () => _open(
-              context,
-              ref,
-              MinisteringCompanionshipsScreen(callingId: callingId),
-            ),
-            icon: const Icon(Icons.people_outline),
-          ),
-          IconButton(
-            key: const Key('open-brothers-from-dashboard'),
-            tooltip: 'Irmãos ministradores',
-            onPressed: () => _open(
-              context,
-              ref,
-              MinisteringBrothersScreen(callingId: callingId),
-            ),
-            icon: const Icon(Icons.group_outlined),
-          ),
-          IconButton(
-            key: const Key('open-leaders-from-dashboard'),
-            tooltip: 'Liderança',
-            onPressed: () => _open(
-              context,
-              ref,
-              MinisteringLeadersScreen(callingId: callingId),
-            ),
-            icon: const Icon(Icons.badge_outlined),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Ministração')),
       body: RefreshIndicator(
         onRefresh: () async =>
             ref.invalidate(ministeringModuleProvider(callingId)),
         child: module.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          skipLoadingOnReload: true,
+          loading: () => const _DashboardSkeleton(),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
             onRetry: () => ref.invalidate(ministeringModuleProvider(callingId)),
@@ -94,45 +62,15 @@ class MinisteringDashboardScreen extends ConsumerWidget {
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+      padding: const EdgeInsets.fromLTRB(
+        Spacing.screenGutter,
+        Spacing.md,
+        Spacing.screenGutter,
+        Spacing.xxxl,
+      ),
       children: [
-        AppSurface(
-          gradient: AppGradients.soft(Theme.of(context).brightness),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AppIconTile(icon: Icons.volunteer_activism_outlined),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Painel trimestral',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.xxs),
-                    Text(
-                      callingTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: Spacing.xs),
-                    const Text(
-                      'Acompanhe o que falta e registre somente o trabalho '
-                      'administrativo necessário.',
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: Spacing.md),
-        _QuarterCard(summary: state.summary),
-        const SizedBox(height: 24),
+        _QuarterCard(eyebrow: callingTitle, summary: state.summary),
+        const SizedBox(height: Spacing.section),
         if (state.activeCompanionships.isEmpty)
           _StartHere(
             hasBrothers: state.activeBrothers.length >= 2,
@@ -175,7 +113,7 @@ class MinisteringDashboardScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-          const SizedBox(height: 24),
+          const SizedBox(height: Spacing.section),
           MinisteringSectionTitle(label: 'Pendentes', count: pending.length),
           const SizedBox(height: 8),
           if (pending.isEmpty)
@@ -201,7 +139,7 @@ class MinisteringDashboardScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-          const SizedBox(height: 24),
+          const SizedBox(height: Spacing.section),
           MinisteringSectionTitle(label: 'Entrevistadas', count: done.length),
           const SizedBox(height: 8),
           if (done.isEmpty)
@@ -224,6 +162,24 @@ class MinisteringDashboardScreen extends ConsumerWidget {
                 ),
               ),
         ],
+        const SizedBox(height: Spacing.section),
+        _ManageSection(
+          onOpenCompanionships: () => _open(
+            context,
+            ref,
+            MinisteringCompanionshipsScreen(callingId: callingId),
+          ),
+          onOpenBrothers: () => _open(
+            context,
+            ref,
+            MinisteringBrothersScreen(callingId: callingId),
+          ),
+          onOpenLeaders: () => _open(
+            context,
+            ref,
+            MinisteringLeadersScreen(callingId: callingId),
+          ),
+        ),
       ],
     );
   }
@@ -236,8 +192,9 @@ class MinisteringDashboardScreen extends ConsumerWidget {
 }
 
 class _QuarterCard extends StatelessWidget {
-  const _QuarterCard({required this.summary});
+  const _QuarterCard({required this.eyebrow, required this.summary});
 
+  final String eyebrow;
   final QuarterSummary summary;
 
   @override
@@ -254,10 +211,20 @@ class _QuarterCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              eyebrow,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: Colors.white.withValues(alpha: 0.64),
+              ),
+            ),
+            const SizedBox(height: Spacing.xs),
             Row(
               children: [
                 const Icon(
                   Icons.calendar_month_outlined,
+                  size: 18,
                   color: AppColors.cyan400,
                 ),
                 const SizedBox(width: Spacing.xs),
@@ -291,14 +258,14 @@ class _QuarterCard extends StatelessWidget {
             const SizedBox(height: 12),
             TweenAnimationBuilder<double>(
               tween: Tween(end: summary.progress),
-              duration: Motion.slow,
+              duration: Motion.adaptive(context, Motion.slow),
               curve: Motion.enter,
               builder: (context, value, _) => ClipRRect(
                 borderRadius: BorderRadius.circular(999),
                 child: LinearProgressIndicator(
                   key: const Key('quarter-progress'),
                   value: value,
-                  minHeight: 10,
+                  minHeight: 8,
                   color: AppColors.cyan400,
                   backgroundColor: Colors.white.withValues(alpha: 0.14),
                 ),
@@ -467,5 +434,107 @@ class _StartHere extends StatelessWidget {
         ),
       ],
     ),
+  );
+}
+
+/// Ferramentas de cadastro, agrupadas depois do estado do trimestre: são o
+/// "onde eu configuro", que vem depois do "o que falta".
+class _ManageSection extends StatelessWidget {
+  const _ManageSection({
+    required this.onOpenCompanionships,
+    required this.onOpenBrothers,
+    required this.onOpenLeaders,
+  });
+
+  final VoidCallback onOpenCompanionships;
+  final VoidCallback onOpenBrothers;
+  final VoidCallback onOpenLeaders;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const AppSectionHeader(title: 'Gerenciar'),
+      const SizedBox(height: Spacing.sm),
+      AppSurface(
+        padding: EdgeInsets.zero,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            children: [
+              _ManageTile(
+                itemKey: const Key('open-companionships-button'),
+                icon: Icons.people_outline,
+                label: 'Duplas',
+                onTap: onOpenCompanionships,
+              ),
+              const Divider(height: 1),
+              _ManageTile(
+                itemKey: const Key('open-brothers-from-dashboard'),
+                icon: Icons.group_outlined,
+                label: 'Irmãos ministradores',
+                onTap: onOpenBrothers,
+              ),
+              const Divider(height: 1),
+              _ManageTile(
+                itemKey: const Key('open-leaders-from-dashboard'),
+                icon: Icons.badge_outlined,
+                label: 'Liderança',
+                onTap: onOpenLeaders,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class _ManageTile extends StatelessWidget {
+  const _ManageTile({
+    required this.itemKey,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final Key itemKey;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    key: itemKey,
+    leading: Icon(icon),
+    title: Text(label),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
+}
+
+/// Esqueleto do painel enquanto a leitura do módulo não chega.
+class _DashboardSkeleton extends StatelessWidget {
+  const _DashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsets.fromLTRB(
+      Spacing.screenGutter,
+      Spacing.md,
+      Spacing.screenGutter,
+      Spacing.xxxl,
+    ),
+    children: const [
+      AppSkeletonBox(height: 148, radius: Radii.surface),
+      SizedBox(height: Spacing.section),
+      AppSkeletonBox(height: 22, width: 180),
+      SizedBox(height: Spacing.sm),
+      AppSkeletonList(rows: 2),
+      SizedBox(height: Spacing.section),
+      AppSkeletonBox(height: 22, width: 140),
+      SizedBox(height: Spacing.sm),
+      AppSkeletonList(rows: 3),
+    ],
   );
 }

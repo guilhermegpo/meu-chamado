@@ -34,6 +34,36 @@ void main() {
     await tapVisible(tester, find.text(label).last);
   }
 
+  testWidgets(
+    'o editor cabe em 320px com escala de texto 1.5 e a orientação não corta',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await pumpMinisteringScreen(
+        tester,
+        database: database,
+        child: MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(1.5)),
+          child: const MinisteringBrothersScreen(
+            callingId: ministeringTestCallingId,
+          ),
+        ),
+      );
+
+      await tapVisible(tester, find.byKey(const Key('add-brother-button')));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      // A orientação inteira fica na tela, não elidida.
+      expect(find.textContaining('não registre nome completo'), findsOneWidget);
+      // A ação primária continua alcançável com o teclado aberto.
+      expect(find.byKey(const Key('brother-label-confirm')), findsOneWidget);
+    },
+  );
+
   testWidgets('parte do estado vazio e lembra a política de privacidade', (
     tester,
   ) async {

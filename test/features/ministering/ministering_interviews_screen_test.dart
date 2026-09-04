@@ -4,6 +4,7 @@ import 'package:meu_chamado/core/database/app_database.dart';
 import 'package:meu_chamado/features/ministering/data/ministering_repository.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_interviews_screen.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 
 import 'ministering_harness.dart';
 
@@ -302,7 +303,7 @@ void main() {
     expect(state.appointments.single.interviewerId, replacement.id);
   });
 
-  testWidgets('dialogs operacionais cabem em tela estreita', (tester) async {
+  testWidgets('as folhas operacionais cabem em tela estreita', (tester) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {
@@ -317,10 +318,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final dialog = find.byType(AlertDialog);
-    expect(dialog, findsOneWidget);
+    final sheet = find.byType(AppFormSheet);
+    expect(sheet, findsOneWidget);
     expect(
-      find.descendant(of: dialog, matching: find.text('Agendar entrevista')),
+      find.descendant(of: sheet, matching: find.text('Agendar entrevista')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
