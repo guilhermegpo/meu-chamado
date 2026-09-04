@@ -6,6 +6,8 @@ import 'package:meu_chamado/features/ministering/application/ministering_provide
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_leaders_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Tela operacional de uma dupla: o estado dela no trimestre, a entrevista
@@ -216,8 +218,9 @@ class _MinisteringInterviewsScreenState
     MinisteringCompanionship companionship,
     List<MinisteringLeader> leaders,
   ) async {
-    final draft = await showDialog<_ScheduleDraft>(
+    final draft = await showModalBottomSheet<_ScheduleDraft>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => _ScheduleDialog(
         title: 'Agendar entrevista',
         actionLabel: 'Agendar',
@@ -243,8 +246,9 @@ class _MinisteringInterviewsScreenState
     MinisteringAppointment appointment,
     List<MinisteringLeader> leaders,
   ) async {
-    final draft = await showDialog<_ScheduleDraft>(
+    final draft = await showModalBottomSheet<_ScheduleDraft>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => _ScheduleDialog(
         title: 'Reagendar entrevista',
         actionLabel: 'Salvar',
@@ -308,8 +312,9 @@ class _MinisteringInterviewsScreenState
     MinisteringCompanionship companionship,
     MinisteringModuleState state,
   ) async {
-    final draft = await showDialog<_InterviewDraft>(
+    final draft = await showModalBottomSheet<_InterviewDraft>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => _InterviewEditorDialog(
         title: 'Marcar realizada',
         actionLabel: 'Concluir',
@@ -340,8 +345,9 @@ class _MinisteringInterviewsScreenState
     MinisteringCompanionship companionship,
     List<MinisteringLeader> leaders,
   ) async {
-    final draft = await showDialog<_InterviewDraft>(
+    final draft = await showModalBottomSheet<_InterviewDraft>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => _InterviewEditorDialog(
         title: 'Registrar entrevista',
         actionLabel: 'Registrar',
@@ -385,8 +391,9 @@ class _MinisteringInterviewsScreenState
       ...state.activeLeaders,
       if (current != null && !current.isActive) current,
     ];
-    final draft = await showDialog<_InterviewDraft>(
+    final draft = await showModalBottomSheet<_InterviewDraft>(
       context: context,
+      isScrollControlled: true,
       builder: (_) => _InterviewEditorDialog(
         title: 'Corrigir entrevista',
         actionLabel: 'Salvar correção',
@@ -463,10 +470,15 @@ class _MinisteringInterviewsScreenState
         ..invalidate(ministeringModuleProvider(widget.callingId))
         ..invalidate(ministeringInterviewsProvider(_query));
       if (!mounted) return;
+      final completed =
+          successMessage.contains('registrada') ||
+          successMessage.contains('corrigida');
+      completed ? AppHaptics.milestone() : AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
@@ -777,80 +789,8 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
 
-    return AlertDialog(
-      scrollable: true,
-      title: Text(widget.title),
-      content: SizedBox(
-        width: 380,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              key: const Key('schedule-date-field'),
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.event_outlined),
-              title: const Text('Data'),
-              subtitle: Text(localizations.formatFullDate(_moment)),
-              trailing: const Icon(Icons.edit_calendar_outlined),
-              onTap: _pickDate,
-            ),
-            ListTile(
-              key: const Key('schedule-time-field'),
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.schedule_outlined),
-              title: const Text('Hora'),
-              subtitle: Text(
-                localizations.formatTimeOfDay(
-                  TimeOfDay.fromDateTime(_moment),
-                  alwaysUse24HourFormat: true,
-                ),
-              ),
-              trailing: const Icon(Icons.more_time_outlined),
-              onTap: _pickTime,
-            ),
-            if (_isPast)
-              Padding(
-                key: const Key('schedule-past-error'),
-                padding: const EdgeInsets.only(bottom: Spacing.xs),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Escolha um horário atual ou futuro.',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ),
-              ),
-            const Divider(),
-            DropdownButtonFormField<String>(
-              key: const Key('schedule-interviewer-field'),
-              initialValue: _interviewerId,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Entrevistador'),
-              items: widget.leaders
-                  .map(
-                    (leader) => DropdownMenuItem(
-                      value: leader.id,
-                      child: Text(
-                        '${leader.displayLabel} · ${leader.role.label}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: (value) => setState(() => _interviewerId = value),
-            ),
-            const SizedBox(height: Spacing.xs),
-            const MinisteringPrivacyNote(
-              text:
-                  'O entrevistador é sempre escolhido aqui. O secretário '
-                  'organiza a agenda sem virar entrevistador.',
-            ),
-          ],
-        ),
-      ),
+    return AppFormSheet(
+      title: widget.title,
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -862,6 +802,73 @@ class _ScheduleDialogState extends State<_ScheduleDialog> {
           child: Text(widget.actionLabel),
         ),
       ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            key: const Key('schedule-date-field'),
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.event_outlined),
+            title: const Text('Data'),
+            subtitle: Text(localizations.formatFullDate(_moment)),
+            trailing: const Icon(Icons.edit_calendar_outlined),
+            onTap: _pickDate,
+          ),
+          ListTile(
+            key: const Key('schedule-time-field'),
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.schedule_outlined),
+            title: const Text('Hora'),
+            subtitle: Text(
+              localizations.formatTimeOfDay(
+                TimeOfDay.fromDateTime(_moment),
+                alwaysUse24HourFormat: true,
+              ),
+            ),
+            trailing: const Icon(Icons.more_time_outlined),
+            onTap: _pickTime,
+          ),
+          if (_isPast)
+            Padding(
+              key: const Key('schedule-past-error'),
+              padding: const EdgeInsets.only(bottom: Spacing.xs),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Escolha um horário atual ou futuro.',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            ),
+          const Divider(),
+          DropdownButtonFormField<String>(
+            key: const Key('schedule-interviewer-field'),
+            initialValue: _interviewerId,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Entrevistador'),
+            items: widget.leaders
+                .map(
+                  (leader) => DropdownMenuItem(
+                    value: leader.id,
+                    child: Text(
+                      '${leader.displayLabel} · ${leader.role.label}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (value) => setState(() => _interviewerId = value),
+          ),
+          const SizedBox(height: Spacing.xs),
+          const MinisteringPrivacyNote(
+            text:
+                'O entrevistador é sempre escolhido aqui. O secretário '
+                'organiza a agenda sem virar entrevistador.',
+          ),
+        ],
+      ),
     );
   }
 
@@ -977,81 +984,8 @@ class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
 
-    return AlertDialog(
-      scrollable: true,
-      title: Text(widget.title),
-      content: SizedBox(
-        width: 380,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              key: const Key('interview-date-field'),
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.event_outlined),
-              title: const Text('Data da entrevista'),
-              subtitle: Text(localizations.formatFullDate(_date)),
-              trailing: const Icon(Icons.edit_calendar_outlined),
-              onTap: _pickDate,
-            ),
-            if (widget.fixedInterviewer != null)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.badge_outlined),
-                title: const Text('Entrevistador'),
-                subtitle: Text(
-                  '${widget.fixedInterviewer!.displayLabel} · '
-                  '${widget.fixedInterviewer!.role.label} (do agendamento)',
-                ),
-              )
-            else if (widget.interviewerChoices.isNotEmpty) ...[
-              const SizedBox(height: Spacing.xs),
-              DropdownButtonFormField<String>(
-                key: const Key('interview-interviewer-field'),
-                initialValue: _interviewerId,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Entrevistador'),
-                items: widget.interviewerChoices
-                    .map(
-                      (leader) => DropdownMenuItem(
-                        value: leader.id,
-                        child: Text(
-                          '${leader.displayLabel} · ${leader.role.label}'
-                          '${leader.isActive ? '' : ' (inativo)'}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    )
-                    .toList(growable: false),
-                onChanged: (value) => setState(() => _interviewerId = value),
-              ),
-            ],
-            const Divider(),
-            const Text('Quem participou'),
-            for (final member in widget.companionship.members)
-              CheckboxListTile(
-                key: Key('interview-participant-${member.id}'),
-                value: _participants.contains(member.id),
-                title: Text(member.displayLabel),
-                controlAffinity: ListTileControlAffinity.leading,
-                onChanged: (checked) => setState(() {
-                  if (checked ?? false) {
-                    _participants.add(member.id);
-                  } else {
-                    _participants.remove(member.id);
-                  }
-                }),
-              ),
-            const SizedBox(height: 8),
-            const MinisteringPrivacyNote(
-              text:
-                  'Registre apenas que a entrevista aconteceu. O que foi '
-                  'tratado nela não deve ser anotado no app.',
-            ),
-          ],
-        ),
-      ),
+    return AppFormSheet(
+      title: widget.title,
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -1063,6 +997,76 @@ class _InterviewEditorDialogState extends State<_InterviewEditorDialog> {
           child: Text(widget.actionLabel),
         ),
       ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            key: const Key('interview-date-field'),
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.event_outlined),
+            title: const Text('Data da entrevista'),
+            subtitle: Text(localizations.formatFullDate(_date)),
+            trailing: const Icon(Icons.edit_calendar_outlined),
+            onTap: _pickDate,
+          ),
+          if (widget.fixedInterviewer != null)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.badge_outlined),
+              title: const Text('Entrevistador'),
+              subtitle: Text(
+                '${widget.fixedInterviewer!.displayLabel} · '
+                '${widget.fixedInterviewer!.role.label} (do agendamento)',
+              ),
+            )
+          else if (widget.interviewerChoices.isNotEmpty) ...[
+            const SizedBox(height: Spacing.xs),
+            DropdownButtonFormField<String>(
+              key: const Key('interview-interviewer-field'),
+              initialValue: _interviewerId,
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: 'Entrevistador'),
+              items: widget.interviewerChoices
+                  .map(
+                    (leader) => DropdownMenuItem(
+                      value: leader.id,
+                      child: Text(
+                        '${leader.displayLabel} · ${leader.role.label}'
+                        '${leader.isActive ? '' : ' (inativo)'}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: (value) => setState(() => _interviewerId = value),
+            ),
+          ],
+          const Divider(),
+          const Text('Quem participou'),
+          for (final member in widget.companionship.members)
+            CheckboxListTile(
+              key: Key('interview-participant-${member.id}'),
+              value: _participants.contains(member.id),
+              title: Text(member.displayLabel),
+              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (checked) => setState(() {
+                if (checked ?? false) {
+                  _participants.add(member.id);
+                } else {
+                  _participants.remove(member.id);
+                }
+              }),
+            ),
+          const SizedBox(height: 8),
+          const MinisteringPrivacyNote(
+            text:
+                'Registre apenas que a entrevista aconteceu. O que foi '
+                'tratado nela não deve ser anotado no app.',
+          ),
+        ],
+      ),
     );
   }
 

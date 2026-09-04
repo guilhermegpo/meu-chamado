@@ -5,6 +5,8 @@ import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Liderança responsável pelas entrevistas de ministração.
@@ -266,8 +268,9 @@ class _MinisteringLeadersScreenState
     required String title,
     String? initialLabel,
     MinisteringLeadershipRole? initialRole,
-  }) => showDialog<_LeaderDraft>(
+  }) => showModalBottomSheet<_LeaderDraft>(
     context: context,
+    isScrollControlled: true,
     builder: (_) => _LeaderDialog(
       title: title,
       initialLabel: initialLabel,
@@ -284,10 +287,12 @@ class _MinisteringLeadersScreenState
       await operation();
       ref.invalidate(ministeringModuleProvider(widget.callingId));
       if (!mounted) return;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
@@ -405,70 +410,8 @@ class _LeaderDialogState extends State<_LeaderDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    scrollable: true,
-    title: Text(widget.title),
-    content: SizedBox(
-      width: 380,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              key: const Key('leader-label-field'),
-              controller: _label,
-              autofocus: true,
-              maxLength: 60,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Identificação',
-                helperText: 'Primeiro nome ou iniciais.',
-              ),
-              validator: (value) => (value == null || value.trim().isEmpty)
-                  ? 'Informe uma identificação.'
-                  : null,
-            ),
-            const SizedBox(height: Spacing.md),
-            DropdownButtonFormField<MinisteringLeadershipRole>(
-              key: const Key('leader-role-field'),
-              initialValue: _role,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Cargo na presidência do quórum',
-              ),
-              items: MinisteringLeadershipRole.values
-                  .map(
-                    (role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(
-                        role.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-              selectedItemBuilder: (context) => MinisteringLeadershipRole.values
-                  .map(
-                    (role) => Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        role.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: (value) {
-                if (value != null) setState(() => _role = value);
-              },
-            ),
-          ],
-        ),
-      ),
-    ),
+  Widget build(BuildContext context) => AppFormSheet(
+    title: widget.title,
     actions: [
       TextButton(
         onPressed: () => Navigator.of(context).pop(),
@@ -480,6 +423,65 @@ class _LeaderDialogState extends State<_LeaderDialog> {
         child: const Text('Salvar'),
       ),
     ],
+    child: Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            key: const Key('leader-label-field'),
+            controller: _label,
+            autofocus: true,
+            maxLength: 60,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Identificação',
+              helperText: 'Primeiro nome ou iniciais.',
+            ),
+            validator: (value) => (value == null || value.trim().isEmpty)
+                ? 'Informe uma identificação.'
+                : null,
+          ),
+          const SizedBox(height: Spacing.md),
+          DropdownButtonFormField<MinisteringLeadershipRole>(
+            key: const Key('leader-role-field'),
+            initialValue: _role,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Cargo na presidência do quórum',
+            ),
+            items: MinisteringLeadershipRole.values
+                .map(
+                  (role) => DropdownMenuItem(
+                    value: role,
+                    child: Text(
+                      role.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            selectedItemBuilder: (context) => MinisteringLeadershipRole.values
+                .map(
+                  (role) => Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      role.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (value) {
+              if (value != null) setState(() => _role = value);
+            },
+          ),
+        ],
+      ),
+    ),
   );
 
   void _submit() {

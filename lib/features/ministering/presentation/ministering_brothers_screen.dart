@@ -5,6 +5,7 @@ import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Cadastro dos irmãos que podem compor duplas.
@@ -262,10 +263,12 @@ class _MinisteringBrothersScreenState
       await operation();
       ref.invalidate(ministeringModuleProvider(widget.callingId));
       if (!mounted) return;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
