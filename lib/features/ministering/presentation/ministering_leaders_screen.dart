@@ -425,7 +425,10 @@ class _LeaderDialogState extends State<_LeaderDialog> {
             textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Identificação',
-              helperText: 'Primeiro nome ou iniciais.',
+              helperText:
+                  'Primeiro nome ou iniciais — não registre nome '
+                  'completo.',
+              counterText: '',
             ),
             validator: (value) => (value == null || value.trim().isEmpty)
                 ? 'Informe uma identificação.'

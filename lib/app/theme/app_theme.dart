@@ -67,6 +67,10 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colorScheme.surfaceContainerHigh,
+        // A orientação abaixo do campo quebra linha em vez de truncar — vale
+        // em tela estreita e com a escala de texto grande.
+        helperMaxLines: 3,
+        errorMaxLines: 3,
         border: const OutlineInputBorder(
           borderRadius: Radii.controlBorder,
           borderSide: BorderSide.none,

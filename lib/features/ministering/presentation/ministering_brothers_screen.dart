@@ -7,6 +7,7 @@ import 'package:meu_chamado/features/ministering/domain/ministering_models.dart'
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
 import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/app_action_sheet.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Cadastro dos irmãos que podem compor duplas.
@@ -250,8 +251,9 @@ class _MinisteringBrothersScreenState
   }
 
   Future<String?> _askLabel({required String title, String? initial}) =>
-      showDialog<String>(
+      showModalBottomSheet<String>(
         context: context,
+        isScrollControlled: true,
         builder: (_) => _BrotherLabelDialog(title: title, initial: initial),
       );
 
@@ -360,26 +362,8 @@ class _BrotherLabelDialogState extends State<_BrotherLabelDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.title),
-    content: Form(
-      key: _formKey,
-      child: TextFormField(
-        key: const Key('brother-label-field'),
-        controller: _controller,
-        autofocus: true,
-        maxLength: 60,
-        textCapitalization: TextCapitalization.words,
-        decoration: const InputDecoration(
-          labelText: 'Identificação',
-          helperText: 'Primeiro nome ou iniciais.',
-        ),
-        validator: (value) => (value == null || value.trim().isEmpty)
-            ? 'Informe uma identificação.'
-            : null,
-        onFieldSubmitted: (_) => _submit(),
-      ),
-    ),
+  Widget build(BuildContext context) => AppFormSheet(
+    title: widget.title,
     actions: [
       TextButton(
         onPressed: () => Navigator.of(context).pop(),
@@ -391,6 +375,25 @@ class _BrotherLabelDialogState extends State<_BrotherLabelDialog> {
         child: const Text('Salvar'),
       ),
     ],
+    child: Form(
+      key: _formKey,
+      child: TextFormField(
+        key: const Key('brother-label-field'),
+        controller: _controller,
+        autofocus: true,
+        maxLength: 60,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+          labelText: 'Identificação',
+          helperText: 'Primeiro nome ou iniciais — não registre nome completo.',
+          counterText: '',
+        ),
+        validator: (value) => (value == null || value.trim().isEmpty)
+            ? 'Informe uma identificação.'
+            : null,
+        onFieldSubmitted: (_) => _submit(),
+      ),
+    ),
   );
 
   void _submit() {
