@@ -7,6 +7,7 @@ import 'package:meu_chamado/features/ministering/domain/ministering_models.dart'
 import 'package:meu_chamado/features/ministering/presentation/ministering_brothers_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
 import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_action_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
@@ -415,6 +416,32 @@ class _CompanionshipCard extends StatelessWidget {
   final String toggleLabel;
   final IconData toggleIcon;
 
+  void _openActions(BuildContext context) => showAppActionSheet(
+    context: context,
+    title: companionship.title,
+    actions: [
+      AppAction(
+        label: 'Editar dupla',
+        icon: Icons.edit_outlined,
+        enabled: onEdit != null,
+        onSelected: () => onEdit?.call(),
+      ),
+      AppAction(
+        label: toggleLabel,
+        icon: toggleIcon,
+        enabled: onToggle != null,
+        onSelected: () => onToggle?.call(),
+      ),
+      AppAction(
+        label: 'Verificar exclusão da dupla',
+        icon: Icons.delete_outline,
+        destructive: true,
+        enabled: onDelete != null,
+        onSelected: () => onDelete?.call(),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final members = companionship.members
@@ -423,60 +450,21 @@ class _CompanionshipCard extends StatelessWidget {
 
     return Card(
       child: ListTile(
-        contentPadding: const EdgeInsets.fromLTRB(
-          Spacing.md,
-          Spacing.xs,
-          Spacing.xs,
-          Spacing.xs,
-        ),
-        leading: const AppIconTile(icon: Icons.people_outline, size: 44),
+        leading: const AppIconTile(icon: Icons.people_outline, size: 40),
         title: Text(companionship.title),
         subtitle: companionship.displayLabel != null
             ? Text(members)
             : Text(toggleLabel == 'Desativar dupla' ? 'Ativa' : 'Inativa'),
-        trailing: PopupMenuButton<_CompanionshipAction>(
+        trailing: IconButton(
           tooltip: 'Ações da dupla',
-          onSelected: (action) => switch (action) {
-            _CompanionshipAction.edit => onEdit?.call(),
-            _CompanionshipAction.toggle => onToggle?.call(),
-            _CompanionshipAction.delete => onDelete?.call(),
-          },
-          itemBuilder: (_) => [
-            PopupMenuItem(
-              value: _CompanionshipAction.edit,
-              enabled: onEdit != null,
-              child: const ListTile(
-                leading: Icon(Icons.edit_outlined),
-                title: Text('Editar dupla'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _CompanionshipAction.toggle,
-              enabled: onToggle != null,
-              child: ListTile(
-                leading: Icon(toggleIcon),
-                title: Text(toggleLabel),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _CompanionshipAction.delete,
-              enabled: onDelete != null,
-              child: const ListTile(
-                leading: Icon(Icons.delete_outline),
-                title: Text('Verificar exclusão da dupla'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
+          icon: const Icon(Icons.more_vert),
+          onPressed: () => _openActions(context),
         ),
+        onTap: () => _openActions(context),
       ),
     );
   }
 }
-
-enum _CompanionshipAction { edit, toggle, delete }
 
 /// Composição escolhida no editor, antes de ir para o repositório.
 class _CompanionshipDraft {

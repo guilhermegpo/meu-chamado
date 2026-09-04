@@ -71,6 +71,52 @@ class AppIconTile extends StatelessWidget {
   );
 }
 
+/// Avatar de iniciais para pessoas em listas — irmãos, liderança.
+///
+/// Sem foto no domínio da Ministração (identificação mínima), a inicial já
+/// dá âncora visual para percorrer a lista sem virar mais um ícone genérico.
+class AppInitialAvatar extends StatelessWidget {
+  const AppInitialAvatar({required this.label, this.size = 40, super.key});
+
+  final String label;
+  final double size;
+
+  String get _initials {
+    final parts = label.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) {
+      final word = parts.first;
+      return word.characters.take(2).toString().toUpperCase();
+    }
+    return (parts.first.characters.first + parts.last.characters.first)
+        .toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      excludeSemantics: true,
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.secondaryContainer,
+          shape: BoxShape.circle,
+        ),
+        child: Text(
+          _initials,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: scheme.onSecondaryContainer,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AppSurface extends StatelessWidget {
   const AppSurface({
     required this.child,
