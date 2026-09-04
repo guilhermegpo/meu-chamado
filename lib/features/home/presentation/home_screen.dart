@@ -55,6 +55,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // O shell pode readotar o Workspace depois de uma mudança feita por outra
+    // aba; sem isto a Home continuaria com o estado com que foi construída.
+    if (!identical(widget.dashboard, oldWidget.dashboard)) {
+      _dashboard = widget.dashboard;
+    }
+    if (!identical(widget.currentUser, oldWidget.currentUser)) {
+      _currentUser = widget.currentUser;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userCallings = _dashboard.callings
         .where((calling) => calling.userId == _currentUser.id)

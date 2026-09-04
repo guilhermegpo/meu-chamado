@@ -92,6 +92,31 @@ void main() {
     expect(find.byKey(const Key('home-greeting')), findsOneWidget);
   });
 
+  testWidgets('o shell adota o Workspace relido por outra aba', (tester) async {
+    // A aba abre com um dashboard sem o chamado; o banco de teste já tem o
+    // chamado de Ministração. Ao ouvir o bootstrap, o shell adota o estado
+    // atual e a Home passa a mostrar o módulo — sem cada aba avisar as outras.
+    await pumpMinisteringScreen(
+      tester,
+      database: database,
+      child: const AppShell(
+        dashboard: WorkspaceDashboard(
+          id: 'ws',
+          name: 'Workspace Demo',
+          type: WorkspaceType.local,
+          users: [currentUser],
+          callings: [],
+        ),
+        currentUser: currentUser,
+      ),
+    );
+
+    expect(
+      find.byKey(const Key('home-ministering-$ministeringTestCallingId')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('o back do Android volta ao Início antes de sair', (
     tester,
   ) async {
