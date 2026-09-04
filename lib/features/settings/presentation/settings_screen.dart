@@ -4,8 +4,11 @@ import 'package:meu_chamado/app/app_info.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/app/theme/theme_mode_controller.dart';
 import 'package:meu_chamado/features/security/presentation/security_settings_section.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
+/// Configurações, agrupadas por área: preferências do app e informações do
+/// produto. A segurança faz parte das preferências — o bloqueio é do app.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -22,40 +25,16 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-          Spacing.md,
+          Spacing.screenGutter,
           Spacing.sm,
-          Spacing.md,
+          Spacing.screenGutter,
           Spacing.xxxl,
         ),
         children: [
-          AppSurface(
-            gradient: AppGradients.soft(Theme.of(context).brightness),
-            child: const Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppIconTile(icon: Icons.tune_outlined),
-                SizedBox(width: Spacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Seu app, do seu jeito',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      SizedBox(height: Spacing.xxs),
-                      Text(
-                        'A preferência de tema fica salva neste dispositivo.',
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: Spacing.section),
-          const AppSectionHeader(title: 'Aparência'),
+          const _SectionLabel('Preferências'),
           const SizedBox(height: Spacing.sm),
+          Text('Aparência', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: Spacing.xs),
           SegmentedButton<ThemeMode>(
             showSelectedIcon: false,
             segments: const [
@@ -79,6 +58,7 @@ class SettingsScreen extends ConsumerWidget {
             onSelectionChanged: themeModeState.isLoading
                 ? null
                 : (selection) async {
+                    AppHaptics.selection();
                     try {
                       await ref
                           .read(themeModeProvider.notifier)
@@ -95,25 +75,28 @@ class SettingsScreen extends ConsumerWidget {
                     }
                   },
           ),
-          const SizedBox(height: Spacing.section),
-          const AppSectionHeader(title: 'Segurança'),
-          const SizedBox(height: Spacing.sm),
+          const SizedBox(height: Spacing.lg),
+          Text('Segurança', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: Spacing.xs),
           const SecuritySettingsSection(),
           const SizedBox(height: Spacing.section),
-          const AppSectionHeader(title: 'Sobre o produto'),
+          const _SectionLabel('Aplicativo'),
           const SizedBox(height: Spacing.sm),
           const AppSurface(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
                 ListTile(
-                  leading: AppIconTile(icon: Icons.cloud_off_outlined),
-                  title: Text('Compartilhamento'),
-                  subtitle: Text('Planejado para uma versão futura'),
+                  leading: Icon(Icons.shield_outlined),
+                  title: Text('Privacidade'),
+                  subtitle: Text(
+                    'Tudo fica neste aparelho. Sem sincronização, sem '
+                    'compartilhamento e sem envio para a internet.',
+                  ),
                 ),
                 Divider(height: 1),
                 ListTile(
-                  leading: AppIconTile(icon: Icons.info_outline),
+                  leading: Icon(Icons.info_outline),
                   title: Text('Meu Chamado'),
                   subtitle: Text(AppInfo.versionLine),
                 ),
@@ -132,4 +115,21 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Rótulo de grupo das configurações: caixa alta, discreto, sem virar um card.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      letterSpacing: 1,
+      fontWeight: FontWeight.w700,
+    ),
+  );
 }
