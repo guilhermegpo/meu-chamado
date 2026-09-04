@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/data/workspace_repository.dart';
+import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
 
 typedef OnboardingWorkspaceCreator = Future<void> Function({
@@ -164,7 +165,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.screenGutter,
+                Spacing.lg,
+                Spacing.screenGutter,
+                Spacing.xl,
+              ),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Center(
                 child: ConstrainedBox(
@@ -178,9 +184,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _OnboardingHeader(step: _step, stepCount: _stepCount),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: Spacing.section),
                       AnimatedSwitcher(
-                        duration: Motion.adaptive(context, Motion.micro),
+                        duration: Motion.adaptive(context, Motion.component),
+                        switchInCurve: Motion.enter,
+                        switchOutCurve: Motion.exit,
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0.04, 0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        ),
                         child: KeyedSubtree(
                           key: ValueKey(_step),
                           child: switch (_step) {
@@ -215,7 +233,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                       ),
                       if (_error != null) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: Spacing.md),
                         Semantics(
                           liveRegion: true,
                           child: Text(
@@ -227,7 +245,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 28),
+                      const SizedBox(height: Spacing.section),
                       _OnboardingNavigation(
                         step: _step,
                         saving: _saving,
@@ -236,7 +254,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ? _createWorkspace
                             : _nextStep,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: Spacing.lg),
                       Text(
                         'Projeto independente e não oficial.',
                         textAlign: TextAlign.center,
@@ -264,8 +282,8 @@ class _OnboardingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const AppsMeuMark(size: 52),
-        const SizedBox(width: 16),
+        const AppsMeuMark(size: 48, shadow: true),
+        const SizedBox(width: Spacing.md),
         Expanded(
           child: Semantics(
             label: 'Etapa ${step + 1} de $stepCount',
@@ -274,17 +292,25 @@ class _OnboardingHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'MEU CHAMADO',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
+                    'MEU CHAMADO · ETAPA ${step + 1} DE $stepCount',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: (step + 1) / stepCount,
-                    minHeight: 6,
+                  const SizedBox(height: Spacing.xs),
+                  ClipRRect(
                     borderRadius: BorderRadius.circular(999),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(end: (step + 1) / stepCount),
+                      duration: Motion.adaptive(context, Motion.component),
+                      curve: Motion.enter,
+                      builder: (context, value, _) =>
+                          LinearProgressIndicator(value: value, minHeight: 6),
+                    ),
                   ),
                 ],
               ),
@@ -304,38 +330,52 @@ class _IntroductionStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          header: true,
-          child: Text(
-            'Organize seus chamados no seu ritmo.',
-            key: const Key('onboarding-title'),
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(fontWeight: FontWeight.w800),
+        AppSurface(
+          gradient: AppGradients.darkHero,
+          border: const Border(),
+          shadow: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  'Organize seus chamados no seu ritmo.',
+                  key: const Key('onboarding-title'),
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: Spacing.sm),
+              Text(
+                'Reúna pessoas e responsabilidades em um lugar simples de '
+                'consultar.',
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: Colors.white.withValues(alpha: 0.78)),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          'Reúna pessoas e responsabilidades em um lugar simples de consultar.',
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: Spacing.section),
         const _FeatureTile(
           icon: Icons.view_list_outlined,
           title: 'Organize',
           description: 'Registre chamados sem depender de planilhas soltas.',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Spacing.sm),
         const _FeatureTile(
           icon: Icons.track_changes_outlined,
           title: 'Acompanhe',
           description:
               'Consulte o que está ativo e mantenha o histórico claro.',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Spacing.sm),
         const _FeatureTile(
           icon: Icons.phone_android_outlined,
           title: 'Comece local',
-          description: 'Nesta versão, seus dados ficam neste dispositivo. O compartilhamento poderá chegar no futuro.',
+          description:
+              'Nesta versão, seus dados ficam neste dispositivo. O '
+              'compartilhamento poderá chegar no futuro.',
         ),
       ],
     );
@@ -355,41 +395,29 @@ class _FeatureTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: SizedBox.square(
-                dimension: 44,
-                child: Icon(icon, color: colors.onSecondaryContainer),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
+    return AppSurface(
+      padding: const EdgeInsets.all(Spacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppIconTile(icon: icon, size: 44),
+          const SizedBox(width: Spacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: Spacing.xxs),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(height: 4),
-                  Text(description),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -418,53 +446,50 @@ class _WorkspaceStep extends StatelessWidget {
           header: true,
           child: Text(
             'Crie seu Workspace',
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Spacing.sm),
         Text(
           'O Workspace reúne as pessoas e os chamados que você administra.',
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 24),
-        Card(
-          margin: EdgeInsets.zero,
+        const SizedBox(height: Spacing.lg),
+        AppSurface(
+          padding: const EdgeInsets.all(Spacing.md),
           color: colors.secondaryContainer,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.offline_bolt_outlined,
-                  color: colors.onSecondaryContainer,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Workspace LOCAL',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: colors.onSecondaryContainer,
-                          fontWeight: FontWeight.w800,
-                        ),
+          border: const Border(),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.offline_bolt_outlined,
+                color: colors.onSecondaryContainer,
+              ),
+              const SizedBox(width: Spacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Workspace LOCAL',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: colors.onSecondaryContainer,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Funciona sem conta externa. Os dados ficam somente neste dispositivo e o compartilhamento ainda não está disponível.',
-                        style: TextStyle(color: colors.onSecondaryContainer),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: Spacing.xxs),
+                    Text(
+                      'Funciona sem conta externa. Os dados ficam somente neste dispositivo e o compartilhamento ainda não está disponível.',
+                      style: TextStyle(color: colors.onSecondaryContainer),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: Spacing.lg),
         TextField(
           key: const Key('workspace-name-field'),
           controller: controller,
@@ -518,16 +543,15 @@ class _AdministratorStep extends StatelessWidget {
           header: true,
           child: Text(
             'Crie o primeiro usuário',
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: Spacing.sm),
         Text(
           'Esse perfil começa como ADMIN para configurar o Workspace e gerenciar os demais usuários.',
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: Spacing.md),
         Align(
           alignment: Alignment.centerLeft,
           child: Semantics(
@@ -540,7 +564,7 @@ class _AdministratorStep extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: Spacing.lg),
         TextField(
           key: const Key('administrator-name-field'),
           controller: controller,
@@ -558,7 +582,7 @@ class _AdministratorStep extends StatelessWidget {
           onChanged: onChanged,
           onSubmitted: onSubmitted,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Spacing.sm),
         if (photoSelectionAvailable)
           OutlinedButton.icon(
             key: const Key('select-profile-photo-button'),
@@ -587,22 +611,24 @@ class _AdministratorStep extends StatelessWidget {
         else
           Semantics(
             label: 'Foto de perfil opcional. Pode ser adicionada depois.',
-            child: Card(
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    const Icon(Icons.add_a_photo_outlined),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Foto opcional · você poderá adicionar depois.',
-                        style: Theme.of(context).textTheme.bodyMedium,
+            child: AppSurface(
+              padding: const EdgeInsets.all(Spacing.md),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.add_a_photo_outlined,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Foto opcional · você poderá adicionar depois.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -652,7 +678,7 @@ class _OnboardingNavigation extends StatelessWidget {
           ),
         ),
         if (step > 0) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: Spacing.xs),
           TextButton.icon(
             key: const Key('onboarding-back-button'),
             onPressed: saving ? null : onBack,
