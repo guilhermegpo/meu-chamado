@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/features/callings/presentation/manage_callings_screen.dart';
 import 'package:meu_chamado/features/home/presentation/home_screen.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_screen.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/features/settings/presentation/more_screen.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
 
@@ -73,6 +75,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _select(int index) {
     if (index == _index) return;
+    AppHaptics.selection();
     setState(() => _index = index);
   }
 
@@ -111,6 +114,7 @@ class _ShellNavigationBar extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           height: 68,
+          animationDuration: Motion.component,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: const [
             NavigationDestination(

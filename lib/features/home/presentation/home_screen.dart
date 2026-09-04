@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
+import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/callings/domain/calling_catalog.dart';
 import 'package:meu_chamado/features/callings/presentation/manage_callings_screen.dart';
+import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
+import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_dashboard_screen.dart';
+import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
 import 'package:meu_chamado/features/profile/presentation/profile_avatar.dart';
 import 'package:meu_chamado/features/settings/presentation/settings_screen.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
+import 'package:meu_chamado/shared/widgets/app_skeleton.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
+/// Início contextual.
+///
+/// A ordem responde ao que a pessoa precisa resolver agora: uma saudação
+/// curta, o estado operacional dos chamados que já têm módulo (o que falta,
+/// a próxima ação), e só depois a lista administrativa dos chamados. Não é um
+/// menu de atalhos.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({
     required this.dashboard,
@@ -23,13 +34,9 @@ class HomeScreen extends ConsumerStatefulWidget {
   final UserProfile currentUser;
 
   /// Leva para a aba Chamados quando a Home vive dentro do shell.
-  ///
-  /// Sem isto a Home empilharia a mesma tela que já é um destino da barra, e
-  /// o usuário terminaria com dois caminhos para o mesmo lugar.
   final VoidCallback? onOpenCallings;
 
-  /// Avisa o shell de que o Workspace foi relido, para as outras abas não
-  /// continuarem mostrando o estado anterior.
+  /// Avisa o shell de que o Workspace foi relido.
   final void Function(WorkspaceDashboard, UserProfile)? onReloaded;
 
   @override
@@ -59,6 +66,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .where((calling) => calling.status == CallingStatus.archived)
         .length;
 
+    final readyCallings = activeCallings
+        .where(_hasModule)
+        .toList(growable: false);
+    final plainCallings = activeCallings
+        .where((calling) => !_hasModule(calling))
+        .toList(growable: false);
+
     return Scaffold(
       appBar: AppBar(
         title: const AppBrandLockup(compact: true),
@@ -77,57 +91,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
-            Spacing.md,
+            Spacing.screenGutter,
             Spacing.sm,
-            Spacing.md,
+            Spacing.screenGutter,
             Spacing.xxxl,
           ),
           children: [
-            _WelcomeHero(user: _currentUser, workspaceName: _dashboard.name),
-            const SizedBox(height: Spacing.md),
-            const SizedBox(height: Spacing.section),
-            AppSectionHeader(
-              title: 'Meus chamados',
-              count: activeCallings.length,
-              action: TextButton.icon(
-                key: const Key('manage-callings-button'),
-                onPressed: widget.onOpenCallings ?? _openCallings,
-                icon: const Icon(Icons.tune, size: 18),
-                label: const Text('Gerenciar'),
+            _Greeting(
+              key: const Key('home-greeting'),
+              user: _currentUser,
+              workspaceName: _dashboard.name,
+            ),
+            if (activeCallings.isEmpty) ...[
+              const SizedBox(height: Spacing.section),
+              AppEmptyState(
+                icon: Icons.assignment_outlined,
+                title: 'Nenhum chamado ativo',
+                message:
+                    'Adicione um chamado para acompanhar suas rotinas em um '
+                    'só lugar.',
+                action: FilledButton.icon(
+                  key: const Key('home-empty-add-calling'),
+                  onPressed: widget.onOpenCallings ?? _openCallings,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Adicionar chamado'),
+                ),
               ),
-            ),
-            const SizedBox(height: Spacing.sm),
-            AnimatedSwitcher(
-              duration: Motion.base,
-              switchInCurve: Motion.enter,
-              switchOutCurve: Motion.exit,
-              child: activeCallings.isEmpty
-                  ? const AppEmptyState(
-                      key: ValueKey('empty-callings'),
-                      icon: Icons.assignment_outlined,
-                      title: 'Nenhum chamado ativo',
-                      message:
-                          'Adicione um chamado para organizar suas rotinas em '
-                          'um só lugar.',
-                    )
-                  : Column(
-                      key: ValueKey(activeCallings.length),
-                      children: [
-                        for (final calling in activeCallings)
-                          _CallingCard(
-                            calling: calling,
-                            hasModule: _hasModule(calling),
-                            onTap: _hasModule(calling)
-                                ? () => _openModule(calling)
-                                : null,
-                          ),
-                      ],
-                    ),
-            ),
+            ],
+            for (final calling in readyCallings) ...[
+              const SizedBox(height: Spacing.section),
+              _MinisteringPulse(
+                key: Key('home-ministering-${calling.id}'),
+                calling: calling,
+                onOpen: () => _openModule(calling),
+              ),
+            ],
+            if (plainCallings.isNotEmpty) ...[
+              const SizedBox(height: Spacing.section),
+              AppSectionHeader(
+                title: 'Outros chamados',
+                count: plainCallings.length,
+                action: TextButton.icon(
+                  key: const Key('manage-callings-button'),
+                  onPressed: widget.onOpenCallings ?? _openCallings,
+                  icon: const Icon(Icons.tune, size: 18),
+                  label: const Text('Gerenciar'),
+                ),
+              ),
+              const SizedBox(height: Spacing.sm),
+              for (final calling in plainCallings)
+                _CallingCard(calling: calling),
+            ] else if (readyCallings.isNotEmpty) ...[
+              const SizedBox(height: Spacing.md),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: const Key('manage-callings-button'),
+                  onPressed: widget.onOpenCallings ?? _openCallings,
+                  icon: const Icon(Icons.tune, size: 18),
+                  label: const Text('Gerenciar chamados'),
+                ),
+              ),
+            ],
             if (archivedCount > 0) ...[
               const SizedBox(height: Spacing.xs),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: Alignment.centerLeft,
                 child: AppStatusPill(
                   icon: Icons.archive_outlined,
                   label:
@@ -137,32 +166,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
             const SizedBox(height: Spacing.section),
-            AppSurface(
-              gradient: AppGradients.soft(Theme.of(context).brightness),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppIconTile(icon: Icons.shield_outlined),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Privacidade por padrão',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: Spacing.xs),
-                        const Text(
-                          'Este Workspace funciona offline. Sincronização e '
-                          'compartilhamento ainda não estão implementados.',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const _PrivacyNote(),
           ],
         ),
       ),
@@ -181,6 +185,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+    if (mounted) ref.invalidate(ministeringModuleProvider(calling.id));
   }
 
   Future<void> _openCallings() async {
@@ -221,84 +226,238 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _WelcomeHero extends StatelessWidget {
-  const _WelcomeHero({required this.user, required this.workspaceName});
+/// Saudação pelo período do dia. Curta: uma linha de presença, uma de contexto.
+class _Greeting extends StatelessWidget {
+  const _Greeting({required this.user, required this.workspaceName, super.key});
 
   final UserProfile user;
   final String workspaceName;
 
+  static String _partOfDay(int hour) {
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  }
+
   @override
-  Widget build(BuildContext context) => AppSurface(
-    gradient: AppGradients.darkHero,
-    border: const Border(),
-    shadow: true,
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(3),
-          decoration: const BoxDecoration(
-            gradient: AppGradients.brand,
-            shape: BoxShape.circle,
+  Widget build(BuildContext context) {
+    final first = user.name.split(' ').first;
+    return AppSurface(
+      gradient: AppGradients.darkHero,
+      border: const Border(),
+      shadow: true,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: const BoxDecoration(
+              gradient: AppGradients.brand,
+              shape: BoxShape.circle,
+            ),
+            child: ProfileAvatar(
+              name: user.name,
+              photoPath: user.photoPath,
+              radius: 28,
+            ),
           ),
-          child: ProfileAvatar(
-            name: user.name,
-            photoPath: user.photoPath,
-            radius: 30,
+          const SizedBox(width: Spacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_partOfDay(DateTime.now().hour)}, $first',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(color: Colors.white),
+                ),
+                const SizedBox(height: Spacing.xxs),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.lock_outline,
+                      size: 15,
+                      color: AppColors.cyan400,
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    Expanded(
+                      child: Text(
+                        'Workspace local · $workspaceName',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.74),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: Spacing.md),
-        Expanded(
+        ],
+      ),
+    );
+  }
+}
+
+/// Estado operacional do chamado de Ministração, direto na Home.
+///
+/// Responde "o que falta?" antes de "onde configuro?": o trimestre, quantas
+/// duplas faltam, e a próxima ação concreta. Carrega com esqueleto, falha com
+/// calma.
+class _MinisteringPulse extends ConsumerWidget {
+  const _MinisteringPulse({
+    required this.calling,
+    required this.onOpen,
+    super.key,
+  });
+
+  final CallingSummary calling;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final module = ref.watch(ministeringModuleProvider(calling.id));
+    final theme = Theme.of(context);
+
+    return AppSurface(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: Radii.surfaceBorder,
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.all(Spacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Olá, ${user.name}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: Spacing.xs),
               Row(
                 children: [
-                  const Icon(
-                    Icons.offline_bolt_outlined,
-                    size: 16,
-                    color: AppColors.cyan400,
+                  const AppIconTile(
+                    icon: Icons.volunteer_activism_outlined,
+                    size: 40,
                   ),
-                  const SizedBox(width: Spacing.xs),
+                  const SizedBox(width: Spacing.sm),
                   Expanded(
                     child: Text(
-                      'Workspace local · $workspaceName',
-                      maxLines: 1,
+                      calling.title,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.76),
-                      ),
+                      style: theme.textTheme.titleMedium,
                     ),
                   ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ],
+              ),
+              const SizedBox(height: Spacing.md),
+              module.when(
+                loading: () => const AppSkeletonList(rows: 2, rowHeight: 20),
+                error: (error, _) => Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_off_outlined,
+                      size: 18,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: Spacing.xs),
+                    Expanded(child: Text(userErrorMessage(error))),
+                    TextButton(
+                      onPressed: () =>
+                          ref.invalidate(ministeringModuleProvider(calling.id)),
+                      child: const Text('Tentar de novo'),
+                    ),
+                  ],
+                ),
+                data: (state) => _summary(context, state),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _summary(BuildContext context, MinisteringModuleState state) {
+    final theme = Theme.of(context);
+    final summary = state.summary;
+    final total = summary.activeCompanionships;
+
+    if (total == 0) {
+      return Text(
+        state.activeBrothers.length >= 2
+            ? 'Monte as duplas para acompanhar o trimestre.'
+            : 'Comece cadastrando os irmãos ministradores.',
+        style: theme.textTheme.bodyMedium,
+      );
+    }
+
+    final nextAppointment = state.appointments.isEmpty
+        ? null
+        : state.appointments.first;
+    final pending = summary.pending;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          summary.quarter.label,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: Spacing.xxs),
+        Text(
+          '${summary.interviewedCompanionships} de $total '
+          'dupla${total == 1 ? '' : 's'} '
+          'entrevistada${total == 1 ? '' : 's'}',
+          style: theme.textTheme.titleMedium,
+        ),
+        const SizedBox(height: Spacing.sm),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(value: summary.progress, minHeight: 6),
+        ),
+        const SizedBox(height: Spacing.sm),
+        Row(
+          children: [
+            Icon(
+              nextAppointment != null
+                  ? Icons.event_outlined
+                  : pending == 0
+                  ? Icons.check_circle_outline
+                  : Icons.pending_actions_outlined,
+              size: 16,
+              color: theme.colorScheme.secondary,
+            ),
+            const SizedBox(width: Spacing.xs),
+            Expanded(
+              child: Text(
+                nextAppointment != null
+                    ? 'Próxima: '
+                          '${formatAppointmentMoment(context, nextAppointment.scheduledAt)}'
+                    : pending == 0
+                    ? 'Tudo em dia neste trimestre.'
+                    : '$pending dupla${pending == 1 ? '' : 's'} '
+                          'sem entrevista nem agendamento.',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
       ],
-    ),
-  );
+    );
+  }
 }
 
 class _CallingCard extends StatelessWidget {
-  const _CallingCard({
-    required this.calling,
-    required this.hasModule,
-    required this.onTap,
-  });
+  const _CallingCard({required this.calling});
 
   final CallingSummary calling;
-  final bool hasModule;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -307,26 +466,45 @@ class _CallingCard extends StatelessWidget {
       contentPadding: const EdgeInsets.fromLTRB(
         Spacing.md,
         Spacing.sm,
-        Spacing.sm,
+        Spacing.md,
         Spacing.sm,
       ),
-      leading: AppIconTile(
-        icon: hasModule
-            ? Icons.assignment_turned_in_outlined
-            : Icons.construction_outlined,
-        size: 48,
-      ),
+      leading: const AppIconTile(icon: Icons.construction_outlined, size: 44),
       title: Text(calling.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: Spacing.xxs),
-        child: Text(
-          hasModule ? 'Ativo • Abrir módulo' : 'Ativo • Em desenvolvimento',
-        ),
+      subtitle: const Padding(
+        padding: EdgeInsets.only(top: Spacing.xxs),
+        child: Text('Ativo • Em desenvolvimento'),
       ),
-      trailing: hasModule
-          ? const Icon(Icons.arrow_forward_ios_rounded, size: 18)
-          : null,
-      onTap: onTap,
+    ),
+  );
+}
+
+class _PrivacyNote extends StatelessWidget {
+  const _PrivacyNote();
+
+  @override
+  Widget build(BuildContext context) => AppSurface(
+    padding: const EdgeInsets.all(Spacing.md),
+    gradient: AppGradients.soft(Theme.of(context).brightness),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.shield_outlined,
+          size: 20,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: Spacing.sm),
+        Expanded(
+          child: Text(
+            'Este Workspace funciona offline e protegido por PIN. '
+            'Sincronização e compartilhamento ainda não existem.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }

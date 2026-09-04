@@ -89,7 +89,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('more-settings')), findsNothing);
-    expect(find.textContaining('Olá'), findsOneWidget);
+    expect(find.byKey(const Key('home-greeting')), findsOneWidget);
   });
 
   testWidgets('o back do Android volta ao Início antes de sair', (
@@ -105,7 +105,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(popped, isTrue, reason: 'o gesto foi tratado pelo shell');
-    expect(find.textContaining('Olá'), findsOneWidget);
+    expect(find.byKey(const Key('home-greeting')), findsOneWidget);
     expect(find.text('Editar meu perfil'), findsNothing);
   });
 }

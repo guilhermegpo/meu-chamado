@@ -54,11 +54,11 @@ void main() {
       ),
     );
 
-    expect(find.text('Ativo • Abrir módulo'), findsOneWidget);
-
+    // O chamado com módulo pronto aparece como estado operacional, não como
+    // um cartão administrativo — e é identificado pela chave, não pelo título.
     await tapVisible(
       tester,
-      find.byKey(const Key('calling-card-$ministeringTestCallingId')),
+      find.byKey(const Key('home-ministering-$ministeringTestCallingId')),
     );
 
     expect(find.text('Ministração'), findsOneWidget);
