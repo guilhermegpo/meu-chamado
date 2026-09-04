@@ -134,6 +134,13 @@ código e os ADRs vencem a imagem. Não foi copiado das REFs:
 - **"Gerenciar" como seção, não ícones no app bar.** Os três ícones eram
   crípticos; a seção fica depois do estado do trimestre — o "onde configuro"
   vem depois do "o que falta".
-- **Voltar de uma subtela mantém a rolagem do painel.** O teste rola até o
-  card do trimestre; um usuário faz o mesmo gesto. (Pendência conhecida:
-  rolar o painel ao topo ao retornar seria mais gentil.)
+- **Voltar de uma subtela mantém a rolagem do painel.** Decisão deliberada:
+  preservar a posição é aceitável e às vezes útil (a pessoa volta para onde
+  estava). O teste rola até o card do trimestre; um usuário faz o mesmo gesto.
+
+## Backlog de UX
+
+- **Rolagem do painel de Ministração ao retornar.** Avaliar se, depois de
+  registrar/concluir uma entrevista, rolar o painel ao topo para destacar o
+  resumo atualizado do trimestre seria mais gentil que manter a posição. Não
+  implementado de propósito — precisa de avaliação de produto, não é bug.
