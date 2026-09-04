@@ -1,6 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:meu_chamado/app/theme/app_tokens.dart';
+import 'package:meu_chamado/shared/widgets/app_skeleton.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
+
+/// Esqueleto padrão das telas de lista do módulo — cabeçalho + linhas.
+class MinisteringListSkeleton extends StatelessWidget {
+  const MinisteringListSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsets.fromLTRB(
+      Spacing.screenGutter,
+      Spacing.md,
+      Spacing.screenGutter,
+      Spacing.xxxl,
+    ),
+    children: const [
+      AppSkeletonBox(height: 64, radius: Radii.surface),
+      SizedBox(height: Spacing.section),
+      AppSkeletonBox(height: 20, width: 120),
+      SizedBox(height: Spacing.sm),
+      AppSkeletonList(rows: 4),
+    ],
+  );
+}
 
 /// Formata o instante de um agendamento no fuso do aparelho: "12 de set. ·
 /// 19:30". Recebe o valor em UTC, como o domínio guarda.

@@ -4,6 +4,7 @@ import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/features/security/application/app_lock.dart';
 import 'package:meu_chamado/features/security/application/security_providers.dart';
 import 'package:meu_chamado/features/security/presentation/change_pin_screen.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Seção "Segurança" das Configurações: estado do PIN, biometria, trocar o PIN
@@ -42,6 +43,7 @@ class _SecuritySettingsSectionState
   }
 
   Future<void> _toggleBiometric(bool value) async {
+    AppHaptics.toggle();
     setState(() => _busy = true);
     var enabled = value;
     if (value) {
@@ -117,7 +119,10 @@ class _SecuritySettingsSectionState
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.lock_clock_outlined),
                   title: const Text('Bloquear agora'),
-                  onTap: () => ref.read(appLockProvider.notifier).lockNow(),
+                  onTap: () {
+                    AppHaptics.milestone();
+                    ref.read(appLockProvider.notifier).lockNow();
+                  },
                 ),
               ],
             ),

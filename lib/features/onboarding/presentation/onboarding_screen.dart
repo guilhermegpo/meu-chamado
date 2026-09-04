@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/data/workspace_repository.dart';
 import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
@@ -179,7 +180,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       _OnboardingHeader(step: _step, stepCount: _stepCount),
                       const SizedBox(height: 28),
                       AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
+                        duration: Motion.adaptive(context, Motion.micro),
                         child: KeyedSubtree(
                           key: ValueKey(_step),
                           child: switch (_step) {

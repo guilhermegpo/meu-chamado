@@ -60,7 +60,7 @@ class _MinisteringCompanionshipsScreenState
               )
             : null,
         body: module.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const MinisteringListSkeleton(),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
             onRetry: () =>

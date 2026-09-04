@@ -4,6 +4,7 @@ import 'package:meu_chamado/app/theme/app_tokens.dart';
 import 'package:meu_chamado/features/security/application/app_lock.dart';
 import 'package:meu_chamado/features/security/application/security_providers.dart';
 import 'package:meu_chamado/features/security/presentation/pin_field.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/apps_meu_mark.dart';
 
 /// Tela de bloqueio. Não mostra nada do conteúdo — só a marca, o PIN e, quando
@@ -52,6 +53,7 @@ class _LockedScreenState extends ConsumerState<LockedScreen> {
       _error = failure;
     });
     if (failure != null) {
+      AppHaptics.warning();
       _pinKey.currentState?.clear();
       _pinKey.currentState?.focus();
     }

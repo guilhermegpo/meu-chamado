@@ -8,6 +8,7 @@ import 'package:meu_chamado/features/ministering/presentation/ministering_leader
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
 import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
+import 'package:meu_chamado/shared/widgets/app_skeleton.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Tela operacional de uma dupla: o estado dela no trimestre, a entrevista
@@ -51,7 +52,7 @@ class _MinisteringInterviewsScreenState
       child: Scaffold(
         appBar: AppBar(title: const Text('Entrevistas')),
         body: module.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const MinisteringListSkeleton(),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
             onRetry: () =>
@@ -144,8 +145,8 @@ class _MinisteringInterviewsScreenState
         const SizedBox(height: 24),
         history.when(
           loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 32),
-            child: Center(child: CircularProgressIndicator()),
+            padding: EdgeInsets.symmetric(vertical: Spacing.md),
+            child: AppSkeletonList(rows: 2),
           ),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
