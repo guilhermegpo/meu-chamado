@@ -7,6 +7,19 @@ projeto pretende usar [Versionamento Semântico](https://semver.org/lang/pt-BR/)
 
 ## [Unreleased]
 
+### Changed
+
+- refresh de apresentação **Product Experience 2.0** (milestone interno, entre
+  a `alpha.3` e a `alpha.4`): tokens de design centralizados (tipografia
+  editorial, Motion System, camada semântica de haptics), Início e painel de
+  Ministração contextuais, editores de Ministração em bottom sheet no lugar de
+  diálogos com largura fixa, listas de entidade mais limpas com folha de
+  ações, Configurações e Mais agrupados por área, skeleton loading, estados
+  vazios/erro acionáveis, e cobertura de responsividade (320–430px) e
+  acessibilidade (escala de texto 1.5, reduzir movimento). Sem mudança de
+  schema, domínio, segurança ou SemVer
+  ([docs/design/product-experience-2.md](docs/design/product-experience-2.md)).
+
 ## [0.2.0-alpha.3] — 2026-09-03
 
 Segurança local: o app deixa de guardar tudo em texto puro e acessível a
