@@ -18,28 +18,32 @@ class AppBrandLockup extends StatelessWidget {
       children: [
         AppsMeuMark(size: compact ? 42 : 54, shadow: !onDark),
         SizedBox(width: compact ? Spacing.sm : Spacing.md),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Meu Chamado',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
-              ),
-            ),
-            if (!compact)
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'ORGANIZE · SIRVA · FAÇA A DIFERENÇA',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: foreground.withValues(alpha: 0.72),
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.75,
+                'Meu Chamado',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
                 ),
               ),
-          ],
+              if (!compact)
+                Text(
+                  'ORGANIZE · SIRVA · FAÇA A DIFERENÇA',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.72),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.75,
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );
@@ -69,6 +73,52 @@ class AppIconTile extends StatelessWidget {
       child: Icon(icon, color: foregroundColor ?? Colors.white),
     ),
   );
+}
+
+/// Avatar de iniciais para pessoas em listas — irmãos, liderança.
+///
+/// Sem foto no domínio da Ministração (identificação mínima), a inicial já
+/// dá âncora visual para percorrer a lista sem virar mais um ícone genérico.
+class AppInitialAvatar extends StatelessWidget {
+  const AppInitialAvatar({required this.label, this.size = 40, super.key});
+
+  final String label;
+  final double size;
+
+  String get _initials {
+    final parts = label.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) {
+      final word = parts.first;
+      return word.characters.take(2).toString().toUpperCase();
+    }
+    return (parts.first.characters.first + parts.last.characters.first)
+        .toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      excludeSemantics: true,
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.secondaryContainer,
+          shape: BoxShape.circle,
+        ),
+        child: Text(
+          _initials,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: scheme.onSecondaryContainer,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class AppSurface extends StatelessWidget {

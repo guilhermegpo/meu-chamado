@@ -6,8 +6,17 @@ import 'package:meu_chamado/features/callings/domain/calling_catalog.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_authorization.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_action_sheet.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
+/// Gerenciamento dos chamados de um perfil.
+///
+/// Lista editorial: os ativos primeiro, os arquivados depois, cada linha com o
+/// estado claro e as ações na folha. Um chamado com histórico é arquivado,
+/// nunca destruído silenciosamente. A identidade é o `moduleKey`, não o
+/// título — renomear não muda comportamento.
 class ManageCallingsScreen extends ConsumerStatefulWidget {
   const ManageCallingsScreen({
     required this.dashboard,
@@ -49,6 +58,14 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
   }
 
   @override
+  void didUpdateWidget(ManageCallingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.dashboard, oldWidget.dashboard)) {
+      _dashboard = widget.dashboard;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userCallings = _dashboard.callings
         .where((calling) => calling.userId == _target.id)
@@ -71,7 +88,9 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: widget.showBackButton,
-          title: const Text('Chamados'),
+          title: Text(
+            _isOwnProfile ? 'Chamados' : 'Chamados de ${_target.name}',
+          ),
         ),
         floatingActionButton: canCreate
             ? FloatingActionButton.extended(
@@ -83,45 +102,30 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
             : null,
         body: ListView(
           padding: const EdgeInsets.fromLTRB(
+            Spacing.screenGutter,
             Spacing.md,
-            Spacing.xs,
-            Spacing.md,
+            Spacing.screenGutter,
             Spacing.fabClearance,
           ),
           children: [
-            AppSurface(
-              gradient: AppGradients.soft(Theme.of(context).brightness),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AppIconTile(icon: Icons.assignment_ind_outlined),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _target.name,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: Spacing.xs),
-                        const Text(
-                          'Módulos prontos abrem suas rotinas pela tela inicial; '
-                          'os demais continuam sinalizados como futuros.',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            _SectionTitle(label: 'Ativos', count: active.length),
-            const SizedBox(height: 8),
+            AppSectionHeader(title: 'Ativos', count: active.length),
+            const SizedBox(height: Spacing.sm),
             if (active.isEmpty)
-              const _EmptyState(
+              AppEmptyState(
                 icon: Icons.assignment_outlined,
-                text: 'Nenhum chamado ativo.',
+                title: 'Nenhum chamado ativo',
+                message: canCreate
+                    ? 'Adicione um chamado do catálogo para organizar as '
+                          'rotinas dele.'
+                    : 'Nenhum chamado ativo para este perfil.',
+                action: canCreate
+                    ? FilledButton.icon(
+                        key: const Key('calling-empty-add'),
+                        onPressed: _busy ? null : () => _chooseCalling(active),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Adicionar chamado'),
+                      )
+                    : null,
               )
             else
               for (final calling in active)
@@ -131,13 +135,16 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
                   actionIcon: Icons.archive_outlined,
                   onAction: _canArchive ? () => _archive(calling) : null,
                 ),
-            const SizedBox(height: 24),
-            _SectionTitle(label: 'Arquivados', count: archived.length),
-            const SizedBox(height: 8),
+            const SizedBox(height: Spacing.section),
+            AppSectionHeader(title: 'Arquivados', count: archived.length),
+            const SizedBox(height: Spacing.sm),
             if (archived.isEmpty)
-              const _EmptyState(
+              const AppEmptyState(
                 icon: Icons.inventory_2_outlined,
-                text: 'Nenhum chamado arquivado.',
+                title: 'Nada arquivado',
+                message:
+                    'Chamados arquivados guardam o histórico e podem voltar '
+                    'a qualquer momento.',
               )
             else
               for (final calling in archived)
@@ -145,6 +152,7 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
                   calling: calling,
                   actionLabel: 'Restaurar',
                   actionIcon: Icons.unarchive_outlined,
+                  archivedLook: true,
                   onAction: _canArchive ? () => _restore(calling) : null,
                 ),
           ],
@@ -164,40 +172,36 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
     final activeKeys = active.map((calling) => calling.moduleKey).toSet();
     final definition = await showModalBottomSheet<CallingDefinition>(
       context: context,
-      showDragHandle: true,
       isScrollControlled: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      builder: (sheetContext) => AppFormSheet(
+        title: 'Catálogo de chamados',
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(sheetContext).pop(),
+            child: const Text('Fechar'),
+          ),
+        ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Catálogo inicial',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            const Text(
               'Escolha uma estrutura. O conteúdo completo de cada módulo '
-              'será entregue em versões futuras.',
-            ),
-            const SizedBox(height: 12),
-            for (final item in CallingCatalog.values)
-              Card(
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Text(item.title),
-                  subtitle: Text(
-                    activeKeys.contains(item.moduleKey)
-                        ? 'Já está ativo neste perfil'
-                        : item.description,
-                  ),
-                  trailing: const Icon(Icons.add_circle_outline),
-                  enabled: !activeKeys.contains(item.moduleKey),
-                  onTap: activeKeys.contains(item.moduleKey)
-                      ? null
-                      : () => Navigator.of(context).pop(item),
-                ),
+              'chega em versões futuras.',
+              style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
               ),
+            ),
+            const SizedBox(height: Spacing.md),
+            for (final item in CallingCatalog.values) ...[
+              _CatalogTile(
+                item: item,
+                alreadyActive: activeKeys.contains(item.moduleKey),
+                onTap: () => Navigator.of(sheetContext).pop(item),
+              ),
+              if (item != CallingCatalog.values.last)
+                const SizedBox(height: Spacing.xs),
+            ],
           ],
         ),
       ),
@@ -249,10 +253,12 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
       await operation();
       await _reload();
       if (!mounted) return;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
@@ -270,84 +276,138 @@ class _ManageCallingsScreenState extends ConsumerState<ManageCallingsScreen> {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.label, required this.count});
-
-  final String label;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) =>
-      AppSectionHeader(title: label, count: count);
-}
-
 class _CallingCard extends StatelessWidget {
   const _CallingCard({
     required this.calling,
     required this.actionLabel,
     required this.actionIcon,
     required this.onAction,
+    this.archivedLook = false,
   });
 
   final CallingSummary calling;
   final String actionLabel;
   final IconData actionIcon;
   final VoidCallback? onAction;
+  final bool archivedLook;
+
+  bool get _hasModule =>
+      CallingCatalog.byModuleKey(calling.moduleKey)?.hasModule ?? false;
+
+  void _openActions(BuildContext context) => showAppActionSheet(
+    context: context,
+    title: calling.title,
+    actions: [
+      AppAction(
+        label: actionLabel,
+        icon: actionIcon,
+        enabled: onAction != null,
+        onSelected: () => onAction?.call(),
+      ),
+    ],
+  );
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-      child: Row(
-        children: [
-          const AppIconTile(
-            icon: Icons.assignment_turned_in_outlined,
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      child: ListTile(
+        key: Key('manage-calling-${calling.id}'),
+        leading: Opacity(
+          opacity: archivedLook ? 0.55 : 1,
+          child: AppIconTile(
+            icon: _hasModule
+                ? Icons.assignment_turned_in_outlined
+                : Icons.construction_outlined,
             size: 44,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  calling.title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  CallingCatalog.byModuleKey(calling.moduleKey)?.hasModule ??
-                          false
-                      ? 'Módulo disponível'
-                      : 'Em desenvolvimento',
-                ),
-              ],
-            ),
+        ),
+        title: Text(
+          calling.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          archivedLook
+              ? 'Arquivado'
+              : _hasModule
+              ? 'Ativo • Módulo disponível'
+              : 'Ativo • Em desenvolvimento',
+          style: TextStyle(
+            color: archivedLook ? scheme.onSurfaceVariant : null,
           ),
-          IconButton(
-            tooltip: actionLabel,
-            onPressed: onAction,
-            icon: Icon(actionIcon),
-          ),
-        ],
+        ),
+        trailing: onAction == null
+            ? null
+            : IconButton(
+                tooltip: 'Ações do chamado',
+                icon: const Icon(Icons.more_vert),
+                onPressed: () => _openActions(context),
+              ),
+        onTap: onAction == null ? null : () => _openActions(context),
       ),
-    ),
-  );
+    );
+  }
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.icon, required this.text});
+class _CatalogTile extends StatelessWidget {
+  const _CatalogTile({
+    required this.item,
+    required this.alreadyActive,
+    required this.onTap,
+  });
 
-  final IconData icon;
-  final String text;
+  final CallingDefinition item;
+  final bool alreadyActive;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => AppSurface(
-    child: Row(
-      children: [
-        AppIconTile(icon: icon),
-        const SizedBox(width: Spacing.sm),
-        Expanded(child: Text(text)),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        borderRadius: Radii.surfaceBorder,
+        onTap: alreadyActive ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.all(Spacing.md),
+          decoration: BoxDecoration(
+            borderRadius: Radii.surfaceBorder,
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: Spacing.xxs),
+                    Text(
+                      alreadyActive
+                          ? 'Já está ativo neste perfil'
+                          : item.description,
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: Spacing.sm),
+              Icon(
+                alreadyActive
+                    ? Icons.check_circle_outline
+                    : Icons.add_circle_outline,
+                color: alreadyActive ? scheme.secondary : scheme.primary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

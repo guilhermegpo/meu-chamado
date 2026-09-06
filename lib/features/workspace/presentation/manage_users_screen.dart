@@ -7,6 +7,7 @@ import 'package:meu_chamado/features/profile/presentation/user_editor_dialog.dar
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_authorization.dart';
 import 'package:meu_chamado/features/workspace/domain/workspace_models.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 class ManageUsersScreen extends ConsumerStatefulWidget {
@@ -302,6 +303,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
       await operation();
       await _reload();
       if (!mounted) return true;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
       return true;
@@ -312,6 +314,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
             .deleteIfManaged(orphanPhotoPath);
       }
       if (!mounted) return false;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
       return false;

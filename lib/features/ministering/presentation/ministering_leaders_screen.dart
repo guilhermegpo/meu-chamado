@@ -5,6 +5,9 @@ import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_action_sheet.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Liderança responsável pelas entrevistas de ministração.
@@ -41,7 +44,7 @@ class _MinisteringLeadersScreenState
           label: const Text('Adicionar'),
         ),
         body: module.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const MinisteringListSkeleton(),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
             onRetry: () =>
@@ -266,8 +269,9 @@ class _MinisteringLeadersScreenState
     required String title,
     String? initialLabel,
     MinisteringLeadershipRole? initialRole,
-  }) => showDialog<_LeaderDraft>(
+  }) => showModalBottomSheet<_LeaderDraft>(
     context: context,
+    isScrollControlled: true,
     builder: (_) => _LeaderDialog(
       title: title,
       initialLabel: initialLabel,
@@ -284,10 +288,12 @@ class _MinisteringLeadersScreenState
       await operation();
       ref.invalidate(ministeringModuleProvider(widget.callingId));
       if (!mounted) return;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
@@ -313,60 +319,47 @@ class _LeaderCard extends StatelessWidget {
   final String toggleLabel;
   final IconData toggleIcon;
 
+  void _openActions(BuildContext context) => showAppActionSheet(
+    context: context,
+    title: '${leader.displayLabel} · ${leader.role.label}',
+    actions: [
+      AppAction(
+        label: 'Editar',
+        icon: Icons.edit_outlined,
+        enabled: onEdit != null,
+        onSelected: () => onEdit?.call(),
+      ),
+      AppAction(
+        label: toggleLabel,
+        icon: toggleIcon,
+        enabled: onToggle != null,
+        onSelected: () => onToggle?.call(),
+      ),
+      AppAction(
+        label: 'Verificar exclusão',
+        icon: Icons.delete_outline,
+        destructive: true,
+        enabled: onDelete != null,
+        onSelected: () => onDelete?.call(),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) => Card(
     child: ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(
-        Spacing.md,
-        Spacing.xs,
-        Spacing.xs,
-        Spacing.xs,
-      ),
-      leading: const AppIconTile(icon: Icons.badge_outlined, size: 44),
+      leading: AppInitialAvatar(label: leader.displayLabel),
       title: Text(leader.displayLabel),
       subtitle: Text(leader.role.label),
-      trailing: PopupMenuButton<_LeaderAction>(
+      trailing: IconButton(
         tooltip: 'Ações da liderança',
-        onSelected: (action) => switch (action) {
-          _LeaderAction.edit => onEdit?.call(),
-          _LeaderAction.toggle => onToggle?.call(),
-          _LeaderAction.delete => onDelete?.call(),
-        },
-        itemBuilder: (_) => [
-          PopupMenuItem(
-            value: _LeaderAction.edit,
-            enabled: onEdit != null,
-            child: const ListTile(
-              leading: Icon(Icons.edit_outlined),
-              title: Text('Editar'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: _LeaderAction.toggle,
-            enabled: onToggle != null,
-            child: ListTile(
-              leading: Icon(toggleIcon),
-              title: Text(toggleLabel),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: _LeaderAction.delete,
-            enabled: onDelete != null,
-            child: const ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text('Verificar exclusão'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
+        icon: const Icon(Icons.more_vert),
+        onPressed: () => _openActions(context),
       ),
+      onTap: () => _openActions(context),
     ),
   );
 }
-
-enum _LeaderAction { edit, toggle, delete }
 
 /// Identificação e papel escolhidos no editor, antes de ir ao repositório.
 class _LeaderDraft {
@@ -405,70 +398,8 @@ class _LeaderDialogState extends State<_LeaderDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    scrollable: true,
-    title: Text(widget.title),
-    content: SizedBox(
-      width: 380,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              key: const Key('leader-label-field'),
-              controller: _label,
-              autofocus: true,
-              maxLength: 60,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Identificação',
-                helperText: 'Primeiro nome ou iniciais.',
-              ),
-              validator: (value) => (value == null || value.trim().isEmpty)
-                  ? 'Informe uma identificação.'
-                  : null,
-            ),
-            const SizedBox(height: Spacing.md),
-            DropdownButtonFormField<MinisteringLeadershipRole>(
-              key: const Key('leader-role-field'),
-              initialValue: _role,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Cargo na presidência do quórum',
-              ),
-              items: MinisteringLeadershipRole.values
-                  .map(
-                    (role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(
-                        role.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-              selectedItemBuilder: (context) => MinisteringLeadershipRole.values
-                  .map(
-                    (role) => Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        role.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: (value) {
-                if (value != null) setState(() => _role = value);
-              },
-            ),
-          ],
-        ),
-      ),
-    ),
+  Widget build(BuildContext context) => AppFormSheet(
+    title: widget.title,
     actions: [
       TextButton(
         onPressed: () => Navigator.of(context).pop(),
@@ -480,6 +411,68 @@ class _LeaderDialogState extends State<_LeaderDialog> {
         child: const Text('Salvar'),
       ),
     ],
+    child: Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            key: const Key('leader-label-field'),
+            controller: _label,
+            autofocus: true,
+            maxLength: 60,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Identificação',
+              helperText:
+                  'Primeiro nome ou iniciais — não registre nome '
+                  'completo.',
+              counterText: '',
+            ),
+            validator: (value) => (value == null || value.trim().isEmpty)
+                ? 'Informe uma identificação.'
+                : null,
+          ),
+          const SizedBox(height: Spacing.md),
+          DropdownButtonFormField<MinisteringLeadershipRole>(
+            key: const Key('leader-role-field'),
+            initialValue: _role,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Cargo na presidência do quórum',
+            ),
+            items: MinisteringLeadershipRole.values
+                .map(
+                  (role) => DropdownMenuItem(
+                    value: role,
+                    child: Text(
+                      role.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            selectedItemBuilder: (context) => MinisteringLeadershipRole.values
+                .map(
+                  (role) => Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      role.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (value) {
+              if (value != null) setState(() => _role = value);
+            },
+          ),
+        ],
+      ),
+    ),
   );
 
   void _submit() {

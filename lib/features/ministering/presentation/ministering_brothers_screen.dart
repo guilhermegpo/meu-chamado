@@ -5,6 +5,9 @@ import 'package:meu_chamado/core/errors/user_error_message.dart';
 import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_action_sheet.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Cadastro dos irmãos que podem compor duplas.
@@ -41,7 +44,7 @@ class _MinisteringBrothersScreenState
           label: const Text('Adicionar'),
         ),
         body: module.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const MinisteringListSkeleton(),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
             onRetry: () =>
@@ -248,8 +251,9 @@ class _MinisteringBrothersScreenState
   }
 
   Future<String?> _askLabel({required String title, String? initial}) =>
-      showDialog<String>(
+      showModalBottomSheet<String>(
         context: context,
+        isScrollControlled: true,
         builder: (_) => _BrotherLabelDialog(title: title, initial: initial),
       );
 
@@ -262,10 +266,12 @@ class _MinisteringBrothersScreenState
       await operation();
       ref.invalidate(ministeringModuleProvider(widget.callingId));
       if (!mounted) return;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
@@ -291,60 +297,47 @@ class _BrotherCard extends StatelessWidget {
   final String toggleLabel;
   final IconData toggleIcon;
 
+  void _openActions(BuildContext context) => showAppActionSheet(
+    context: context,
+    title: brother.displayLabel,
+    actions: [
+      AppAction(
+        label: 'Editar identificação',
+        icon: Icons.edit_outlined,
+        enabled: onEdit != null,
+        onSelected: () => onEdit?.call(),
+      ),
+      AppAction(
+        label: toggleLabel,
+        icon: toggleIcon,
+        enabled: onToggle != null,
+        onSelected: () => onToggle?.call(),
+      ),
+      AppAction(
+        label: 'Verificar exclusão',
+        icon: Icons.delete_outline,
+        destructive: true,
+        enabled: onDelete != null,
+        onSelected: () => onDelete?.call(),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) => Card(
     child: ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(
-        Spacing.md,
-        Spacing.xs,
-        Spacing.xs,
-        Spacing.xs,
-      ),
-      leading: const AppIconTile(icon: Icons.person_outline, size: 44),
+      leading: AppInitialAvatar(label: brother.displayLabel),
       title: Text(brother.displayLabel),
       subtitle: Text(toggleLabel == 'Desativar' ? 'Ativo' : 'Inativo'),
-      trailing: PopupMenuButton<_BrotherAction>(
+      trailing: IconButton(
         tooltip: 'Ações do cadastro',
-        onSelected: (action) => switch (action) {
-          _BrotherAction.edit => onEdit?.call(),
-          _BrotherAction.toggle => onToggle?.call(),
-          _BrotherAction.delete => onDelete?.call(),
-        },
-        itemBuilder: (_) => [
-          PopupMenuItem(
-            value: _BrotherAction.edit,
-            enabled: onEdit != null,
-            child: const ListTile(
-              leading: Icon(Icons.edit_outlined),
-              title: Text('Editar identificação'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: _BrotherAction.toggle,
-            enabled: onToggle != null,
-            child: ListTile(
-              leading: Icon(toggleIcon),
-              title: Text(toggleLabel),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: _BrotherAction.delete,
-            enabled: onDelete != null,
-            child: const ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text('Verificar exclusão'),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
+        icon: const Icon(Icons.more_vert),
+        onPressed: () => _openActions(context),
       ),
+      onTap: () => _openActions(context),
     ),
   );
 }
-
-enum _BrotherAction { edit, toggle, delete }
 
 class _BrotherLabelDialog extends StatefulWidget {
   const _BrotherLabelDialog({required this.title, this.initial});
@@ -369,26 +362,8 @@ class _BrotherLabelDialogState extends State<_BrotherLabelDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.title),
-    content: Form(
-      key: _formKey,
-      child: TextFormField(
-        key: const Key('brother-label-field'),
-        controller: _controller,
-        autofocus: true,
-        maxLength: 60,
-        textCapitalization: TextCapitalization.words,
-        decoration: const InputDecoration(
-          labelText: 'Identificação',
-          helperText: 'Primeiro nome ou iniciais.',
-        ),
-        validator: (value) => (value == null || value.trim().isEmpty)
-            ? 'Informe uma identificação.'
-            : null,
-        onFieldSubmitted: (_) => _submit(),
-      ),
-    ),
+  Widget build(BuildContext context) => AppFormSheet(
+    title: widget.title,
     actions: [
       TextButton(
         onPressed: () => Navigator.of(context).pop(),
@@ -400,6 +375,25 @@ class _BrotherLabelDialogState extends State<_BrotherLabelDialog> {
         child: const Text('Salvar'),
       ),
     ],
+    child: Form(
+      key: _formKey,
+      child: TextFormField(
+        key: const Key('brother-label-field'),
+        controller: _controller,
+        autofocus: true,
+        maxLength: 60,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+          labelText: 'Identificação',
+          helperText: 'Primeiro nome ou iniciais — não registre nome completo.',
+          counterText: '',
+        ),
+        validator: (value) => (value == null || value.trim().isEmpty)
+            ? 'Informe uma identificação.'
+            : null,
+        onFieldSubmitted: (_) => _submit(),
+      ),
+    ),
   );
 
   void _submit() {

@@ -5,6 +5,9 @@
 Documento de fundação. Deve ser atualizado quando armazenamento, autenticação,
 sincronização ou distribuição forem implementados.
 
+A `0.2.0-alpha.3` implementa a seção **Segurança local** abaixo
+([ADR 0016](../adr/0016-local-security-and-encrypted-storage.md)).
+
 ## Ativos
 
 - perfis e preferências dos usuários;
@@ -45,7 +48,47 @@ sincronização ou distribuição forem implementados.
 - dados de teste sempre fictícios;
 - revisão do modelo antes de cada integração externa.
 
+## Segurança local (`0.2.0-alpha.3`)
+
+O app guarda localmente a agenda administrativa de ministração de uma ala:
+identificação mínima de irmãos e liderança, duplas, entrevistas realizadas e
+agendamentos. Pouco por linha, sensível no conjunto e no contexto.
+
+### Protege contra
+
+| Ameaça | Consequência | Controle |
+|---|---|---|
+| acesso casual com o aparelho desbloqueado | outra pessoa lê a agenda da ala | bloqueio do app por PIN antes de qualquer tela sensível |
+| retomar o app depois de sair | sessão aberta esquecida | relock após 30 s em segundo plano e no cold start |
+| cópia do banco (backup, `adb`, `/data`) | banco inteiro legível fora do app | banco criptografado com SQLite3 Multiple Ciphers |
+| PIN em texto puro | brute force trivial do verificador | verificador PBKDF2-HMAC-SHA256, 150k iterações, sal aleatório |
+| chave do banco em local acessível | criptografia inútil | chave aleatória só no `flutter_secure_storage` (Keystore) |
+| conteúdo sensível no seletor de apps / screenshot | vazamento por captura | `FLAG_SECURE` nas telas desbloqueadas |
+| brute force de PIN dentro do app | adivinhação do PIN de 6 dígitos | atraso progressivo após 5 erros, com teto |
+
+### Não promete proteção contra
+
+- aparelho com root ou bootloader comprometido;
+- malware com privilégios de sistema;
+- processo do app comprometido em execução;
+- atacante com o sistema já desbloqueado e acesso ao Android Keystore;
+- análise de RAM com o app aberto.
+
+### Decisões
+
+- **Chave do banco ≠ PIN.** Chave: 32 bytes de CSPRNG, gerada uma vez, só no
+  secure storage. PIN: fator de desbloqueio da interface, guardado como
+  verificador derivado.
+- **Não apagar dados por tentativas erradas**, em hipótese alguma.
+- **Biometria é opcional** e nunca é o único método: sempre há o PIN.
+- Migração texto puro → criptografado é atômica, valida antes de promover e
+  preserva o original até a confirmação.
+- Nenhum segredo (PIN, chave, rótulos, conteúdo de entrevista, caminho com
+  segredo) aparece em log ou exceção.
+
 ## Fora do escopo atual
 
-Não existe ainda autenticação Google, sincronização, updater ou release assinado.
-Os controles correspondentes são requisitos de projeto, não garantias atuais.
+Não existe ainda autenticação Google, sincronização, updater ou release
+assinado. Os controles correspondentes são requisitos de projeto, não garantias
+atuais. A criptografia de dados (este documento) é independente da assinatura do
+APK ([ADR 0011](../adr/0011-android-release-signing.md)).

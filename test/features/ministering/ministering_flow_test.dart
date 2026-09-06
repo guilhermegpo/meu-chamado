@@ -87,6 +87,7 @@ void main() {
 
     // 4. A dupla nova aparece pendente no trimestre corrente.
     final quarter = Quarter.of(DateTime.now());
+    await tester.scrollUntilVisible(find.text(quarter.label), -240);
     expect(find.text(quarter.label), findsOneWidget);
     expect(find.text('0 de 1 dupla entrevistada'), findsOneWidget);
     expect(
@@ -104,6 +105,10 @@ void main() {
     await goBack(tester);
 
     // 6. O painel fecha o trimestre.
+    await tester.scrollUntilVisible(
+      find.text('1 de 1 dupla entrevistada'),
+      -240,
+    );
     expect(find.text('1 de 1 dupla entrevistada'), findsOneWidget);
     expect(find.text('Nada pendente por aqui.'), findsOneWidget);
     await scrollTo(
@@ -175,6 +180,7 @@ void main() {
     await pumpDashboard(tester);
     expect(find.text('1 de 1 dupla entrevistada'), findsOneWidget);
 
+    await scrollTo(tester, find.byKey(const Key('open-companionships-button')));
     await tapVisible(
       tester,
       find.byKey(const Key('open-companionships-button')),
@@ -185,6 +191,7 @@ void main() {
     await goBack(tester);
 
     // Sem duplas ativas o painel volta ao começo, mas nada foi apagado.
+    await tester.scrollUntilVisible(find.text('Nenhuma dupla ativa'), -240);
     expect(find.text('Nenhuma dupla ativa'), findsOneWidget);
 
     final interviews = await repository.listInterviews(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meu_chamado/app/theme/app_theme.dart';
 import 'package:meu_chamado/app/theme/theme_mode_controller.dart';
 import 'package:meu_chamado/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:meu_chamado/features/security/presentation/security_gate.dart';
 import 'package:meu_chamado/features/splash/presentation/app_splash_screen.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 import 'package:meu_chamado/features/workspace/presentation/user_selection_screen.dart';
@@ -41,7 +42,7 @@ class MeuChamadoApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const _AppGate(),
+      home: const SecurityGate(child: _AppGate()),
     );
   }
 }

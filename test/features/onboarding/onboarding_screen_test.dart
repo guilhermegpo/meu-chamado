@@ -6,6 +6,8 @@ import 'package:meu_chamado/app/meu_chamado_app.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 
+import '../../support/security_test_scope.dart';
+
 void main() {
   testWidgets('conclui onboarding e apresenta seleção de usuário', (
     tester,
@@ -15,7 +17,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(database)],
+        overrides: [
+          databaseProvider.overrideWithValue(database),
+          ...unlockedSecurityOverrides(),
+        ],
         child: const MeuChamadoApp(),
       ),
     );

@@ -67,6 +67,10 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colorScheme.surfaceContainerHigh,
+        // A orientação abaixo do campo quebra linha em vez de truncar — vale
+        // em tela estreita e com a escala de texto grande.
+        helperMaxLines: 3,
+        errorMaxLines: 3,
         border: const OutlineInputBorder(
           borderRadius: Radii.controlBorder,
           borderSide: BorderSide.none,
@@ -244,37 +248,55 @@ abstract final class AppTheme {
     );
   }
 
-  /// Ajustes de peso e respiro sobre a tipografia do Material.
+  /// Hierarquia editorial da Product Experience 2.0.
   ///
-  /// Títulos ganham peso e `height` menor para virarem âncora de leitura; o
-  /// corpo ganha entrelinha para textos explicativos não ficarem apertados.
+  /// Escala conceitual: Display 32/36, Headline 26/30, Title 20/24,
+  /// Body Large 16/24, Body 14/21, Label 12/16. Só o Display carrega o peso
+  /// mais alto — abaixo dele o contraste vem do tamanho e do `height`, não de
+  /// mais bold, para a leitura não ficar pesada.
   static TextTheme _textTheme(TextTheme base) => base.copyWith(
     displaySmall: base.displaySmall?.copyWith(
+      fontSize: 32,
       fontWeight: FontWeight.w800,
-      height: 1.02,
-      letterSpacing: -1.2,
+      height: 36 / 32,
+      letterSpacing: -1,
     ),
     headlineMedium: base.headlineMedium?.copyWith(
-      fontWeight: FontWeight.w800,
-      height: 1.1,
-      letterSpacing: -0.7,
+      fontSize: 28,
+      fontWeight: FontWeight.w700,
+      height: 32 / 28,
+      letterSpacing: -0.6,
     ),
     headlineSmall: base.headlineSmall?.copyWith(
-      fontWeight: FontWeight.w800,
-      height: 1.15,
+      fontSize: 26,
+      fontWeight: FontWeight.w700,
+      height: 30 / 26,
       letterSpacing: -0.4,
     ),
     titleLarge: base.titleLarge?.copyWith(
+      fontSize: 20,
       fontWeight: FontWeight.w700,
-      height: 1.2,
+      height: 24 / 20,
       letterSpacing: -0.2,
     ),
     titleMedium: base.titleMedium?.copyWith(
+      fontSize: 16,
       fontWeight: FontWeight.w600,
-      height: 1.25,
+      height: 22 / 16,
+      letterSpacing: -0.1,
     ),
-    bodyMedium: base.bodyMedium?.copyWith(height: 1.45),
-    bodySmall: base.bodySmall?.copyWith(height: 1.4),
-    labelLarge: base.labelLarge?.copyWith(letterSpacing: 0.1),
+    bodyLarge: base.bodyLarge?.copyWith(fontSize: 16, height: 24 / 16),
+    bodyMedium: base.bodyMedium?.copyWith(fontSize: 14, height: 21 / 14),
+    bodySmall: base.bodySmall?.copyWith(fontSize: 13, height: 18 / 13),
+    labelLarge: base.labelLarge?.copyWith(
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.1,
+    ),
+    labelMedium: base.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+    labelSmall: base.labelSmall?.copyWith(
+      fontSize: 12,
+      height: 16 / 12,
+      letterSpacing: 0.4,
+    ),
   );
 }

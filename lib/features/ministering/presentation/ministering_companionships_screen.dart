@@ -6,6 +6,9 @@ import 'package:meu_chamado/features/ministering/application/ministering_provide
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_brothers_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
+import 'package:meu_chamado/shared/feedback/app_haptics.dart';
+import 'package:meu_chamado/shared/widgets/app_action_sheet.dart';
+import 'package:meu_chamado/shared/widgets/app_form_sheet.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
 
 /// Composição das duplas de ministração.
@@ -57,7 +60,7 @@ class _MinisteringCompanionshipsScreenState
               )
             : null,
         body: module.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const MinisteringListSkeleton(),
           error: (error, _) => MinisteringErrorState(
             message: userErrorMessage(error),
             onRetry: () =>
@@ -361,8 +364,9 @@ class _MinisteringCompanionshipsScreenState
     String? initialLabel,
     List<String> initialSelection = const [],
     int droppedInactive = 0,
-  }) => showDialog<_CompanionshipDraft>(
+  }) => showModalBottomSheet<_CompanionshipDraft>(
     context: context,
+    isScrollControlled: true,
     builder: (_) => _CompanionshipEditorDialog(
       title: title,
       candidates: candidates,
@@ -381,10 +385,12 @@ class _MinisteringCompanionshipsScreenState
       await operation();
       ref.invalidate(ministeringModuleProvider(widget.callingId));
       if (!mounted) return;
+      AppHaptics.saved();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(successMessage)));
     } catch (error) {
       if (!mounted) return;
+      AppHaptics.warning();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(userErrorMessage(error))));
     } finally {
@@ -410,6 +416,32 @@ class _CompanionshipCard extends StatelessWidget {
   final String toggleLabel;
   final IconData toggleIcon;
 
+  void _openActions(BuildContext context) => showAppActionSheet(
+    context: context,
+    title: companionship.title,
+    actions: [
+      AppAction(
+        label: 'Editar dupla',
+        icon: Icons.edit_outlined,
+        enabled: onEdit != null,
+        onSelected: () => onEdit?.call(),
+      ),
+      AppAction(
+        label: toggleLabel,
+        icon: toggleIcon,
+        enabled: onToggle != null,
+        onSelected: () => onToggle?.call(),
+      ),
+      AppAction(
+        label: 'Verificar exclusão da dupla',
+        icon: Icons.delete_outline,
+        destructive: true,
+        enabled: onDelete != null,
+        onSelected: () => onDelete?.call(),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final members = companionship.members
@@ -418,60 +450,21 @@ class _CompanionshipCard extends StatelessWidget {
 
     return Card(
       child: ListTile(
-        contentPadding: const EdgeInsets.fromLTRB(
-          Spacing.md,
-          Spacing.xs,
-          Spacing.xs,
-          Spacing.xs,
-        ),
-        leading: const AppIconTile(icon: Icons.people_outline, size: 44),
+        leading: const AppIconTile(icon: Icons.people_outline, size: 40),
         title: Text(companionship.title),
         subtitle: companionship.displayLabel != null
             ? Text(members)
             : Text(toggleLabel == 'Desativar dupla' ? 'Ativa' : 'Inativa'),
-        trailing: PopupMenuButton<_CompanionshipAction>(
+        trailing: IconButton(
           tooltip: 'Ações da dupla',
-          onSelected: (action) => switch (action) {
-            _CompanionshipAction.edit => onEdit?.call(),
-            _CompanionshipAction.toggle => onToggle?.call(),
-            _CompanionshipAction.delete => onDelete?.call(),
-          },
-          itemBuilder: (_) => [
-            PopupMenuItem(
-              value: _CompanionshipAction.edit,
-              enabled: onEdit != null,
-              child: const ListTile(
-                leading: Icon(Icons.edit_outlined),
-                title: Text('Editar dupla'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _CompanionshipAction.toggle,
-              enabled: onToggle != null,
-              child: ListTile(
-                leading: Icon(toggleIcon),
-                title: Text(toggleLabel),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: _CompanionshipAction.delete,
-              enabled: onDelete != null,
-              child: const ListTile(
-                leading: Icon(Icons.delete_outline),
-                title: Text('Verificar exclusão da dupla'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
+          icon: const Icon(Icons.more_vert),
+          onPressed: () => _openActions(context),
         ),
+        onTap: () => _openActions(context),
       ),
     );
   }
 }
-
-enum _CompanionshipAction { edit, toggle, delete }
 
 /// Composição escolhida no editor, antes de ir para o repositório.
 class _CompanionshipDraft {
@@ -522,59 +515,8 @@ class _CompanionshipEditorDialogState
   bool get _isValid => _selected.length >= 2 && _selected.length <= 3;
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.title),
-    content: SizedBox(
-      width: 380,
-      child: ListView(
-        shrinkWrap: true,
-        children: [
-          if (widget.droppedInactive > 0)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                widget.droppedInactive == 1
-                    ? 'Um integrante desta dupla está inativo e não pode '
-                          'continuar nela. Reative-o ou escolha outro.'
-                    : '${widget.droppedInactive} integrantes desta dupla '
-                          'estão inativos e não podem continuar nela.',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          Text(
-            'Selecione 2 ou 3 integrantes '
-            '(${_selected.length} selecionado'
-            '${_selected.length == 1 ? '' : 's'}).',
-          ),
-          const SizedBox(height: 4),
-          for (final brother in widget.candidates)
-            CheckboxListTile(
-              key: Key('companionship-member-${brother.id}'),
-              value: _selected.contains(brother.id),
-              title: Text(brother.displayLabel),
-              controlAffinity: ListTileControlAffinity.leading,
-              onChanged: (checked) => setState(() {
-                if (checked ?? false) {
-                  _selected.add(brother.id);
-                } else {
-                  _selected.remove(brother.id);
-                }
-              }),
-            ),
-          const SizedBox(height: 8),
-          TextField(
-            key: const Key('companionship-label-field'),
-            controller: _label,
-            maxLength: 60,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Rótulo (opcional)',
-              helperText: 'Vazio: a dupla é identificada pelos integrantes.',
-            ),
-          ),
-        ],
-      ),
-    ),
+  Widget build(BuildContext context) => AppFormSheet(
+    title: widget.title,
     actions: [
       TextButton(
         onPressed: () => Navigator.of(context).pop(),
@@ -586,6 +528,55 @@ class _CompanionshipEditorDialogState
         child: const Text('Salvar'),
       ),
     ],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.droppedInactive > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              widget.droppedInactive == 1
+                  ? 'Um integrante desta dupla está inativo e não pode '
+                        'continuar nela. Reative-o ou escolha outro.'
+                  : '${widget.droppedInactive} integrantes desta dupla '
+                        'estão inativos e não podem continuar nela.',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        Text(
+          'Selecione 2 ou 3 integrantes '
+          '(${_selected.length} selecionado'
+          '${_selected.length == 1 ? '' : 's'}).',
+        ),
+        const SizedBox(height: 4),
+        for (final brother in widget.candidates)
+          CheckboxListTile(
+            key: Key('companionship-member-${brother.id}'),
+            value: _selected.contains(brother.id),
+            title: Text(brother.displayLabel),
+            controlAffinity: ListTileControlAffinity.leading,
+            onChanged: (checked) => setState(() {
+              if (checked ?? false) {
+                _selected.add(brother.id);
+              } else {
+                _selected.remove(brother.id);
+              }
+            }),
+          ),
+        const SizedBox(height: 8),
+        TextField(
+          key: const Key('companionship-label-field'),
+          controller: _label,
+          maxLength: 60,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            labelText: 'Rótulo (opcional)',
+            helperText: 'Vazio: a dupla é identificada pelos integrantes.',
+          ),
+        ),
+      ],
+    ),
   );
 
   void _submit() {
