@@ -20,9 +20,11 @@ Workspace local, com uma base modular para evoluções futuras.
 
 Esta versão fecha a segurança local: o app pede um PIN antes de mostrar qualquer
 dado, aceita biometria como atalho e passa a guardar o banco local
-criptografado. Não é uma versão estável nem distribuída publicamente — não há
-APK de release assinado com chave de produção, apenas artefatos de debug para
-validação.
+criptografado. Depois disso, um refresh de apresentação (Product Experience 2.0,
+marco interno rumo à `alpha.4`) reorganizou a experiência sem mudar schema,
+domínio, segurança nem SemVer. Não é uma versão estável nem distribuída
+publicamente — não há APK de release assinado com chave de produção, apenas
+artefatos de debug para validação.
 
 As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
 existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
@@ -60,6 +62,22 @@ O que o modelo de ameaças protege e o que **não** protege está em
 [ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md). Não existe
 recuperação do PIN pela internet. A criptografia de dados é independente da
 assinatura do APK ([ADR 0011](docs/adr/0011-android-release-signing.md)).
+
+### Product Experience 2.0
+
+Refresh só de apresentação aplicado depois da segurança local, como marco
+interno entre a `alpha.3` e a `alpha.4`. Sem mudança de schema, domínio,
+segurança ou SemVer ([docs/design/product-experience-2.md](docs/design/product-experience-2.md)).
+
+- Início contextual e navbar refinada;
+- Ministração reorganizada por prioridade operacional; painel do trimestre mais
+  limpo;
+- operações mobile em bottom sheet; listas editoriais com folha de ações;
+- Chamados e onboarding revisados;
+- motion system, haptics semânticos, skeleton/loading contextual, estados
+  vazios/erro acionáveis;
+- responsividade de 320 a 430 px, escala de texto 1.5, "reduzir movimento" e
+  ajustes de acessibilidade; claro e escuro revisados.
 
 ## Implementado na `0.2.0-alpha.2`
 

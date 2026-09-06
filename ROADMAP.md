@@ -97,6 +97,16 @@ O que o modelo protege e o que não protege está em
 [ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md). Não há
 recuperação do PIN pela internet.
 
+### Product Experience 2.0 — marco interno entre a alpha.3 e a alpha.4
+
+Refresh só de apresentação aplicado depois da segurança local, sem mudar
+SemVer, schema, domínio nem segurança: Início e Ministração contextuais,
+navbar refinada, bottom sheets para operações mobile, listas editoriais,
+Chamados e onboarding revisados, motion e haptics, skeleton/loading, estados
+vazios/erro acionáveis, responsividade 320–430 px, escala de texto 1.5 e
+"reduzir movimento". Detalhado em
+[docs/design/product-experience-2.md](docs/design/product-experience-2.md).
+
 ### Previsto para as próximas alphas da série
 
 - `alpha.4`: histórico de trimestres anteriores e relatório para a liderança;
