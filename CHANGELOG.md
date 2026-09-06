@@ -7,6 +7,52 @@ projeto pretende usar [Versionamento Semântico](https://semver.org/lang/pt-BR/)
 
 ## [Unreleased]
 
+## [0.2.0-alpha.4] — 2026-09-06
+
+Histórico dos trimestres da Ministração. O "X de Y duplas entrevistadas" de um
+trimestre encerrado para de mudar quando as duplas mudam depois: o escopo do
+trimestre — quais duplas faziam parte dele — é congelado num snapshot.
+
+### Added
+
+- entrada "Histórico de trimestres" no painel da Ministração: lista dos
+  trimestres agrupada por ano, com o corrente marcado "em andamento" e estado
+  vazio explicando quando os encerrados aparecem;
+- tela de detalhe de um trimestre, separando as duplas do escopo entre
+  **entrevistadas** e **pendentes**; a dupla entrevistada abre o histórico de
+  entrevistas dela, onde uma entrevista omitida é registrada ou uma data errada
+  é corrigida;
+- snapshot de escopo por trimestre encerrado (schema local v5, três tabelas:
+  `ministering_quarter_snapshots` e as de duplas e integrantes congelados);
+- congelamento automático como regra de domínio: roda antes de cada leitura do
+  módulo e no início de cada mutação que mexe no conjunto de duplas, nunca no
+  trimestre corrente nem num futuro, e materializa de uma vez todos os
+  trimestres perdidos com o app fechado;
+- relógio injetável no repositório da Ministração, para os testes exercitarem a
+  virada de trimestre sem tocar no relógio do sistema;
+- [ADR 0017](docs/adr/0017-ministering-quarter-snapshots.md): o problema do
+  denominador que se move, o snapshot que congela o escopo e não as
+  entrevistas, o momento da finalização e as alternativas descartadas.
+
+### Changed
+
+- o denominador de um trimestre encerrado passa a vir do snapshot, não do
+  estado atual das duplas; o numerador continua sendo lido das entrevistas, ao
+  vivo, então corrigir uma entrevista antiga recalcula o número do trimestre;
+- excluir uma dupla que faz parte do escopo de um trimestre concluído passa a
+  ser bloqueado — a ação segura é desativar; a verificação de remoção conta os
+  snapshots e a mensagem explica o motivo;
+- migração aditiva v4 → v5, sem reescrever linha existente, válida a partir do
+  banco em texto puro da `alpha.2` e do criptografado da `alpha.3`.
+
+### Fora desta versão
+
+- relatórios/visão para a liderança e designações de famílias;
+- Google Drive, sincronização, atualização pelo aplicativo;
+- recuperação do PIN pela internet.
+
+Continua sendo uma pré-versão alpha.
+
 ## [0.2.0-alpha.3] — 2026-09-03
 
 Segurança local: o app deixa de guardar tudo em texto puro e acessível a
@@ -217,7 +263,8 @@ O número SemVer `0.1.0-alpha.1` identifica a pré-versão. O sufixo de build do
 Flutter, como `+1`, corresponde ao `versionCode` do Android e evolui de forma
 monotônica quando um novo pacote é publicado.
 
-[Unreleased]: https://github.com/guilhermegpo/meu-chamado/compare/v0.2.0-alpha.3...develop
+[Unreleased]: https://github.com/guilhermegpo/meu-chamado/compare/v0.2.0-alpha.4...develop
+[0.2.0-alpha.4]: https://github.com/guilhermegpo/meu-chamado/compare/v0.2.0-alpha.3...v0.2.0-alpha.4
 [0.2.0-alpha.3]: https://github.com/guilhermegpo/meu-chamado/compare/v0.2.0-alpha.2...v0.2.0-alpha.3
 [0.2.0-alpha.2]: https://github.com/guilhermegpo/meu-chamado/releases/tag/v0.2.0-alpha.2
 [0.1.0-alpha.1]: https://github.com/guilhermegpo/meu-chamado/releases/tag/v0.1.0-alpha.1

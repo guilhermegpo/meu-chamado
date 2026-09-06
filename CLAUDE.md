@@ -52,6 +52,13 @@ prompt, e não precisam ser reproduzidas nos relatórios.
 - O agendamento também não tem `status`: é linha própria em
   `ministering_appointments`; cancelar apaga, concluir cria a entrevista.
   Não se agenda no passado ([ADR 0015](docs/adr/0015-ministering-scheduling-model.md)).
+- Trimestre encerrado tem o **escopo** congelado num snapshot (schema v5): o
+  denominador do histórico é quem fazia parte do trimestre, não o estado atual
+  das duplas. A entrevista segue como fonte de verdade — corrigi-la recalcula o
+  numerador. Congelar é regra de domínio (roda antes de ler o módulo e de
+  mudar o conjunto de duplas), nunca no trimestre corrente. Snapshot guarda só
+  IDs. Dupla no escopo de um trimestre concluído não se apaga, só se desativa
+  ([ADR 0017](docs/adr/0017-ministering-quarter-snapshots.md)).
 
 ## UX
 
@@ -103,15 +110,16 @@ Não reduzir testes existentes para obter verde.
 
 ## Fora de escopo até liberação explícita
 
-`0.2.0-alpha.4` e além: Google Drive, sync, updater, Aprender, Escola Dominical
-completa, relatório/visão para a liderança, histórico de trimestres anteriores,
-recuperação de PIN pela internet.
+`0.2.0-alpha.5` e além: Google Drive, sync, updater, Aprender, Escola Dominical
+completa, relatório/visão para a liderança, recuperação de PIN pela internet.
 
 Liderança/entrevistadores e agendamento entraram na `0.2.0-alpha.2`
 ([ADR 0014](docs/adr/0014-ministering-leadership-domain.md),
 [ADR 0015](docs/adr/0015-ministering-scheduling-model.md)). Bloqueio por PIN,
 biometria e banco criptografado entraram na `0.2.0-alpha.3`
-([ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md)).
+([ADR 0016](docs/adr/0016-local-security-and-encrypted-storage.md)). O histórico
+dos trimestres, com snapshot de escopo, entrou na `0.2.0-alpha.4`
+([ADR 0017](docs/adr/0017-ministering-quarter-snapshots.md)).
 
 ### Segurança local (0.2.3+)
 

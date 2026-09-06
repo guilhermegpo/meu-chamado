@@ -107,10 +107,34 @@ vazios/erro acionáveis, responsividade 320–430 px, escala de texto 1.5 e
 "reduzir movimento". Detalhado em
 [docs/design/product-experience-2.md](docs/design/product-experience-2.md).
 
+### 0.2.0-alpha.4 — Entregue em 2026-09-06
+
+Escopo entregue e verificado:
+
+- histórico dos trimestres da Ministração: entrada no painel, lista agrupada
+  por ano com o corrente "em andamento", e detalhe de cada trimestre separando
+  duplas entrevistadas e pendentes;
+- snapshot de escopo por trimestre encerrado (schema local v5): o denominador
+  histórico vem de quais duplas faziam parte do trimestre, não do estado atual;
+- congelamento automático como regra de domínio — antes de cada leitura do
+  módulo e de cada mudança no conjunto de duplas, nunca no trimestre corrente,
+  cobrindo o caso do app fechado por vários trimestres;
+- o numerador histórico segue lido das entrevistas: correção de entrevista
+  antiga recalcula o número do trimestre;
+- snapshot referencia só IDs, com nomes resolvidos ao vivo (minimização de
+  dados); dupla no escopo de um trimestre concluído não pode ser apagada, só
+  desativada;
+- migração aditiva v4 → v5 a partir do banco em texto puro da `alpha.2` e do
+  criptografado da `alpha.3`.
+
+O problema do denominador que se move e a decisão de congelar o escopo, não as
+entrevistas, estão na
+[ADR 0017](docs/adr/0017-ministering-quarter-snapshots.md).
+
 ### Previsto para as próximas alphas da série
 
-- `alpha.4`: histórico de trimestres anteriores e relatório para a liderança;
-- `alpha.5`: apoio ao "Aprender" da reunião do quórum.
+- `alpha.5`: relatório/visão para a liderança e apoio ao "Aprender" da reunião
+  do quórum.
 
 Designações de famílias ou pessoas ministradas seguem fora da série enquanto o
 tratamento desse dado não estiver documentado e justificado.

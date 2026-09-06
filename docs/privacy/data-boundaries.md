@@ -37,7 +37,12 @@ O que o módulo grava, a partir da `0.2.0-alpha.1`:
 
 - identificação curta do irmão ministrador (primeiro nome ou iniciais);
 - composição das duplas e rótulo próprio opcional;
-- data de entrevistas realizadas e quem participou.
+- data de entrevistas realizadas e quem participou;
+- desde a `0.2.0-alpha.4`, o snapshot de escopo de cada trimestre encerrado —
+  **apenas os IDs** das duplas e integrantes que faziam parte do trimestre, sem
+  nome nenhum. Os rótulos continuam resolvidos ao vivo pelo cadastro; o que o
+  snapshot preserva é o conjunto, para o número do histórico não se mover
+  ([ADR 0017](../adr/0017-ministering-quarter-snapshots.md)).
 
 O que o módulo **não** grava, por decisão e não por omissão — ver
 [ADR 0013](../adr/0013-ministering-minimal-identification.md):
