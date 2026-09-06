@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
+import 'package:meu_chamado/features/ministering/domain/ministering_clock.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_exceptions.dart';
 import 'package:meu_chamado/features/ministering/domain/ministering_models.dart';
 
@@ -15,9 +16,15 @@ import 'package:meu_chamado/features/ministering/domain/ministering_models.dart'
 /// `USER`) é técnico e não representa autoridade eclesiástica. Aceitar o
 /// parâmetro sugeriria uma verificação que não existe.
 class MinisteringRepository {
-  MinisteringRepository(this._database);
+  MinisteringRepository(this._database, {MinisteringClock? clock})
+    : _clock = clock ?? systemClock;
 
   final AppDatabase _database;
+
+  /// Hora de referência para derivar o trimestre corrente. Injetável para os
+  /// testes do histórico exercitarem a virada de trimestre sem tocar no relógio
+  /// do sistema.
+  final MinisteringClock _clock;
 
   int _lastIdentifier = 0;
 
@@ -29,7 +36,11 @@ class MinisteringRepository {
     required String callingId,
     Quarter? quarter,
   }) async {
-    final targetQuarter = quarter ?? Quarter.of(DateTime.now());
+    final targetQuarter = quarter ?? Quarter.of(_clock());
+
+    // Congelar o escopo dos trimestres já encerrados antes de qualquer leitura:
+    // o histórico é regra de domínio, não efeito de abrir a tela Histórico.
+    await _finalizeExpiredQuarters(callingId);
 
     final brothers = await _loadBrothers(callingId);
     final leaders = await _loadLeaders(callingId);
@@ -60,6 +71,413 @@ class MinisteringRepository {
     );
   }
 
+  // ------------------------------------------------- histórico trimestral --
+
+  /// Trimestres do histórico, do mais recente para o mais antigo.
+  ///
+  /// O trimestre corrente vem primeiro, marcado como "em andamento", com os
+  /// números derivados do estado atual. Os demais vêm dos snapshots congelados.
+  Future<List<MinisteringHistoricalQuarter>> loadQuarterHistory({
+    required String callingId,
+  }) async {
+    await _finalizeExpiredQuarters(callingId);
+
+    final current = Quarter.of(_clock());
+    final result = <MinisteringHistoricalQuarter>[
+      await _liveQuarter(callingId: callingId, quarter: current),
+    ];
+
+    final snapshots =
+        await (_database.select(_database.ministeringQuarterSnapshots)
+              ..where((row) => row.callingId.equals(callingId))
+              ..orderBy([
+                (row) => OrderingTerm.desc(row.year),
+                (row) => OrderingTerm.desc(row.quarter),
+              ]))
+            .get();
+
+    for (final row in snapshots) {
+      final quarter = Quarter(row.year, row.quarter);
+      result.add(
+        MinisteringHistoricalQuarter(
+          quarter: quarter,
+          inProgress: false,
+          eligible: await _snapshotEligibleCount(row.id),
+          interviewed: await _snapshotInterviewedCount(
+            callingId: callingId,
+            snapshotId: row.id,
+            quarter: quarter,
+          ),
+        ),
+      );
+    }
+
+    return result;
+  }
+
+  /// Detalhe de um trimestre — as duplas do escopo, separadas entre
+  /// entrevistadas e pendentes.
+  ///
+  /// Devolve `null` quando o trimestre não é o corrente e ainda não tem
+  /// snapshot (nada a mostrar).
+  Future<MinisteringQuarterDetail?> loadQuarterDetail({
+    required String callingId,
+    required Quarter quarter,
+  }) async {
+    await _finalizeExpiredQuarters(callingId);
+
+    final current = Quarter.of(_clock());
+    final brothers = await _loadBrothers(callingId);
+    final byBrotherId = {for (final brother in brothers) brother.id: brother};
+
+    List<({String id, String? label, List<String> memberIds})> scope;
+    MinisteringHistoricalQuarter summary;
+
+    if (quarter == current) {
+      final companionships = await _loadCompanionships(callingId, brothers);
+      final active = companionships
+          .where((item) => item.isActive)
+          .toList(growable: false);
+      scope = [
+        for (final item in active)
+          (
+            id: item.id,
+            label: item.displayLabel,
+            memberIds: item.members.map((m) => m.id).toList(growable: false),
+          ),
+      ];
+      summary = await _liveQuarter(callingId: callingId, quarter: quarter);
+    } else {
+      final snapshot =
+          await (_database.select(_database.ministeringQuarterSnapshots)..where(
+                (row) =>
+                    row.callingId.equals(callingId) &
+                    row.year.equals(quarter.year) &
+                    row.quarter.equals(quarter.number),
+              ))
+              .getSingleOrNull();
+      if (snapshot == null) return null;
+
+      final scopeRows = await (_database.select(
+        _database.ministeringQuarterSnapshotCompanionships,
+      )..where((row) => row.snapshotId.equals(snapshot.id))).get();
+      final memberRows = await (_database.select(
+        _database.ministeringQuarterSnapshotMembers,
+      )..where((row) => row.snapshotId.equals(snapshot.id))).get();
+      final membersBySnapshotCompanionship = <String, List<String>>{};
+      for (final member in memberRows) {
+        membersBySnapshotCompanionship
+            .putIfAbsent(member.companionshipId, () => [])
+            .add(member.brotherId);
+      }
+
+      // O rótulo próprio da dupla é resolvido pelo cadastro vivo — não é
+      // histórico, só cosmético.
+      final companionshipLabels = {
+        for (final item in await (_database.select(
+          _database.ministeringCompanionships,
+        )..where((row) => row.callingId.equals(callingId))).get())
+          item.id: item.displayLabel,
+      };
+
+      scope = [
+        for (final row in scopeRows)
+          (
+            id: row.companionshipId,
+            label: companionshipLabels[row.companionshipId],
+            memberIds:
+                membersBySnapshotCompanionship[row.companionshipId] ?? const [],
+          ),
+      ];
+      summary = MinisteringHistoricalQuarter(
+        quarter: quarter,
+        inProgress: false,
+        eligible: scope.length,
+        interviewed: await _snapshotInterviewedCount(
+          callingId: callingId,
+          snapshotId: snapshot.id,
+          quarter: quarter,
+        ),
+      );
+    }
+
+    final counts = await _interviewCountsByCompanionship(
+      callingId: callingId,
+      quarter: quarter,
+    );
+
+    final details = [
+      for (final item in scope)
+        MinisteringQuarterCompanionshipDetail(
+          companionshipId: item.id,
+          title:
+              item.label ??
+              item.memberIds
+                  .map((id) => byBrotherId[id]?.displayLabel ?? '—')
+                  .join(' · '),
+          members: [
+            for (final id in item.memberIds)
+              byBrotherId[id] ??
+                  MinisteringBrother(
+                    id: id,
+                    displayLabel: '—',
+                    isActive: false,
+                  ),
+          ],
+          interviewCount: counts[item.id]?.count ?? 0,
+          lastInterviewAt: counts[item.id]?.last,
+        ),
+    ];
+
+    return MinisteringQuarterDetail(
+      summary: summary,
+      interviewed: details.where((d) => d.interviewed).toList(growable: false),
+      pending: details.where((d) => !d.interviewed).toList(growable: false),
+    );
+  }
+
+  /// Congela o escopo de todo trimestre já encerrado que ainda não tem
+  /// snapshot, do mais antigo com atividade até o anterior ao corrente.
+  ///
+  /// **Invariante**: esta rotina roda antes de qualquer leitura do módulo e no
+  /// início de toda mutação que mexe no conjunto de duplas (`createCompanionship`,
+  /// `updateCompanionship`, `setCompanionshipActive`, `deleteCompanionship`).
+  /// Como o escopo é congelado antes da mutação acontecer, o snapshot sempre
+  /// reflete o estado que valia durante o trimestre — não é preciso reconstruir
+  /// atividade histórica.
+  ///
+  /// Idempotente: a `UNIQUE (calling_id, year, quarter)` barra a segunda
+  /// gravação, e a checagem anterior evita nem tentar. Nunca congela o
+  /// trimestre corrente nem um futuro.
+  Future<void> _finalizeExpiredQuarters(String callingId) async {
+    final current = Quarter.of(_clock());
+
+    final earliest = await _earliestRelevantQuarter(callingId);
+    if (earliest == null) return;
+
+    final existing =
+        (await (_database.select(
+              _database.ministeringQuarterSnapshots,
+            )..where((row) => row.callingId.equals(callingId))).get())
+            .map((row) => (row.year, row.quarter))
+            .toSet();
+
+    var quarter = earliest;
+    final pending = <Quarter>[];
+    while (quarter.isBefore(current)) {
+      if (!existing.contains((quarter.year, quarter.number))) {
+        pending.add(quarter);
+      }
+      quarter = quarter.next;
+    }
+    if (pending.isEmpty) return;
+
+    final brothers = await _loadBrothers(callingId);
+    final companionships = await _loadCompanionships(callingId, brothers);
+    final active = companionships
+        .where((item) => item.isActive)
+        .toList(growable: false);
+    final now = _clock().toUtc();
+
+    await _database.transaction(() async {
+      for (final target in pending) {
+        // Duplas do escopo do trimestre: as ativas agora — que, pela
+        // invariante acima, são as que valiam quando o trimestre encerrou —
+        // mais qualquer dupla com entrevista nele (esteve no escopo de
+        // propósito, ainda que inativa agora).
+        final interviewedIds = await _interviewedCompanionshipIds(
+          callingId: callingId,
+          quarter: target,
+        );
+        final eligibleIds = {
+          ...active.map((item) => item.id),
+          ...interviewedIds,
+        };
+        final eligible = companionships
+            .where((item) => eligibleIds.contains(item.id))
+            .toList(growable: false);
+
+        final snapshotId = 'snapshot-${_nextIdentifier()}';
+        await _database
+            .into(_database.ministeringQuarterSnapshots)
+            .insert(
+              MinisteringQuarterSnapshotsCompanion.insert(
+                id: snapshotId,
+                callingId: callingId,
+                year: target.year,
+                quarter: target.number,
+                finalizedAt: now,
+                createdAt: now,
+              ),
+            );
+
+        await _database.batch((batch) {
+          for (final item in eligible) {
+            batch.insert(
+              _database.ministeringQuarterSnapshotCompanionships,
+              MinisteringQuarterSnapshotCompanionshipsCompanion.insert(
+                snapshotId: snapshotId,
+                companionshipId: item.id,
+                callingId: callingId,
+              ),
+            );
+            for (final member in item.members) {
+              batch.insert(
+                _database.ministeringQuarterSnapshotMembers,
+                MinisteringQuarterSnapshotMembersCompanion.insert(
+                  snapshotId: snapshotId,
+                  companionshipId: item.id,
+                  brotherId: member.id,
+                  callingId: callingId,
+                ),
+              );
+            }
+          }
+        });
+      }
+    });
+  }
+
+  /// Primeiro trimestre com algo a registrar: a entrevista mais antiga ou a
+  /// dupla criada há mais tempo. `null` quando o chamado não tem nem uma nem
+  /// outra.
+  Future<Quarter?> _earliestRelevantQuarter(String callingId) async {
+    final interviewMin =
+        await (_database.selectOnly(_database.ministeringInterviews)
+              ..addColumns([_database.ministeringInterviews.completedAt.min()])
+              ..where(
+                _database.ministeringInterviews.callingId.equals(callingId),
+              ))
+            .getSingleOrNull();
+    final companionshipMin =
+        await (_database.selectOnly(_database.ministeringCompanionships)
+              ..addColumns([
+                _database.ministeringCompanionships.createdAt.min(),
+              ])
+              ..where(
+                _database.ministeringCompanionships.callingId.equals(callingId),
+              ))
+            .getSingleOrNull();
+
+    // O Drift guarda `DateTime` como epoch e devolve no fuso do aparelho.
+    // Sem voltar para UTC, uma data no primeiro dia de um trimestre é lida como
+    // o último dia do anterior a oeste de Greenwich, e a finalização
+    // começaria um trimestre cedo demais.
+    final dates = <DateTime>[
+      if (interviewMin?.read(_database.ministeringInterviews.completedAt.min())
+          case final DateTime value)
+        value.toUtc(),
+      if (companionshipMin?.read(
+            _database.ministeringCompanionships.createdAt.min(),
+          )
+          case final DateTime value)
+        value.toUtc(),
+    ];
+    if (dates.isEmpty) return null;
+
+    dates.sort();
+    return Quarter.of(dates.first);
+  }
+
+  Future<int> _snapshotEligibleCount(String snapshotId) async {
+    final row =
+        await (_database.selectOnly(
+                _database.ministeringQuarterSnapshotCompanionships,
+              )
+              ..addColumns([
+                _database.ministeringQuarterSnapshotCompanionships.snapshotId
+                    .count(),
+              ])
+              ..where(
+                _database.ministeringQuarterSnapshotCompanionships.snapshotId
+                    .equals(snapshotId),
+              ))
+            .getSingle();
+    return row.read(
+          _database.ministeringQuarterSnapshotCompanionships.snapshotId.count(),
+        ) ??
+        0;
+  }
+
+  /// Numerador histórico: duplas **do escopo** com ao menos uma entrevista no
+  /// trimestre. O `IN (escopo)` garante que uma entrevista para uma dupla fora
+  /// do snapshot (criada depois, retroagida por engano) não infle o numerador
+  /// além do denominador.
+  Future<int> _snapshotInterviewedCount({
+    required String callingId,
+    required String snapshotId,
+    required Quarter quarter,
+  }) async {
+    final scopeRows = await (_database.select(
+      _database.ministeringQuarterSnapshotCompanionships,
+    )..where((row) => row.snapshotId.equals(snapshotId))).get();
+    final scope = scopeRows.map((row) => row.companionshipId).toSet();
+    if (scope.isEmpty) return 0;
+
+    final interviewed = await _interviewedCompanionshipIds(
+      callingId: callingId,
+      quarter: quarter,
+    );
+    return interviewed.where(scope.contains).length;
+  }
+
+  /// Contagem e última data de entrevista por dupla, dentro de um trimestre.
+  Future<Map<String, ({int count, DateTime? last})>>
+  _interviewCountsByCompanionship({
+    required String callingId,
+    required Quarter quarter,
+  }) async {
+    final companionshipId = _database.ministeringInterviews.companionshipId;
+    final completedAt = _database.ministeringInterviews.completedAt;
+    final rows =
+        await (_database.selectOnly(_database.ministeringInterviews)
+              ..addColumns([
+                companionshipId,
+                completedAt.count(),
+                completedAt.max(),
+              ])
+              ..where(
+                _database.ministeringInterviews.callingId.equals(callingId) &
+                    completedAt.isBiggerOrEqualValue(quarter.start) &
+                    completedAt.isSmallerThanValue(quarter.nextStart),
+              )
+              ..groupBy([companionshipId]))
+            .get();
+
+    return {
+      for (final row in rows)
+        row.read(companionshipId)!: (
+          count: row.read(completedAt.count()) ?? 0,
+          // De volta para UTC, como em `listInterviews`: o Drift devolve o
+          // epoch no fuso do aparelho e a data de calendário normalizada
+          // regrediria um dia a oeste de Greenwich.
+          last: row.read(completedAt.max())?.toUtc(),
+        ),
+    };
+  }
+
+  /// Números do trimestre corrente, derivados do estado atual das duplas.
+  Future<MinisteringHistoricalQuarter> _liveQuarter({
+    required String callingId,
+    required Quarter quarter,
+  }) async {
+    final brothers = await _loadBrothers(callingId);
+    final companionships = await _loadCompanionships(callingId, brothers);
+    final active = companionships
+        .where((item) => item.isActive)
+        .toList(growable: false);
+    final interviewed = await _interviewedCompanionshipIds(
+      callingId: callingId,
+      quarter: quarter,
+    );
+    return MinisteringHistoricalQuarter(
+      quarter: quarter,
+      inProgress: true,
+      eligible: active.length,
+      interviewed: active.where((item) => interviewed.contains(item.id)).length,
+    );
+  }
+
   // ------------------------------------------------------- liderança --
 
   /// Cadastra um líder responsável pelas entrevistas.
@@ -72,7 +490,7 @@ class MinisteringRepository {
     required MinisteringLeadershipRole role,
   }) async {
     final safeLabel = _validatedLabel(displayLabel);
-    final now = DateTime.now().toUtc();
+    final now = _clock().toUtc();
     final id = 'leader-${_nextIdentifier()}';
 
     await _database
@@ -112,7 +530,7 @@ class MinisteringRepository {
               MinisteringLeadersCompanion(
                 displayLabel: Value(safeLabel),
                 role: Value(role.storageValue),
-                updatedAt: Value(DateTime.now().toUtc()),
+                updatedAt: Value(_clock().toUtc()),
               ),
             );
 
@@ -137,7 +555,7 @@ class MinisteringRepository {
             .write(
               MinisteringLeadersCompanion(
                 isActive: Value(isActive),
-                updatedAt: Value(DateTime.now().toUtc()),
+                updatedAt: Value(_clock().toUtc()),
               ),
             );
 
@@ -199,7 +617,7 @@ class MinisteringRepository {
     required String displayLabel,
   }) async {
     final safeLabel = _validatedLabel(displayLabel);
-    final now = DateTime.now().toUtc();
+    final now = _clock().toUtc();
     final id = 'brother-${_nextIdentifier()}';
 
     await _database
@@ -231,7 +649,7 @@ class MinisteringRepository {
             .write(
               MinisteringBrothersCompanion(
                 displayLabel: Value(safeLabel),
-                updatedAt: Value(DateTime.now().toUtc()),
+                updatedAt: Value(_clock().toUtc()),
               ),
             );
 
@@ -255,7 +673,7 @@ class MinisteringRepository {
             .write(
               MinisteringBrothersCompanion(
                 isActive: Value(isActive),
-                updatedAt: Value(DateTime.now().toUtc()),
+                updatedAt: Value(_clock().toUtc()),
               ),
             );
 
@@ -331,9 +749,10 @@ class MinisteringRepository {
         ? null
         : _validatedLabel(displayLabel);
     final id = 'companionship-${_nextIdentifier()}';
-    final now = DateTime.now().toUtc();
+    final now = _clock().toUtc();
 
     await _database.transaction(() async {
+      await _finalizeExpiredQuarters(callingId);
       await _assertUsableMembers(callingId: callingId, brotherIds: brotherIds);
 
       await _database
@@ -368,9 +787,10 @@ class MinisteringRepository {
     final safeLabel = displayLabel == null || displayLabel.trim().isEmpty
         ? null
         : _validatedLabel(displayLabel);
-    final now = DateTime.now().toUtc();
+    final now = _clock().toUtc();
 
     await _database.transaction(() async {
+      await _finalizeExpiredQuarters(callingId);
       await _assertUsableMembers(callingId: callingId, brotherIds: brotherIds);
 
       final updated =
@@ -414,6 +834,7 @@ class MinisteringRepository {
     required bool isActive,
   }) async {
     await _database.transaction(() async {
+      await _finalizeExpiredQuarters(callingId);
       if (isActive) {
         final members = await _memberIds(
           callingId: callingId,
@@ -435,7 +856,7 @@ class MinisteringRepository {
               .write(
                 MinisteringCompanionshipsCompanion(
                   isActive: Value(isActive),
-                  updatedAt: Value(DateTime.now().toUtc()),
+                  updatedAt: Value(_clock().toUtc()),
                 ),
               );
 
@@ -478,14 +899,25 @@ class MinisteringRepository {
                   row.companionshipId.equals(companionshipId),
             ))
             .get();
+    final snapshots =
+        await (_database.select(
+              _database.ministeringQuarterSnapshotCompanionships,
+            )..where(
+              (row) =>
+                  row.callingId.equals(callingId) &
+                  row.companionshipId.equals(companionshipId),
+            ))
+            .get();
 
     // A composição em si não é histórico: os integrantes continuam existindo
     // como irmãos. O que não pode sumir é a entrevista; o agendamento aberto
-    // deve ser cancelado de propósito, não levado junto em silêncio.
+    // deve ser cancelado de propósito; e o escopo de um trimestre já concluído
+    // não pode encolher.
     return MinisteringRemovalCheck(
       companionships: 0,
       interviews: interviews.length,
       appointments: appointments.length,
+      snapshots: snapshots.length,
     );
   }
 
@@ -499,6 +931,7 @@ class MinisteringRepository {
     required String companionshipId,
   }) async {
     await _database.transaction(() async {
+      await _finalizeExpiredQuarters(callingId);
       final check = await inspectCompanionshipRemoval(
         callingId: callingId,
         companionshipId: companionshipId,
@@ -529,7 +962,7 @@ class MinisteringRepository {
     required String interviewerId,
   }) async {
     final id = 'appointment-${_nextIdentifier()}';
-    final now = DateTime.now().toUtc();
+    final now = _clock().toUtc();
     final instant = _validatedScheduledInstant(scheduledAt);
 
     await _database.transaction(() async {
@@ -606,7 +1039,7 @@ class MinisteringRepository {
         MinisteringAppointmentsCompanion(
           scheduledAt: Value(instant),
           interviewerId: Value(interviewerId),
-          updatedAt: Value(DateTime.now().toUtc()),
+          updatedAt: Value(_clock().toUtc()),
         ),
       );
     });
@@ -700,7 +1133,7 @@ class MinisteringRepository {
     String? interviewerId,
   }) async {
     final date = calendarDate(completedOn);
-    if (date.isAfter(calendarDate(DateTime.now()))) {
+    if (date.isAfter(calendarDate(_clock()))) {
       throw const FutureInterviewDateException();
     }
     if (participantBrotherIds.isEmpty) {
@@ -831,7 +1264,7 @@ class MinisteringRepository {
     required String? interviewerId,
   }) async {
     final date = calendarDate(completedOn);
-    if (date.isAfter(calendarDate(DateTime.now()))) {
+    if (date.isAfter(calendarDate(_clock()))) {
       throw const FutureInterviewDateException();
     }
     if (participantBrotherIds.isEmpty) {
@@ -840,7 +1273,7 @@ class MinisteringRepository {
 
     final participants = participantBrotherIds.toSet().toList(growable: false);
     final id = 'interview-${_nextIdentifier()}';
-    final now = DateTime.now().toUtc();
+    final now = _clock().toUtc();
 
     final members = await _memberIds(
       callingId: callingId,
@@ -1154,7 +1587,7 @@ class MinisteringRepository {
 
   DateTime _validatedScheduledInstant(DateTime value) {
     final instant = scheduledInstant(value);
-    final currentMinute = scheduledInstant(DateTime.now());
+    final currentMinute = scheduledInstant(_clock());
     if (instant.isBefore(currentMinute)) {
       throw const PastAppointmentDateTimeException();
     }

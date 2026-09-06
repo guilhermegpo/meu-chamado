@@ -241,4 +241,13 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('o painel dá acesso ao histórico dos trimestres', (tester) async {
+    await pump(tester);
+
+    await tapVisible(tester, find.byKey(const Key('open-quarter-history')));
+
+    expect(find.text('Histórico'), findsOneWidget);
+    expect(find.text('Ainda não há trimestres encerrados'), findsOneWidget);
+  });
 }

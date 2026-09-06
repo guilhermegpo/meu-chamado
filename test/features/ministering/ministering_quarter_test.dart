@@ -60,6 +60,42 @@ void main() {
     test('rotula em português', () {
       expect(const Quarter(2026, 3).label, '3º trimestre de 2026');
     });
+
+    test('anda para trás pelos limites, virando o ano', () {
+      expect(const Quarter(2026, 3).previous, const Quarter(2026, 2));
+      expect(const Quarter(2026, 1).previous, const Quarter(2025, 4));
+    });
+
+    test('anda para frente pelos limites, virando o ano', () {
+      expect(const Quarter(2026, 2).next, const Quarter(2026, 3));
+      expect(const Quarter(2026, 4).next, const Quarter(2027, 1));
+    });
+
+    test('ordena por ano e depois por número', () {
+      expect(const Quarter(2026, 1).isBefore(const Quarter(2026, 2)), isTrue);
+      expect(const Quarter(2025, 4).isBefore(const Quarter(2026, 1)), isTrue);
+      expect(const Quarter(2026, 3).isBefore(const Quarter(2026, 3)), isFalse);
+      expect(const Quarter(2026, 4).isAfter(const Quarter(2026, 3)), isTrue);
+    });
+
+    test('rotula a faixa de meses', () {
+      expect(const Quarter(2026, 1).monthsLabel, 'Janeiro — Março');
+      expect(const Quarter(2026, 3).monthsLabel, 'Julho — Setembro');
+      expect(const Quarter(2026, 4).monthsLabel, 'Outubro — Dezembro');
+    });
+
+    test('as viradas de ano seguem consistentes em quatro passos', () {
+      var quarter = const Quarter(2026, 3);
+      for (var i = 0; i < 4; i++) {
+        quarter = quarter.next;
+      }
+      expect(quarter, const Quarter(2027, 3));
+
+      for (var i = 0; i < 4; i++) {
+        quarter = quarter.previous;
+      }
+      expect(quarter, const Quarter(2026, 3));
+    });
   });
 
   group('calendarDate', () {

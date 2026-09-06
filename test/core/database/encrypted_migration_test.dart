@@ -39,7 +39,7 @@ void main() {
     final db = openEncrypted();
     addTearDown(db.close);
 
-    expect(db.schemaVersion, 4);
+    expect(db.schemaVersion, 5);
     expect(await count(db, 'workspaces'), 1);
     expect(await count(db, 'users'), 1);
     expect(await count(db, 'callings'), 1);

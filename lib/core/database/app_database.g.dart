@@ -4708,6 +4708,1084 @@ class MinisteringAppointmentsCompanion
   }
 }
 
+class $MinisteringQuarterSnapshotsTable extends MinisteringQuarterSnapshots
+    with
+        TableInfo<
+          $MinisteringQuarterSnapshotsTable,
+          MinisteringQuarterSnapshotRow
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MinisteringQuarterSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _callingIdMeta = const VerificationMeta(
+    'callingId',
+  );
+  @override
+  late final GeneratedColumn<String> callingId = GeneratedColumn<String>(
+    'calling_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES callings (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _yearMeta = const VerificationMeta('year');
+  @override
+  late final GeneratedColumn<int> year = GeneratedColumn<int>(
+    'year',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quarterMeta = const VerificationMeta(
+    'quarter',
+  );
+  @override
+  late final GeneratedColumn<int> quarter = GeneratedColumn<int>(
+    'quarter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _finalizedAtMeta = const VerificationMeta(
+    'finalizedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> finalizedAt = GeneratedColumn<DateTime>(
+    'finalized_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    callingId,
+    year,
+    quarter,
+    finalizedAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ministering_quarter_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MinisteringQuarterSnapshotRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('calling_id')) {
+      context.handle(
+        _callingIdMeta,
+        callingId.isAcceptableOrUnknown(data['calling_id']!, _callingIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_callingIdMeta);
+    }
+    if (data.containsKey('year')) {
+      context.handle(
+        _yearMeta,
+        year.isAcceptableOrUnknown(data['year']!, _yearMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_yearMeta);
+    }
+    if (data.containsKey('quarter')) {
+      context.handle(
+        _quarterMeta,
+        quarter.isAcceptableOrUnknown(data['quarter']!, _quarterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quarterMeta);
+    }
+    if (data.containsKey('finalized_at')) {
+      context.handle(
+        _finalizedAtMeta,
+        finalizedAt.isAcceptableOrUnknown(
+          data['finalized_at']!,
+          _finalizedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_finalizedAtMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MinisteringQuarterSnapshotRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MinisteringQuarterSnapshotRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      callingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}calling_id'],
+      )!,
+      year: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}year'],
+      )!,
+      quarter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quarter'],
+      )!,
+      finalizedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finalized_at'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MinisteringQuarterSnapshotsTable createAlias(String alias) {
+    return $MinisteringQuarterSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class MinisteringQuarterSnapshotRow extends DataClass
+    implements Insertable<MinisteringQuarterSnapshotRow> {
+  final String id;
+  final String callingId;
+  final int year;
+
+  /// 1 a 4.
+  final int quarter;
+
+  /// Quando o escopo foi congelado — logo após o trimestre encerrar, na
+  /// primeira leitura ou mutação seguinte.
+  final DateTime finalizedAt;
+  final DateTime createdAt;
+  const MinisteringQuarterSnapshotRow({
+    required this.id,
+    required this.callingId,
+    required this.year,
+    required this.quarter,
+    required this.finalizedAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['calling_id'] = Variable<String>(callingId);
+    map['year'] = Variable<int>(year);
+    map['quarter'] = Variable<int>(quarter);
+    map['finalized_at'] = Variable<DateTime>(finalizedAt);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  MinisteringQuarterSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return MinisteringQuarterSnapshotsCompanion(
+      id: Value(id),
+      callingId: Value(callingId),
+      year: Value(year),
+      quarter: Value(quarter),
+      finalizedAt: Value(finalizedAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MinisteringQuarterSnapshotRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MinisteringQuarterSnapshotRow(
+      id: serializer.fromJson<String>(json['id']),
+      callingId: serializer.fromJson<String>(json['callingId']),
+      year: serializer.fromJson<int>(json['year']),
+      quarter: serializer.fromJson<int>(json['quarter']),
+      finalizedAt: serializer.fromJson<DateTime>(json['finalizedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'callingId': serializer.toJson<String>(callingId),
+      'year': serializer.toJson<int>(year),
+      'quarter': serializer.toJson<int>(quarter),
+      'finalizedAt': serializer.toJson<DateTime>(finalizedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MinisteringQuarterSnapshotRow copyWith({
+    String? id,
+    String? callingId,
+    int? year,
+    int? quarter,
+    DateTime? finalizedAt,
+    DateTime? createdAt,
+  }) => MinisteringQuarterSnapshotRow(
+    id: id ?? this.id,
+    callingId: callingId ?? this.callingId,
+    year: year ?? this.year,
+    quarter: quarter ?? this.quarter,
+    finalizedAt: finalizedAt ?? this.finalizedAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MinisteringQuarterSnapshotRow copyWithCompanion(
+    MinisteringQuarterSnapshotsCompanion data,
+  ) {
+    return MinisteringQuarterSnapshotRow(
+      id: data.id.present ? data.id.value : this.id,
+      callingId: data.callingId.present ? data.callingId.value : this.callingId,
+      year: data.year.present ? data.year.value : this.year,
+      quarter: data.quarter.present ? data.quarter.value : this.quarter,
+      finalizedAt: data.finalizedAt.present
+          ? data.finalizedAt.value
+          : this.finalizedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringQuarterSnapshotRow(')
+          ..write('id: $id, ')
+          ..write('callingId: $callingId, ')
+          ..write('year: $year, ')
+          ..write('quarter: $quarter, ')
+          ..write('finalizedAt: $finalizedAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, callingId, year, quarter, finalizedAt, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MinisteringQuarterSnapshotRow &&
+          other.id == this.id &&
+          other.callingId == this.callingId &&
+          other.year == this.year &&
+          other.quarter == this.quarter &&
+          other.finalizedAt == this.finalizedAt &&
+          other.createdAt == this.createdAt);
+}
+
+class MinisteringQuarterSnapshotsCompanion
+    extends UpdateCompanion<MinisteringQuarterSnapshotRow> {
+  final Value<String> id;
+  final Value<String> callingId;
+  final Value<int> year;
+  final Value<int> quarter;
+  final Value<DateTime> finalizedAt;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const MinisteringQuarterSnapshotsCompanion({
+    this.id = const Value.absent(),
+    this.callingId = const Value.absent(),
+    this.year = const Value.absent(),
+    this.quarter = const Value.absent(),
+    this.finalizedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MinisteringQuarterSnapshotsCompanion.insert({
+    required String id,
+    required String callingId,
+    required int year,
+    required int quarter,
+    required DateTime finalizedAt,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       callingId = Value(callingId),
+       year = Value(year),
+       quarter = Value(quarter),
+       finalizedAt = Value(finalizedAt),
+       createdAt = Value(createdAt);
+  static Insertable<MinisteringQuarterSnapshotRow> custom({
+    Expression<String>? id,
+    Expression<String>? callingId,
+    Expression<int>? year,
+    Expression<int>? quarter,
+    Expression<DateTime>? finalizedAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (callingId != null) 'calling_id': callingId,
+      if (year != null) 'year': year,
+      if (quarter != null) 'quarter': quarter,
+      if (finalizedAt != null) 'finalized_at': finalizedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MinisteringQuarterSnapshotsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? callingId,
+    Value<int>? year,
+    Value<int>? quarter,
+    Value<DateTime>? finalizedAt,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return MinisteringQuarterSnapshotsCompanion(
+      id: id ?? this.id,
+      callingId: callingId ?? this.callingId,
+      year: year ?? this.year,
+      quarter: quarter ?? this.quarter,
+      finalizedAt: finalizedAt ?? this.finalizedAt,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (callingId.present) {
+      map['calling_id'] = Variable<String>(callingId.value);
+    }
+    if (year.present) {
+      map['year'] = Variable<int>(year.value);
+    }
+    if (quarter.present) {
+      map['quarter'] = Variable<int>(quarter.value);
+    }
+    if (finalizedAt.present) {
+      map['finalized_at'] = Variable<DateTime>(finalizedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringQuarterSnapshotsCompanion(')
+          ..write('id: $id, ')
+          ..write('callingId: $callingId, ')
+          ..write('year: $year, ')
+          ..write('quarter: $quarter, ')
+          ..write('finalizedAt: $finalizedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MinisteringQuarterSnapshotCompanionshipsTable
+    extends MinisteringQuarterSnapshotCompanionships
+    with
+        TableInfo<
+          $MinisteringQuarterSnapshotCompanionshipsTable,
+          MinisteringQuarterSnapshotCompanionshipRow
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MinisteringQuarterSnapshotCompanionshipsTable(
+    this.attachedDatabase, [
+    this._alias,
+  ]);
+  static const VerificationMeta _snapshotIdMeta = const VerificationMeta(
+    'snapshotId',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotId = GeneratedColumn<String>(
+    'snapshot_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _companionshipIdMeta = const VerificationMeta(
+    'companionshipId',
+  );
+  @override
+  late final GeneratedColumn<String> companionshipId = GeneratedColumn<String>(
+    'companionship_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _callingIdMeta = const VerificationMeta(
+    'callingId',
+  );
+  @override
+  late final GeneratedColumn<String> callingId = GeneratedColumn<String>(
+    'calling_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    snapshotId,
+    companionshipId,
+    callingId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ministering_quarter_snapshot_companionships';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MinisteringQuarterSnapshotCompanionshipRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('snapshot_id')) {
+      context.handle(
+        _snapshotIdMeta,
+        snapshotId.isAcceptableOrUnknown(data['snapshot_id']!, _snapshotIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotIdMeta);
+    }
+    if (data.containsKey('companionship_id')) {
+      context.handle(
+        _companionshipIdMeta,
+        companionshipId.isAcceptableOrUnknown(
+          data['companionship_id']!,
+          _companionshipIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_companionshipIdMeta);
+    }
+    if (data.containsKey('calling_id')) {
+      context.handle(
+        _callingIdMeta,
+        callingId.isAcceptableOrUnknown(data['calling_id']!, _callingIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_callingIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {snapshotId, companionshipId};
+  @override
+  MinisteringQuarterSnapshotCompanionshipRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MinisteringQuarterSnapshotCompanionshipRow(
+      snapshotId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_id'],
+      )!,
+      companionshipId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}companionship_id'],
+      )!,
+      callingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}calling_id'],
+      )!,
+    );
+  }
+
+  @override
+  $MinisteringQuarterSnapshotCompanionshipsTable createAlias(String alias) {
+    return $MinisteringQuarterSnapshotCompanionshipsTable(
+      attachedDatabase,
+      alias,
+    );
+  }
+}
+
+class MinisteringQuarterSnapshotCompanionshipRow extends DataClass
+    implements Insertable<MinisteringQuarterSnapshotCompanionshipRow> {
+  final String snapshotId;
+  final String companionshipId;
+
+  /// Redundante de propósito: sustenta as FKs compostas por chamado.
+  final String callingId;
+  const MinisteringQuarterSnapshotCompanionshipRow({
+    required this.snapshotId,
+    required this.companionshipId,
+    required this.callingId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['snapshot_id'] = Variable<String>(snapshotId);
+    map['companionship_id'] = Variable<String>(companionshipId);
+    map['calling_id'] = Variable<String>(callingId);
+    return map;
+  }
+
+  MinisteringQuarterSnapshotCompanionshipsCompanion toCompanion(
+    bool nullToAbsent,
+  ) {
+    return MinisteringQuarterSnapshotCompanionshipsCompanion(
+      snapshotId: Value(snapshotId),
+      companionshipId: Value(companionshipId),
+      callingId: Value(callingId),
+    );
+  }
+
+  factory MinisteringQuarterSnapshotCompanionshipRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MinisteringQuarterSnapshotCompanionshipRow(
+      snapshotId: serializer.fromJson<String>(json['snapshotId']),
+      companionshipId: serializer.fromJson<String>(json['companionshipId']),
+      callingId: serializer.fromJson<String>(json['callingId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'snapshotId': serializer.toJson<String>(snapshotId),
+      'companionshipId': serializer.toJson<String>(companionshipId),
+      'callingId': serializer.toJson<String>(callingId),
+    };
+  }
+
+  MinisteringQuarterSnapshotCompanionshipRow copyWith({
+    String? snapshotId,
+    String? companionshipId,
+    String? callingId,
+  }) => MinisteringQuarterSnapshotCompanionshipRow(
+    snapshotId: snapshotId ?? this.snapshotId,
+    companionshipId: companionshipId ?? this.companionshipId,
+    callingId: callingId ?? this.callingId,
+  );
+  MinisteringQuarterSnapshotCompanionshipRow copyWithCompanion(
+    MinisteringQuarterSnapshotCompanionshipsCompanion data,
+  ) {
+    return MinisteringQuarterSnapshotCompanionshipRow(
+      snapshotId: data.snapshotId.present
+          ? data.snapshotId.value
+          : this.snapshotId,
+      companionshipId: data.companionshipId.present
+          ? data.companionshipId.value
+          : this.companionshipId,
+      callingId: data.callingId.present ? data.callingId.value : this.callingId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringQuarterSnapshotCompanionshipRow(')
+          ..write('snapshotId: $snapshotId, ')
+          ..write('companionshipId: $companionshipId, ')
+          ..write('callingId: $callingId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(snapshotId, companionshipId, callingId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MinisteringQuarterSnapshotCompanionshipRow &&
+          other.snapshotId == this.snapshotId &&
+          other.companionshipId == this.companionshipId &&
+          other.callingId == this.callingId);
+}
+
+class MinisteringQuarterSnapshotCompanionshipsCompanion
+    extends UpdateCompanion<MinisteringQuarterSnapshotCompanionshipRow> {
+  final Value<String> snapshotId;
+  final Value<String> companionshipId;
+  final Value<String> callingId;
+  final Value<int> rowid;
+  const MinisteringQuarterSnapshotCompanionshipsCompanion({
+    this.snapshotId = const Value.absent(),
+    this.companionshipId = const Value.absent(),
+    this.callingId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MinisteringQuarterSnapshotCompanionshipsCompanion.insert({
+    required String snapshotId,
+    required String companionshipId,
+    required String callingId,
+    this.rowid = const Value.absent(),
+  }) : snapshotId = Value(snapshotId),
+       companionshipId = Value(companionshipId),
+       callingId = Value(callingId);
+  static Insertable<MinisteringQuarterSnapshotCompanionshipRow> custom({
+    Expression<String>? snapshotId,
+    Expression<String>? companionshipId,
+    Expression<String>? callingId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (snapshotId != null) 'snapshot_id': snapshotId,
+      if (companionshipId != null) 'companionship_id': companionshipId,
+      if (callingId != null) 'calling_id': callingId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MinisteringQuarterSnapshotCompanionshipsCompanion copyWith({
+    Value<String>? snapshotId,
+    Value<String>? companionshipId,
+    Value<String>? callingId,
+    Value<int>? rowid,
+  }) {
+    return MinisteringQuarterSnapshotCompanionshipsCompanion(
+      snapshotId: snapshotId ?? this.snapshotId,
+      companionshipId: companionshipId ?? this.companionshipId,
+      callingId: callingId ?? this.callingId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (snapshotId.present) {
+      map['snapshot_id'] = Variable<String>(snapshotId.value);
+    }
+    if (companionshipId.present) {
+      map['companionship_id'] = Variable<String>(companionshipId.value);
+    }
+    if (callingId.present) {
+      map['calling_id'] = Variable<String>(callingId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringQuarterSnapshotCompanionshipsCompanion(')
+          ..write('snapshotId: $snapshotId, ')
+          ..write('companionshipId: $companionshipId, ')
+          ..write('callingId: $callingId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MinisteringQuarterSnapshotMembersTable
+    extends MinisteringQuarterSnapshotMembers
+    with
+        TableInfo<
+          $MinisteringQuarterSnapshotMembersTable,
+          MinisteringQuarterSnapshotMemberRow
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MinisteringQuarterSnapshotMembersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _snapshotIdMeta = const VerificationMeta(
+    'snapshotId',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotId = GeneratedColumn<String>(
+    'snapshot_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _companionshipIdMeta = const VerificationMeta(
+    'companionshipId',
+  );
+  @override
+  late final GeneratedColumn<String> companionshipId = GeneratedColumn<String>(
+    'companionship_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _brotherIdMeta = const VerificationMeta(
+    'brotherId',
+  );
+  @override
+  late final GeneratedColumn<String> brotherId = GeneratedColumn<String>(
+    'brother_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _callingIdMeta = const VerificationMeta(
+    'callingId',
+  );
+  @override
+  late final GeneratedColumn<String> callingId = GeneratedColumn<String>(
+    'calling_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    snapshotId,
+    companionshipId,
+    brotherId,
+    callingId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ministering_quarter_snapshot_members';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MinisteringQuarterSnapshotMemberRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('snapshot_id')) {
+      context.handle(
+        _snapshotIdMeta,
+        snapshotId.isAcceptableOrUnknown(data['snapshot_id']!, _snapshotIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotIdMeta);
+    }
+    if (data.containsKey('companionship_id')) {
+      context.handle(
+        _companionshipIdMeta,
+        companionshipId.isAcceptableOrUnknown(
+          data['companionship_id']!,
+          _companionshipIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_companionshipIdMeta);
+    }
+    if (data.containsKey('brother_id')) {
+      context.handle(
+        _brotherIdMeta,
+        brotherId.isAcceptableOrUnknown(data['brother_id']!, _brotherIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_brotherIdMeta);
+    }
+    if (data.containsKey('calling_id')) {
+      context.handle(
+        _callingIdMeta,
+        callingId.isAcceptableOrUnknown(data['calling_id']!, _callingIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_callingIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {
+    snapshotId,
+    companionshipId,
+    brotherId,
+  };
+  @override
+  MinisteringQuarterSnapshotMemberRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MinisteringQuarterSnapshotMemberRow(
+      snapshotId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_id'],
+      )!,
+      companionshipId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}companionship_id'],
+      )!,
+      brotherId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brother_id'],
+      )!,
+      callingId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}calling_id'],
+      )!,
+    );
+  }
+
+  @override
+  $MinisteringQuarterSnapshotMembersTable createAlias(String alias) {
+    return $MinisteringQuarterSnapshotMembersTable(attachedDatabase, alias);
+  }
+}
+
+class MinisteringQuarterSnapshotMemberRow extends DataClass
+    implements Insertable<MinisteringQuarterSnapshotMemberRow> {
+  final String snapshotId;
+  final String companionshipId;
+  final String brotherId;
+  final String callingId;
+  const MinisteringQuarterSnapshotMemberRow({
+    required this.snapshotId,
+    required this.companionshipId,
+    required this.brotherId,
+    required this.callingId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['snapshot_id'] = Variable<String>(snapshotId);
+    map['companionship_id'] = Variable<String>(companionshipId);
+    map['brother_id'] = Variable<String>(brotherId);
+    map['calling_id'] = Variable<String>(callingId);
+    return map;
+  }
+
+  MinisteringQuarterSnapshotMembersCompanion toCompanion(bool nullToAbsent) {
+    return MinisteringQuarterSnapshotMembersCompanion(
+      snapshotId: Value(snapshotId),
+      companionshipId: Value(companionshipId),
+      brotherId: Value(brotherId),
+      callingId: Value(callingId),
+    );
+  }
+
+  factory MinisteringQuarterSnapshotMemberRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MinisteringQuarterSnapshotMemberRow(
+      snapshotId: serializer.fromJson<String>(json['snapshotId']),
+      companionshipId: serializer.fromJson<String>(json['companionshipId']),
+      brotherId: serializer.fromJson<String>(json['brotherId']),
+      callingId: serializer.fromJson<String>(json['callingId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'snapshotId': serializer.toJson<String>(snapshotId),
+      'companionshipId': serializer.toJson<String>(companionshipId),
+      'brotherId': serializer.toJson<String>(brotherId),
+      'callingId': serializer.toJson<String>(callingId),
+    };
+  }
+
+  MinisteringQuarterSnapshotMemberRow copyWith({
+    String? snapshotId,
+    String? companionshipId,
+    String? brotherId,
+    String? callingId,
+  }) => MinisteringQuarterSnapshotMemberRow(
+    snapshotId: snapshotId ?? this.snapshotId,
+    companionshipId: companionshipId ?? this.companionshipId,
+    brotherId: brotherId ?? this.brotherId,
+    callingId: callingId ?? this.callingId,
+  );
+  MinisteringQuarterSnapshotMemberRow copyWithCompanion(
+    MinisteringQuarterSnapshotMembersCompanion data,
+  ) {
+    return MinisteringQuarterSnapshotMemberRow(
+      snapshotId: data.snapshotId.present
+          ? data.snapshotId.value
+          : this.snapshotId,
+      companionshipId: data.companionshipId.present
+          ? data.companionshipId.value
+          : this.companionshipId,
+      brotherId: data.brotherId.present ? data.brotherId.value : this.brotherId,
+      callingId: data.callingId.present ? data.callingId.value : this.callingId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringQuarterSnapshotMemberRow(')
+          ..write('snapshotId: $snapshotId, ')
+          ..write('companionshipId: $companionshipId, ')
+          ..write('brotherId: $brotherId, ')
+          ..write('callingId: $callingId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(snapshotId, companionshipId, brotherId, callingId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MinisteringQuarterSnapshotMemberRow &&
+          other.snapshotId == this.snapshotId &&
+          other.companionshipId == this.companionshipId &&
+          other.brotherId == this.brotherId &&
+          other.callingId == this.callingId);
+}
+
+class MinisteringQuarterSnapshotMembersCompanion
+    extends UpdateCompanion<MinisteringQuarterSnapshotMemberRow> {
+  final Value<String> snapshotId;
+  final Value<String> companionshipId;
+  final Value<String> brotherId;
+  final Value<String> callingId;
+  final Value<int> rowid;
+  const MinisteringQuarterSnapshotMembersCompanion({
+    this.snapshotId = const Value.absent(),
+    this.companionshipId = const Value.absent(),
+    this.brotherId = const Value.absent(),
+    this.callingId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MinisteringQuarterSnapshotMembersCompanion.insert({
+    required String snapshotId,
+    required String companionshipId,
+    required String brotherId,
+    required String callingId,
+    this.rowid = const Value.absent(),
+  }) : snapshotId = Value(snapshotId),
+       companionshipId = Value(companionshipId),
+       brotherId = Value(brotherId),
+       callingId = Value(callingId);
+  static Insertable<MinisteringQuarterSnapshotMemberRow> custom({
+    Expression<String>? snapshotId,
+    Expression<String>? companionshipId,
+    Expression<String>? brotherId,
+    Expression<String>? callingId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (snapshotId != null) 'snapshot_id': snapshotId,
+      if (companionshipId != null) 'companionship_id': companionshipId,
+      if (brotherId != null) 'brother_id': brotherId,
+      if (callingId != null) 'calling_id': callingId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MinisteringQuarterSnapshotMembersCompanion copyWith({
+    Value<String>? snapshotId,
+    Value<String>? companionshipId,
+    Value<String>? brotherId,
+    Value<String>? callingId,
+    Value<int>? rowid,
+  }) {
+    return MinisteringQuarterSnapshotMembersCompanion(
+      snapshotId: snapshotId ?? this.snapshotId,
+      companionshipId: companionshipId ?? this.companionshipId,
+      brotherId: brotherId ?? this.brotherId,
+      callingId: callingId ?? this.callingId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (snapshotId.present) {
+      map['snapshot_id'] = Variable<String>(snapshotId.value);
+    }
+    if (companionshipId.present) {
+      map['companionship_id'] = Variable<String>(companionshipId.value);
+    }
+    if (brotherId.present) {
+      map['brother_id'] = Variable<String>(brotherId.value);
+    }
+    if (callingId.present) {
+      map['calling_id'] = Variable<String>(callingId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MinisteringQuarterSnapshotMembersCompanion(')
+          ..write('snapshotId: $snapshotId, ')
+          ..write('companionshipId: $companionshipId, ')
+          ..write('brotherId: $brotherId, ')
+          ..write('callingId: $callingId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4732,6 +5810,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $MinisteringAppointmentsTable ministeringAppointments =
       $MinisteringAppointmentsTable(this);
+  late final $MinisteringQuarterSnapshotsTable ministeringQuarterSnapshots =
+      $MinisteringQuarterSnapshotsTable(this);
+  late final $MinisteringQuarterSnapshotCompanionshipsTable
+  ministeringQuarterSnapshotCompanionships =
+      $MinisteringQuarterSnapshotCompanionshipsTable(this);
+  late final $MinisteringQuarterSnapshotMembersTable
+  ministeringQuarterSnapshotMembers = $MinisteringQuarterSnapshotMembersTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4749,6 +5836,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     ministeringInterviews,
     ministeringInterviewParticipants,
     ministeringAppointments,
+    ministeringQuarterSnapshots,
+    ministeringQuarterSnapshotCompanionships,
+    ministeringQuarterSnapshotMembers,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -4789,6 +5879,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [
         TableUpdate('ministering_appointments', kind: UpdateKind.delete),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'callings',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('ministering_quarter_snapshots', kind: UpdateKind.delete),
       ],
     ),
   ]);
@@ -6104,6 +7203,31 @@ final class $$CallingsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $MinisteringQuarterSnapshotsTable,
+    List<MinisteringQuarterSnapshotRow>
+  >
+  _ministeringQuarterSnapshotsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.ministeringQuarterSnapshots,
+        aliasName: 'callings__id__ministering_quarter_snapshots__calling_id',
+      );
+
+  $$MinisteringQuarterSnapshotsTableProcessedTableManager
+  get ministeringQuarterSnapshotsRefs {
+    final manager = $$MinisteringQuarterSnapshotsTableTableManager(
+      $_db,
+      $_db.ministeringQuarterSnapshots,
+    ).filter((f) => f.callingId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _ministeringQuarterSnapshotsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$CallingsTableFilterComposer
@@ -6311,6 +7435,35 @@ class $$CallingsTableFilterComposer
               }) => $$MinisteringAppointmentsTableFilterComposer(
                 $db: $db,
                 $table: $db.ministeringAppointments,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> ministeringQuarterSnapshotsRefs(
+    Expression<bool> Function(
+      $$MinisteringQuarterSnapshotsTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$MinisteringQuarterSnapshotsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringQuarterSnapshots,
+          getReferencedColumn: (t) => t.callingId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringQuarterSnapshotsTableFilterComposer(
+                $db: $db,
+                $table: $db.ministeringQuarterSnapshots,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -6613,6 +7766,35 @@ class $$CallingsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> ministeringQuarterSnapshotsRefs<T extends Object>(
+    Expression<T> Function(
+      $$MinisteringQuarterSnapshotsTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$MinisteringQuarterSnapshotsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.ministeringQuarterSnapshots,
+          getReferencedColumn: (t) => t.callingId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$MinisteringQuarterSnapshotsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.ministeringQuarterSnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$CallingsTableTableManager
@@ -6636,6 +7818,7 @@ class $$CallingsTableTableManager
             bool ministeringCompanionshipsRefs,
             bool ministeringInterviewsRefs,
             bool ministeringAppointmentsRefs,
+            bool ministeringQuarterSnapshotsRefs,
           })
         > {
   $$CallingsTableTableManager(_$AppDatabase db, $CallingsTable table)
@@ -6710,6 +7893,7 @@ class $$CallingsTableTableManager
                 ministeringCompanionshipsRefs = false,
                 ministeringInterviewsRefs = false,
                 ministeringAppointmentsRefs = false,
+                ministeringQuarterSnapshotsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6720,6 +7904,8 @@ class $$CallingsTableTableManager
                       db.ministeringCompanionships,
                     if (ministeringInterviewsRefs) db.ministeringInterviews,
                     if (ministeringAppointmentsRefs) db.ministeringAppointments,
+                    if (ministeringQuarterSnapshotsRefs)
+                      db.ministeringQuarterSnapshots,
                   ],
                   addJoins:
                       <
@@ -6869,6 +8055,27 @@ class $$CallingsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (ministeringQuarterSnapshotsRefs)
+                        await $_getPrefetchedData<
+                          CallingRow,
+                          $CallingsTable,
+                          MinisteringQuarterSnapshotRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CallingsTableReferences
+                              ._ministeringQuarterSnapshotsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CallingsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).ministeringQuarterSnapshotsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.callingId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6897,6 +8104,7 @@ typedef $$CallingsTableProcessedTableManager =
         bool ministeringCompanionshipsRefs,
         bool ministeringInterviewsRefs,
         bool ministeringAppointmentsRefs,
+        bool ministeringQuarterSnapshotsRefs,
       })
     >;
 typedef $$AppPreferencesTableCreateCompanionBuilder =
@@ -9489,6 +10697,771 @@ typedef $$MinisteringAppointmentsTableProcessedTableManager =
       MinisteringAppointmentRow,
       PrefetchHooks Function({bool callingId})
     >;
+typedef $$MinisteringQuarterSnapshotsTableCreateCompanionBuilder =
+    MinisteringQuarterSnapshotsCompanion Function({
+      required String id,
+      required String callingId,
+      required int year,
+      required int quarter,
+      required DateTime finalizedAt,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$MinisteringQuarterSnapshotsTableUpdateCompanionBuilder =
+    MinisteringQuarterSnapshotsCompanion Function({
+      Value<String> id,
+      Value<String> callingId,
+      Value<int> year,
+      Value<int> quarter,
+      Value<DateTime> finalizedAt,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$MinisteringQuarterSnapshotsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotsTable,
+          MinisteringQuarterSnapshotRow
+        > {
+  $$MinisteringQuarterSnapshotsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CallingsTable _callingIdTable(_$AppDatabase db) => db.callings
+      .createAlias('ministering_quarter_snapshots__calling_id__callings__id');
+
+  $$CallingsTableProcessedTableManager get callingId {
+    final $_column = $_itemColumn<String>('calling_id')!;
+
+    final manager = $$CallingsTableTableManager(
+      $_db,
+      $_db.callings,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_callingIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MinisteringQuarterSnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $MinisteringQuarterSnapshotsTable> {
+  $$MinisteringQuarterSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quarter => $composableBuilder(
+    column: $table.quarter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finalizedAt => $composableBuilder(
+    column: $table.finalizedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CallingsTableFilterComposer get callingId {
+    final $$CallingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableFilterComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringQuarterSnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MinisteringQuarterSnapshotsTable> {
+  $$MinisteringQuarterSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quarter => $composableBuilder(
+    column: $table.quarter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finalizedAt => $composableBuilder(
+    column: $table.finalizedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CallingsTableOrderingComposer get callingId {
+    final $$CallingsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableOrderingComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringQuarterSnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MinisteringQuarterSnapshotsTable> {
+  $$MinisteringQuarterSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get year =>
+      $composableBuilder(column: $table.year, builder: (column) => column);
+
+  GeneratedColumn<int> get quarter =>
+      $composableBuilder(column: $table.quarter, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finalizedAt => $composableBuilder(
+    column: $table.finalizedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CallingsTableAnnotationComposer get callingId {
+    final $$CallingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.callingId,
+      referencedTable: $db.callings,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CallingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.callings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MinisteringQuarterSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotsTable,
+          MinisteringQuarterSnapshotRow,
+          $$MinisteringQuarterSnapshotsTableFilterComposer,
+          $$MinisteringQuarterSnapshotsTableOrderingComposer,
+          $$MinisteringQuarterSnapshotsTableAnnotationComposer,
+          $$MinisteringQuarterSnapshotsTableCreateCompanionBuilder,
+          $$MinisteringQuarterSnapshotsTableUpdateCompanionBuilder,
+          (
+            MinisteringQuarterSnapshotRow,
+            $$MinisteringQuarterSnapshotsTableReferences,
+          ),
+          MinisteringQuarterSnapshotRow,
+          PrefetchHooks Function({bool callingId})
+        > {
+  $$MinisteringQuarterSnapshotsTableTableManager(
+    _$AppDatabase db,
+    $MinisteringQuarterSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MinisteringQuarterSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MinisteringQuarterSnapshotsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MinisteringQuarterSnapshotsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> callingId = const Value.absent(),
+                Value<int> year = const Value.absent(),
+                Value<int> quarter = const Value.absent(),
+                Value<DateTime> finalizedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringQuarterSnapshotsCompanion(
+                id: id,
+                callingId: callingId,
+                year: year,
+                quarter: quarter,
+                finalizedAt: finalizedAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String callingId,
+                required int year,
+                required int quarter,
+                required DateTime finalizedAt,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringQuarterSnapshotsCompanion.insert(
+                id: id,
+                callingId: callingId,
+                year: year,
+                quarter: quarter,
+                finalizedAt: finalizedAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MinisteringQuarterSnapshotsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({callingId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (callingId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.callingId,
+                        referencedTable:
+                            $$MinisteringQuarterSnapshotsTableReferences
+                                ._callingIdTable(db),
+                        referencedColumn:
+                            $$MinisteringQuarterSnapshotsTableReferences
+                                ._callingIdTable(db)
+                                .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MinisteringQuarterSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MinisteringQuarterSnapshotsTable,
+      MinisteringQuarterSnapshotRow,
+      $$MinisteringQuarterSnapshotsTableFilterComposer,
+      $$MinisteringQuarterSnapshotsTableOrderingComposer,
+      $$MinisteringQuarterSnapshotsTableAnnotationComposer,
+      $$MinisteringQuarterSnapshotsTableCreateCompanionBuilder,
+      $$MinisteringQuarterSnapshotsTableUpdateCompanionBuilder,
+      (
+        MinisteringQuarterSnapshotRow,
+        $$MinisteringQuarterSnapshotsTableReferences,
+      ),
+      MinisteringQuarterSnapshotRow,
+      PrefetchHooks Function({bool callingId})
+    >;
+typedef $$MinisteringQuarterSnapshotCompanionshipsTableCreateCompanionBuilder =
+    MinisteringQuarterSnapshotCompanionshipsCompanion Function({
+      required String snapshotId,
+      required String companionshipId,
+      required String callingId,
+      Value<int> rowid,
+    });
+typedef $$MinisteringQuarterSnapshotCompanionshipsTableUpdateCompanionBuilder =
+    MinisteringQuarterSnapshotCompanionshipsCompanion Function({
+      Value<String> snapshotId,
+      Value<String> companionshipId,
+      Value<String> callingId,
+      Value<int> rowid,
+    });
+
+class $$MinisteringQuarterSnapshotCompanionshipsTableFilterComposer
+    extends
+        Composer<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotCompanionshipsTable
+        > {
+  $$MinisteringQuarterSnapshotCompanionshipsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get callingId => $composableBuilder(
+    column: $table.callingId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MinisteringQuarterSnapshotCompanionshipsTableOrderingComposer
+    extends
+        Composer<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotCompanionshipsTable
+        > {
+  $$MinisteringQuarterSnapshotCompanionshipsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get callingId => $composableBuilder(
+    column: $table.callingId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MinisteringQuarterSnapshotCompanionshipsTableAnnotationComposer
+    extends
+        Composer<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotCompanionshipsTable
+        > {
+  $$MinisteringQuarterSnapshotCompanionshipsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get callingId =>
+      $composableBuilder(column: $table.callingId, builder: (column) => column);
+}
+
+class $$MinisteringQuarterSnapshotCompanionshipsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotCompanionshipsTable,
+          MinisteringQuarterSnapshotCompanionshipRow,
+          $$MinisteringQuarterSnapshotCompanionshipsTableFilterComposer,
+          $$MinisteringQuarterSnapshotCompanionshipsTableOrderingComposer,
+          $$MinisteringQuarterSnapshotCompanionshipsTableAnnotationComposer,
+          $$MinisteringQuarterSnapshotCompanionshipsTableCreateCompanionBuilder,
+          $$MinisteringQuarterSnapshotCompanionshipsTableUpdateCompanionBuilder,
+          (
+            MinisteringQuarterSnapshotCompanionshipRow,
+            BaseReferences<
+              _$AppDatabase,
+              $MinisteringQuarterSnapshotCompanionshipsTable,
+              MinisteringQuarterSnapshotCompanionshipRow
+            >,
+          ),
+          MinisteringQuarterSnapshotCompanionshipRow,
+          PrefetchHooks Function()
+        > {
+  $$MinisteringQuarterSnapshotCompanionshipsTableTableManager(
+    _$AppDatabase db,
+    $MinisteringQuarterSnapshotCompanionshipsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MinisteringQuarterSnapshotCompanionshipsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MinisteringQuarterSnapshotCompanionshipsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MinisteringQuarterSnapshotCompanionshipsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> snapshotId = const Value.absent(),
+                Value<String> companionshipId = const Value.absent(),
+                Value<String> callingId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringQuarterSnapshotCompanionshipsCompanion(
+                snapshotId: snapshotId,
+                companionshipId: companionshipId,
+                callingId: callingId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String snapshotId,
+                required String companionshipId,
+                required String callingId,
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringQuarterSnapshotCompanionshipsCompanion.insert(
+                snapshotId: snapshotId,
+                companionshipId: companionshipId,
+                callingId: callingId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MinisteringQuarterSnapshotCompanionshipsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MinisteringQuarterSnapshotCompanionshipsTable,
+      MinisteringQuarterSnapshotCompanionshipRow,
+      $$MinisteringQuarterSnapshotCompanionshipsTableFilterComposer,
+      $$MinisteringQuarterSnapshotCompanionshipsTableOrderingComposer,
+      $$MinisteringQuarterSnapshotCompanionshipsTableAnnotationComposer,
+      $$MinisteringQuarterSnapshotCompanionshipsTableCreateCompanionBuilder,
+      $$MinisteringQuarterSnapshotCompanionshipsTableUpdateCompanionBuilder,
+      (
+        MinisteringQuarterSnapshotCompanionshipRow,
+        BaseReferences<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotCompanionshipsTable,
+          MinisteringQuarterSnapshotCompanionshipRow
+        >,
+      ),
+      MinisteringQuarterSnapshotCompanionshipRow,
+      PrefetchHooks Function()
+    >;
+typedef $$MinisteringQuarterSnapshotMembersTableCreateCompanionBuilder =
+    MinisteringQuarterSnapshotMembersCompanion Function({
+      required String snapshotId,
+      required String companionshipId,
+      required String brotherId,
+      required String callingId,
+      Value<int> rowid,
+    });
+typedef $$MinisteringQuarterSnapshotMembersTableUpdateCompanionBuilder =
+    MinisteringQuarterSnapshotMembersCompanion Function({
+      Value<String> snapshotId,
+      Value<String> companionshipId,
+      Value<String> brotherId,
+      Value<String> callingId,
+      Value<int> rowid,
+    });
+
+class $$MinisteringQuarterSnapshotMembersTableFilterComposer
+    extends Composer<_$AppDatabase, $MinisteringQuarterSnapshotMembersTable> {
+  $$MinisteringQuarterSnapshotMembersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brotherId => $composableBuilder(
+    column: $table.brotherId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get callingId => $composableBuilder(
+    column: $table.callingId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MinisteringQuarterSnapshotMembersTableOrderingComposer
+    extends Composer<_$AppDatabase, $MinisteringQuarterSnapshotMembersTable> {
+  $$MinisteringQuarterSnapshotMembersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brotherId => $composableBuilder(
+    column: $table.brotherId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get callingId => $composableBuilder(
+    column: $table.callingId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MinisteringQuarterSnapshotMembersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MinisteringQuarterSnapshotMembersTable> {
+  $$MinisteringQuarterSnapshotMembersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get snapshotId => $composableBuilder(
+    column: $table.snapshotId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get companionshipId => $composableBuilder(
+    column: $table.companionshipId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get brotherId =>
+      $composableBuilder(column: $table.brotherId, builder: (column) => column);
+
+  GeneratedColumn<String> get callingId =>
+      $composableBuilder(column: $table.callingId, builder: (column) => column);
+}
+
+class $$MinisteringQuarterSnapshotMembersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotMembersTable,
+          MinisteringQuarterSnapshotMemberRow,
+          $$MinisteringQuarterSnapshotMembersTableFilterComposer,
+          $$MinisteringQuarterSnapshotMembersTableOrderingComposer,
+          $$MinisteringQuarterSnapshotMembersTableAnnotationComposer,
+          $$MinisteringQuarterSnapshotMembersTableCreateCompanionBuilder,
+          $$MinisteringQuarterSnapshotMembersTableUpdateCompanionBuilder,
+          (
+            MinisteringQuarterSnapshotMemberRow,
+            BaseReferences<
+              _$AppDatabase,
+              $MinisteringQuarterSnapshotMembersTable,
+              MinisteringQuarterSnapshotMemberRow
+            >,
+          ),
+          MinisteringQuarterSnapshotMemberRow,
+          PrefetchHooks Function()
+        > {
+  $$MinisteringQuarterSnapshotMembersTableTableManager(
+    _$AppDatabase db,
+    $MinisteringQuarterSnapshotMembersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MinisteringQuarterSnapshotMembersTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MinisteringQuarterSnapshotMembersTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MinisteringQuarterSnapshotMembersTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> snapshotId = const Value.absent(),
+                Value<String> companionshipId = const Value.absent(),
+                Value<String> brotherId = const Value.absent(),
+                Value<String> callingId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringQuarterSnapshotMembersCompanion(
+                snapshotId: snapshotId,
+                companionshipId: companionshipId,
+                brotherId: brotherId,
+                callingId: callingId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String snapshotId,
+                required String companionshipId,
+                required String brotherId,
+                required String callingId,
+                Value<int> rowid = const Value.absent(),
+              }) => MinisteringQuarterSnapshotMembersCompanion.insert(
+                snapshotId: snapshotId,
+                companionshipId: companionshipId,
+                brotherId: brotherId,
+                callingId: callingId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MinisteringQuarterSnapshotMembersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MinisteringQuarterSnapshotMembersTable,
+      MinisteringQuarterSnapshotMemberRow,
+      $$MinisteringQuarterSnapshotMembersTableFilterComposer,
+      $$MinisteringQuarterSnapshotMembersTableOrderingComposer,
+      $$MinisteringQuarterSnapshotMembersTableAnnotationComposer,
+      $$MinisteringQuarterSnapshotMembersTableCreateCompanionBuilder,
+      $$MinisteringQuarterSnapshotMembersTableUpdateCompanionBuilder,
+      (
+        MinisteringQuarterSnapshotMemberRow,
+        BaseReferences<
+          _$AppDatabase,
+          $MinisteringQuarterSnapshotMembersTable,
+          MinisteringQuarterSnapshotMemberRow
+        >,
+      ),
+      MinisteringQuarterSnapshotMemberRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9530,5 +11503,23 @@ class $AppDatabaseManager {
       $$MinisteringAppointmentsTableTableManager(
         _db,
         _db.ministeringAppointments,
+      );
+  $$MinisteringQuarterSnapshotsTableTableManager
+  get ministeringQuarterSnapshots =>
+      $$MinisteringQuarterSnapshotsTableTableManager(
+        _db,
+        _db.ministeringQuarterSnapshots,
+      );
+  $$MinisteringQuarterSnapshotCompanionshipsTableTableManager
+  get ministeringQuarterSnapshotCompanionships =>
+      $$MinisteringQuarterSnapshotCompanionshipsTableTableManager(
+        _db,
+        _db.ministeringQuarterSnapshotCompanionships,
+      );
+  $$MinisteringQuarterSnapshotMembersTableTableManager
+  get ministeringQuarterSnapshotMembers =>
+      $$MinisteringQuarterSnapshotMembersTableTableManager(
+        _db,
+        _db.ministeringQuarterSnapshotMembers,
       );
 }

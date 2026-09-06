@@ -10,7 +10,7 @@ Workspace local, com uma base modular para evoluções futuras.
 
 ## Status
 
-**`0.2.0-alpha.3` — Alpha.**
+**`0.2.0-alpha.4` — Alpha.**
 
 > [!WARNING]
 > Pré-versão em desenvolvimento ativo. A modelagem de dados, o schema local e as
@@ -18,13 +18,15 @@ Workspace local, com uma base modular para evoluções futuras.
 > caminho de atualização garantido entre pré-versões. Use apenas para avaliação,
 > com dados fictícios.
 
-Esta versão fecha a segurança local: o app pede um PIN antes de mostrar qualquer
-dado, aceita biometria como atalho e passa a guardar o banco local
-criptografado. Depois disso, um refresh de apresentação (Product Experience 2.0,
-marco interno rumo à `alpha.4`) reorganizou a experiência sem mudar schema,
-domínio, segurança nem SemVer. Não é uma versão estável nem distribuída
-publicamente — não há APK de release assinado com chave de produção, apenas
-artefatos de debug para validação.
+Esta versão traz o histórico dos trimestres da Ministração: cada trimestre
+encerrado tem o escopo — quais duplas faziam parte dele — congelado num
+snapshot, então o "X de Y" do passado para de se mover quando as duplas mudam
+hoje. As entrevistas continuam sendo a fonte de verdade e podem ser corrigidas.
+A versão anterior fechou a segurança local (PIN, biometria, banco
+criptografado) e, como marco interno, o refresh de apresentação Product
+Experience 2.0. Não é uma versão estável nem distribuída publicamente — não há
+APK de release assinado com chave de produção, apenas artefatos de debug para
+validação.
 
 As duas listas abaixo são separadas de propósito. **Implementado** descreve o que
 existe e pode ser usado nesta versão; **[Roadmap](ROADMAP.md)** descreve direção
@@ -38,6 +40,35 @@ distintos. Planilhas, papel e mensagens fragmentam esse acompanhamento.
 O projeto busca oferecer uma base Android local para organizar Workspaces,
 usuários e chamados. A primeira alpha funciona sem conta ou serviço externo e
 mantém os dados no dispositivo.
+
+## Implementado na `0.2.0-alpha.4`
+
+Histórico dos trimestres da Ministração, com o escopo de cada trimestre
+encerrado congelado.
+
+- entrada "Histórico de trimestres" no painel da Ministração: lista dos
+  trimestres agrupada por ano, com o corrente marcado "em andamento";
+- detalhe de cada trimestre separando duplas **entrevistadas** e **pendentes**;
+  tocar numa dupla abre o histórico de entrevistas dela para registrar uma que
+  faltou ou corrigir uma data;
+- snapshot de escopo por trimestre encerrado (schema local v5): o denominador
+  histórico vem de quais duplas faziam parte do trimestre, não do estado atual
+  das duplas — criar, desativar ou recompor uma dupla hoje não mexe no passado;
+- o numerador histórico continua sendo lido das entrevistas: corrigir uma
+  entrevista antiga recalcula o número do trimestre;
+- congelamento automático como regra de domínio, antes de cada leitura do
+  módulo e de cada mudança no conjunto de duplas — inclusive quando o app ficou
+  fechado por vários trimestres;
+- o snapshot referencia apenas IDs; os nomes seguem resolvidos ao vivo pelo
+  cadastro (minimização de dados);
+- uma dupla no escopo de um trimestre concluído não pode ser apagada, só
+  desativada, para o histórico não encolher;
+- migração aditiva v4 → v5, válida a partir do banco em texto puro da `alpha.2`
+  e do criptografado da `alpha.3`.
+
+O problema do denominador que se move, a decisão de congelar o escopo e não as
+entrevistas, e as alternativas descartadas estão na
+[ADR 0017](docs/adr/0017-ministering-quarter-snapshots.md).
 
 ## Implementado na `0.2.0-alpha.3`
 
@@ -150,8 +181,7 @@ decisões de arquitetura já registradas:
 - Workspace compartilhado entre dispositivos ou pessoas;
 - atualização pelo próprio aplicativo;
 - recuperação do PIN pela internet;
-- designações de famílias, relatórios para a liderança e histórico de
-  trimestres anteriores;
+- designações de famílias e relatórios/visão para a liderança;
 - rotinas internas do módulo de Escola Dominical;
 - APK de release assinado e distribuição pública.
 

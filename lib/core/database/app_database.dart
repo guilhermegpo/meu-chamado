@@ -296,6 +296,105 @@ class MinisteringAppointments extends Table {
   ];
 }
 
+/// Escopo congelado de um trimestre concluído.
+///
+/// O denominador do painel do trimestre corrente é derivado do estado atual das
+/// duplas. Isso deixa um trimestre já encerrado à mercê de mutações futuras:
+/// criar, remover ou desativar uma dupla mudaria o "X de Y" de um passado que
+/// não deveria mais se mover. O snapshot congela **quais duplas faziam parte do
+/// escopo daquele trimestre** — nunca as entrevistas, que continuam sendo a
+/// fonte de verdade e podem ser corrigidas.
+///
+/// Um snapshot por trimestre por chamado. Só existe para trimestres já
+/// encerrados; o corrente permanece live. Ver
+/// [ADR 0017](../../../docs/adr/0017-ministering-quarter-snapshots.md).
+@DataClassName('MinisteringQuarterSnapshotRow')
+class MinisteringQuarterSnapshots extends Table {
+  TextColumn get id => text()();
+  TextColumn get callingId =>
+      text().references(Callings, #id, onDelete: KeyAction.cascade)();
+  IntColumn get year => integer()();
+
+  /// 1 a 4.
+  IntColumn get quarter => integer()();
+
+  /// Quando o escopo foi congelado — logo após o trimestre encerrar, na
+  /// primeira leitura ou mutação seguinte.
+  DateTimeColumn get finalizedAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => const [
+    'UNIQUE (id, calling_id)',
+    // Um snapshot por trimestre por chamado. É o que torna a finalização
+    // idempotente: uma segunda tentativa esbarra aqui em vez de recongelar.
+    'UNIQUE (calling_id, year, quarter)',
+  ];
+}
+
+/// Dupla que fazia parte do escopo de um trimestre congelado.
+///
+/// Guarda apenas o `companionship_id` — o rótulo e a composição continuam
+/// resolvidos pelo cadastro vivo. O que precisa ficar imutável é o **conjunto**,
+/// não o texto.
+@DataClassName('MinisteringQuarterSnapshotCompanionshipRow')
+class MinisteringQuarterSnapshotCompanionships extends Table {
+  TextColumn get snapshotId => text()();
+  TextColumn get companionshipId => text()();
+
+  /// Redundante de propósito: sustenta as FKs compostas por chamado.
+  TextColumn get callingId => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {snapshotId, companionshipId};
+
+  @override
+  List<String> get customConstraints => const [
+    'FOREIGN KEY (snapshot_id, calling_id) '
+        'REFERENCES ministering_quarter_snapshots (id, calling_id) '
+        'ON DELETE CASCADE',
+    // RESTRICT: uma dupla que consta no escopo de um trimestre concluído não
+    // pode ser apagada definitivamente — isso encolheria o denominador
+    // histórico. Desativar continua permitido; não toca no snapshot.
+    'FOREIGN KEY (companionship_id, calling_id) '
+        'REFERENCES ministering_companionships (id, calling_id) '
+        'ON DELETE RESTRICT',
+  ];
+}
+
+/// Composição congelada de uma dupla no escopo de um trimestre.
+///
+/// IDs dos integrantes, não nomes: a minimização do domínio continua valendo no
+/// histórico. Os rótulos são resolvidos pelo cadastro de irmãos vivo; o que o
+/// snapshot preserva é **quem** compunha a dupla naquele trimestre, mesmo que a
+/// composição mude depois.
+@DataClassName('MinisteringQuarterSnapshotMemberRow')
+class MinisteringQuarterSnapshotMembers extends Table {
+  TextColumn get snapshotId => text()();
+  TextColumn get companionshipId => text()();
+  TextColumn get brotherId => text()();
+  TextColumn get callingId => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {
+    snapshotId,
+    companionshipId,
+    brotherId,
+  };
+
+  @override
+  List<String> get customConstraints => const [
+    'FOREIGN KEY (snapshot_id, companionship_id) '
+        'REFERENCES ministering_quarter_snapshot_companionships '
+        '(snapshot_id, companionship_id) ON DELETE CASCADE',
+    'FOREIGN KEY (brother_id, calling_id) '
+        'REFERENCES ministering_brothers (id, calling_id) ON DELETE RESTRICT',
+  ];
+}
+
 @DriftDatabase(
   tables: [
     Workspaces,
@@ -310,6 +409,9 @@ class MinisteringAppointments extends Table {
     MinisteringInterviews,
     MinisteringInterviewParticipants,
     MinisteringAppointments,
+    MinisteringQuarterSnapshots,
+    MinisteringQuarterSnapshotCompanionships,
+    MinisteringQuarterSnapshotMembers,
   ],
 )
 final class AppDatabase extends _$AppDatabase {
@@ -321,7 +423,7 @@ final class AppDatabase extends _$AppDatabase {
     : super(encryptedExecutor(file, key));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -329,6 +431,7 @@ final class AppDatabase extends _$AppDatabase {
       await migrator.createAll();
       await _createMinisteringIndexes();
       await _createMinisteringOperationsIndexes();
+      await _createMinisteringHistoryIndexes();
     },
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
@@ -361,6 +464,15 @@ final class AppDatabase extends _$AppDatabase {
         }
         await migrator.createTable(ministeringAppointments);
         await _createMinisteringOperationsIndexes();
+      }
+      if (from < 5) {
+        // Histórico trimestral: só três tabelas novas, nada alterado. As
+        // consultas de escopo passado leem daqui; o banco existente continua
+        // exatamente como estava.
+        await migrator.createTable(ministeringQuarterSnapshots);
+        await migrator.createTable(ministeringQuarterSnapshotCompanionships);
+        await migrator.createTable(ministeringQuarterSnapshotMembers);
+        await _createMinisteringHistoryIndexes();
       }
     },
     beforeOpen: (_) async {
@@ -416,6 +528,33 @@ final class AppDatabase extends _$AppDatabase {
           'ON ministering_appointments (calling_id, scheduled_at)',
       'CREATE INDEX IF NOT EXISTS idx_ministering_appointments_interviewer '
           'ON ministering_appointments (interviewer_id)',
+    ];
+
+    for (final statement in statements) {
+      await customStatement(statement);
+    }
+  }
+
+  /// Índices do histórico trimestral (schema v5).
+  Future<void> _createMinisteringHistoryIndexes() async {
+    const statements = [
+      // Lista do histórico: snapshots de um chamado, mais recente primeiro.
+      'CREATE INDEX IF NOT EXISTS idx_ministering_quarter_snapshots_calling '
+          'ON ministering_quarter_snapshots (calling_id, year, quarter)',
+      // Escopo congelado de um trimestre.
+      'CREATE INDEX IF NOT EXISTS '
+          'idx_ministering_snapshot_companionships_snapshot '
+          'ON ministering_quarter_snapshot_companionships (snapshot_id)',
+      // RESTRICT ao apagar uma dupla percorre esta tabela: mantê-la indexada
+      // por dupla torna a checagem previsível.
+      'CREATE INDEX IF NOT EXISTS '
+          'idx_ministering_snapshot_companionships_companionship '
+          'ON ministering_quarter_snapshot_companionships (companionship_id)',
+      'CREATE INDEX IF NOT EXISTS idx_ministering_snapshot_members_snapshot '
+          'ON ministering_quarter_snapshot_members '
+          '(snapshot_id, companionship_id)',
+      'CREATE INDEX IF NOT EXISTS idx_ministering_snapshot_members_brother '
+          'ON ministering_quarter_snapshot_members (brother_id)',
     ];
 
     for (final statement in statements) {
