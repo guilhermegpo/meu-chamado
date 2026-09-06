@@ -67,7 +67,7 @@ void main() {
   test('migra v2 para v3 preservando os dados existentes', () async {
     await openMigratedDatabase();
 
-    expect(database.schemaVersion, 4);
+    expect(database.schemaVersion, 5);
 
     final workspace = await database
         .customSelect(

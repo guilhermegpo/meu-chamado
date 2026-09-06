@@ -354,6 +354,10 @@ class _MinisteringCompanionshipsScreenState
           '${check.interviews == 1 ? '' : 's'}. Desative-a para preservar '
           'o histórico.';
     }
+    if (check.snapshots > 0) {
+      return 'Esta dupla faz parte do escopo de um trimestre já concluído. '
+          'Desative-a em vez de excluir, para o histórico não mudar.';
+    }
     return 'Esta dupla tem uma entrevista agendada. Cancele o agendamento '
         'antes de excluir a dupla.';
   }
