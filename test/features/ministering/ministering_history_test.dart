@@ -309,4 +309,54 @@ void main() {
     expect(bHistory, hasLength(1));
     expect(bHistory.single.inProgress, isTrue);
   });
+
+  test(
+    'a última entrevista do detalhe volta em UTC, como o histórico da dupla',
+    () async {
+      final ids = await seedBrothers(2);
+      final a = await seedCompanionship([ids[0], ids[1]]);
+      await record(a, inQ3);
+      await record(a, DateTime.utc(2026, 9, 12));
+
+      final detail = await repository.loadQuarterDetail(
+        callingId: ministeringTestCallingId,
+        quarter: q3,
+      );
+      final interviews = await repository.listInterviews(
+        callingId: ministeringTestCallingId,
+        companionshipId: a,
+      );
+
+      final row = detail!.interviewed.single;
+      expect(row.interviewCount, 2);
+      // O Drift guarda `DateTime` como epoch e devolve no fuso do aparelho. As
+      // duas leituras precisam normalizar para UTC do mesmo jeito, senão a data
+      // de calendário regride um dia a oeste de Greenwich.
+      expect(row.lastInterviewAt, isNotNull);
+      expect(row.lastInterviewAt!.isUtc, isTrue);
+      expect(row.lastInterviewAt, DateTime.utc(2026, 9, 12));
+      expect(row.lastInterviewAt, interviews.first.completedAt);
+    },
+  );
+
+  test(
+    'a entrevista no primeiro dia do trimestre não congela o anterior',
+    () async {
+      final ids = await seedBrothers(2);
+      final a = await seedCompanionship([ids[0], ids[1]]);
+      // Primeiro instante do Q3: lido sem voltar para UTC, cairia no Q2.
+      await record(a, DateTime.utc(2026, 7));
+
+      clock = inQ4;
+      final history = await repository.loadQuarterHistory(
+        callingId: ministeringTestCallingId,
+      );
+      final frozen = history
+          .where((q) => !q.inProgress)
+          .map((q) => q.quarter)
+          .toList();
+
+      expect(frozen, [q3]);
+    },
+  );
 }

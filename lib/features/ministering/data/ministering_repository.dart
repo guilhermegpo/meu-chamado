@@ -359,15 +359,19 @@ class MinisteringRepository {
               ))
             .getSingleOrNull();
 
+    // O Drift guarda `DateTime` como epoch e devolve no fuso do aparelho.
+    // Sem voltar para UTC, uma data no primeiro dia de um trimestre é lida como
+    // o último dia do anterior a oeste de Greenwich, e a finalização
+    // começaria um trimestre cedo demais.
     final dates = <DateTime>[
       if (interviewMin?.read(_database.ministeringInterviews.completedAt.min())
           case final DateTime value)
-        value,
+        value.toUtc(),
       if (companionshipMin?.read(
             _database.ministeringCompanionships.createdAt.min(),
           )
           case final DateTime value)
-        value,
+        value.toUtc(),
     ];
     if (dates.isEmpty) return null;
 
@@ -444,7 +448,10 @@ class MinisteringRepository {
       for (final row in rows)
         row.read(companionshipId)!: (
           count: row.read(completedAt.count()) ?? 0,
-          last: row.read(completedAt.max()),
+          // De volta para UTC, como em `listInterviews`: o Drift devolve o
+          // epoch no fuso do aparelho e a data de calendário normalizada
+          // regrediria um dia a oeste de Greenwich.
+          last: row.read(completedAt.max())?.toUtc(),
         ),
     };
   }
