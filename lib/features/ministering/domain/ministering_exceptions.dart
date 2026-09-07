@@ -102,6 +102,12 @@ class MinisteringRecordInUseException extends MinisteringException {
         'para não apagar o histórico.',
       );
     }
+    if (check.snapshots > 0) {
+      return const MinisteringRecordInUseException(
+        'Esta dupla faz parte do escopo de um trimestre já concluído. '
+        'Desative-a em vez de excluir, para o histórico não mudar.',
+      );
+    }
     return const MinisteringRecordInUseException(
       'Esta dupla tem uma entrevista agendada. Cancele o agendamento antes de '
       'excluir a dupla.',

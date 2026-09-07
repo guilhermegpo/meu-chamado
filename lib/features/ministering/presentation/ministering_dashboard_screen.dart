@@ -8,6 +8,7 @@ import 'package:meu_chamado/features/ministering/presentation/ministering_brothe
 import 'package:meu_chamado/features/ministering/presentation/ministering_companionships_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_interviews_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_leaders_screen.dart';
+import 'package:meu_chamado/features/ministering/presentation/ministering_quarter_history_screen.dart';
 import 'package:meu_chamado/features/ministering/presentation/ministering_widgets.dart';
 import 'package:meu_chamado/shared/widgets/app_skeleton.dart';
 import 'package:meu_chamado/shared/widgets/app_surfaces.dart';
@@ -162,6 +163,17 @@ class MinisteringDashboardScreen extends ConsumerWidget {
                 ),
               ),
         ],
+        const SizedBox(height: Spacing.section),
+        _HistoryEntry(
+          onTap: () => _open(
+            context,
+            ref,
+            MinisteringQuarterHistoryScreen(
+              callingId: callingId,
+              callingTitle: callingTitle,
+            ),
+          ),
+        ),
         const SizedBox(height: Spacing.section),
         _ManageSection(
           onOpenCompanionships: () => _open(
@@ -433,6 +445,33 @@ class _StartHere extends StatelessWidget {
           ],
         ),
       ],
+    ),
+  );
+}
+
+/// Porta de entrada do histórico dos trimestres.
+///
+/// Fica depois do estado do trimestre corrente e antes dos cadastros: é
+/// consulta, não configuração, e não compete com o "o que falta" que abre a
+/// tela.
+class _HistoryEntry extends StatelessWidget {
+  const _HistoryEntry({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => AppSurface(
+    padding: EdgeInsets.zero,
+    child: Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        key: const Key('open-quarter-history'),
+        leading: const AppIconTile(icon: Icons.history, size: 44),
+        title: const Text('Histórico de trimestres'),
+        subtitle: const Text('Trimestres anteriores e o andamento do atual'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
     ),
   );
 }

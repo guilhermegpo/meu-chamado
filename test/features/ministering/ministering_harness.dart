@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:meu_chamado/app/meu_chamado_app.dart';
 import 'package:meu_chamado/app/theme/app_theme.dart';
 import 'package:meu_chamado/core/database/app_database.dart';
+import 'package:meu_chamado/features/ministering/application/ministering_providers.dart';
 import 'package:meu_chamado/features/workspace/application/workspace_providers.dart';
 
 /// Chamado usado por todas as telas do módulo nos testes.
@@ -42,16 +43,28 @@ Future<AppDatabase> openMinisteringTestDatabase({
 }
 
 /// Monta uma tela do módulo com o banco de teste no lugar do real.
+///
+/// [clock] fixa a hora de referência do módulo — é o que decide o trimestre
+/// corrente e, com ele, quais trimestres o histórico congela. Sem passar nada,
+/// o módulo usa o relógio do sistema, como em produção.
 Future<void> pumpMinisteringScreen(
   WidgetTester tester, {
   required AppDatabase database,
   required Widget child,
+  DateTime? clock,
+  ThemeMode themeMode = ThemeMode.light,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(database)],
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+        if (clock != null)
+          ministeringClockProvider.overrideWithValue(() => clock),
+      ],
       child: MaterialApp(
         theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
         // Mesma configuração do app: sem ela o seletor de data e as datas
         // formatadas apareceriam em inglês, e o teste validaria outra tela
         // que não a entregue ao usuário.

@@ -24,10 +24,45 @@ class Quarter {
   DateTime get nextStart =>
       number == 4 ? DateTime.utc(year + 1) : DateTime.utc(year, number * 3 + 1);
 
+  /// Trimestre anterior. O 1º trimestre volta para o 4º do ano anterior.
+  Quarter get previous =>
+      number == 1 ? Quarter(year - 1, 4) : Quarter(year, number - 1);
+
+  /// Trimestre seguinte. O 4º trimestre avança para o 1º do ano seguinte.
+  Quarter get next =>
+      number == 4 ? Quarter(year + 1, 1) : Quarter(year, number + 1);
+
   bool contains(DateTime date) =>
       !date.isBefore(start) && date.isBefore(nextStart);
 
+  /// Ordem no calendário: ano primeiro, depois o número do trimestre.
+  bool isBefore(Quarter other) =>
+      year < other.year || (year == other.year && number < other.number);
+
+  bool isAfter(Quarter other) => other.isBefore(this);
+
   String get label => '$numberº trimestre de $year';
+
+  /// Faixa de meses do trimestre para os cartões de histórico: "Julho —
+  /// Setembro". Sem depender de `intl` — são doze rótulos fixos em pt-BR.
+  String get monthsLabel {
+    const months = [
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
+    ];
+    final first = (number - 1) * 3;
+    return '${months[first]} — ${months[first + 2]}';
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -215,6 +250,7 @@ class MinisteringRemovalCheck {
     required this.companionships,
     required this.interviews,
     this.appointments = 0,
+    this.snapshots = 0,
   });
 
   /// Duplas que citam o cadastro, ativas ou não. Sempre zero para líderes.
@@ -227,11 +263,18 @@ class MinisteringRemovalCheck {
   /// lideranças podem ser citadas diretamente por um agendamento.
   final int appointments;
 
+  /// Trimestres concluídos cujo escopo congelado inclui a dupla. Apagá-la
+  /// encolheria o denominador daquele histórico. É zero para irmãos e líderes.
+  final int snapshots;
+
   /// Só é seguro apagar o que nunca foi usado.
   bool get canDelete =>
-      companionships == 0 && interviews == 0 && appointments == 0;
+      companionships == 0 &&
+      interviews == 0 &&
+      appointments == 0 &&
+      snapshots == 0;
 
-  bool get hasHistory => interviews > 0;
+  bool get hasHistory => interviews > 0 || snapshots > 0;
 }
 
 /// Números do trimestre exibidos no painel.
@@ -258,6 +301,73 @@ class QuarterSummary {
   double get progress => activeCompanionships == 0
       ? 0
       : interviewedCompanionships / activeCompanionships;
+}
+
+/// Um trimestre na lista de histórico.
+///
+/// [eligible] é o denominador — do snapshot congelado, para trimestres
+/// encerrados; do estado atual das duplas ativas, para o trimestre corrente.
+/// [interviewed] é o numerador: `COUNT(DISTINCT companionship_id)` das duplas do
+/// escopo com ao menos uma entrevista no trimestre.
+///
+/// Uma correção de entrevista antiga altera [interviewed]; nada altera
+/// [eligible] de um trimestre já congelado.
+class MinisteringHistoricalQuarter {
+  const MinisteringHistoricalQuarter({
+    required this.quarter,
+    required this.inProgress,
+    required this.eligible,
+    required this.interviewed,
+  });
+
+  final Quarter quarter;
+
+  /// `true` para o trimestre corrente, que ainda não tem snapshot e continua
+  /// live. `false` para trimestres com escopo congelado.
+  final bool inProgress;
+
+  final int eligible;
+  final int interviewed;
+
+  int get pending => eligible - interviewed;
+
+  double get progress => eligible == 0 ? 0 : interviewed / eligible;
+}
+
+/// Uma dupla no detalhe de um trimestre.
+class MinisteringQuarterCompanionshipDetail {
+  const MinisteringQuarterCompanionshipDetail({
+    required this.companionshipId,
+    required this.title,
+    required this.members,
+    required this.interviewCount,
+    this.lastInterviewAt,
+  });
+
+  final String companionshipId;
+
+  /// Rótulo resolvido pelo cadastro vivo (rótulo próprio ou junção dos nomes).
+  final String title;
+
+  /// Composição congelada do snapshot, com os nomes resolvidos pelo cadastro.
+  final List<MinisteringBrother> members;
+  final int interviewCount;
+  final DateTime? lastInterviewAt;
+
+  bool get interviewed => interviewCount > 0;
+}
+
+/// O detalhe de um trimestre do histórico.
+class MinisteringQuarterDetail {
+  const MinisteringQuarterDetail({
+    required this.summary,
+    required this.interviewed,
+    required this.pending,
+  });
+
+  final MinisteringHistoricalQuarter summary;
+  final List<MinisteringQuarterCompanionshipDetail> interviewed;
+  final List<MinisteringQuarterCompanionshipDetail> pending;
 }
 
 /// Tudo que o painel precisa, numa leitura só.
