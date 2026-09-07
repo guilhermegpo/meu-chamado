@@ -252,8 +252,8 @@ requer SDK e dispositivo ou emulador configurado.
 
 ## Versionamento
 
-O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.3+4`,
-`0.2.0-alpha.3` identifica a pré-versão do aplicativo e o número após `+` é o
+O projeto usa SemVer para a versão pública. Em `0.2.0-alpha.4+5`,
+`0.2.0-alpha.4` identifica a pré-versão do aplicativo e o número após `+` é o
 número de build. No Android, esse número de build alimenta o `versionCode`, que
 deve crescer a cada pacote publicado, sem substituir o significado da versão
 SemVer exibida ao usuário.
