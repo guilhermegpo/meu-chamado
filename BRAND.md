@@ -17,9 +17,32 @@ Ativos do projeto devem ser originais ou possuir licença compatível e origem
 documentada. Não devem ser adicionados:
 
 - logotipo ou símbolo oficial de terceiros;
-- marcas religiosas apresentadas como identidade do aplicativo;
+- marcas, logotipos ou símbolos oficiais de organizações religiosas, inclusive
+  como identidade do aplicativo;
 - imagens, ícones ou fontes sem licença verificável;
 - fotografias ou dados de pessoas reais sem necessidade e autorização.
+
+## Marcas oficiais e ilustrações contextuais
+
+Dois tipos de conteúdo religioso são tratados de forma diferente:
+
+- **Marcas, logotipos e símbolos oficiais de organizações religiosas** são
+  ativos de terceiros. Não são usados no aplicativo nem na comunicação do
+  produto sem autorização expressa de quem os detém.
+- **Ilustrações religiosas genéricas ou contextuais** — cenas, figuras ou
+  edifícios que evocam o contexto de uso sem reproduzir uma marca oficial —
+  podem ser usadas na comunicação aprovada do produto, desde que sejam
+  originais ou tenham licença compatível e origem documentada.
+
+Em qualquer caso, o Meu Chamado não:
+
+- se apresenta como aplicativo oficial de uma organização religiosa;
+- sugere patrocínio, endosso ou afiliação oficial;
+- usa marcas oficiais sem autorização.
+
+A imagem ilustrativa aprovada da comunicação do produto se enquadra como
+ilustração contextual. Ela não é a marca do aplicativo: a identidade do
+aplicativo continua sendo o `M` descrito em "Direção visual".
 
 ## Direção visual
 
